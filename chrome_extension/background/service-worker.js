@@ -4,11 +4,12 @@
  */
 
 const DEFAULT_API_URL = 'https://vifake-analytics-api.onrender.com';
+const DEFAULT_AUTH_TOKEN = 'demo-token-123';
 const LOCAL_API_URL = 'http://localhost:8000';
 
 // ─── State ───
 let apiUrl = DEFAULT_API_URL;
-let authToken = '';
+let authToken = DEFAULT_AUTH_TOKEN;
 let recentScans = [];
 const MAX_RECENT = 20;
 
@@ -16,7 +17,7 @@ const MAX_RECENT = 20;
 chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
     apiUrl: DEFAULT_API_URL,
-    authToken: '',
+    authToken: DEFAULT_AUTH_TOKEN,
     autoScan: false,
     recentScans: [],
     totalScans: 0,
@@ -28,8 +29,14 @@ chrome.runtime.onInstalled.addListener(() => {
 // Load settings on startup
 chrome.storage.local.get(['apiUrl', 'authToken', 'recentScans'], (data) => {
   apiUrl = data.apiUrl || DEFAULT_API_URL;
-  authToken = data.authToken || '';
+  authToken = data.authToken || DEFAULT_AUTH_TOKEN;
   recentScans = data.recentScans || [];
+
+  // Ensure defaults are persisted (for users who installed before defaults existed)
+  const toSet = {};
+  if (!data.apiUrl) toSet.apiUrl = DEFAULT_API_URL;
+  if (!data.authToken) toSet.authToken = DEFAULT_AUTH_TOKEN;
+  if (Object.keys(toSet).length > 0) chrome.storage.local.set(toSet);
 });
 
 // ─── Message Handler ───

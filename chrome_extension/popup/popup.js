@@ -115,11 +115,14 @@ function setupTabs() {
 }
 
 // ─── Settings ───
+const DEFAULT_API_URL = 'https://vifake-analytics-api.onrender.com';
+const DEFAULT_AUTH_TOKEN = 'demo-token-123';
+
 function setupSettings() {
-  // Load current settings
+  // Load current settings (fallback to defaults)
   chrome.storage.local.get(['apiUrl', 'authToken', 'autoScan'], (data) => {
-    document.getElementById('apiUrlInput').value = data.apiUrl || '';
-    document.getElementById('authTokenInput').value = data.authToken || '';
+    document.getElementById('apiUrlInput').value = data.apiUrl || DEFAULT_API_URL;
+    document.getElementById('authTokenInput').value = data.authToken || DEFAULT_AUTH_TOKEN;
     document.getElementById('autoScanToggle').checked = data.autoScan || false;
   });
 

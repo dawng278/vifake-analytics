@@ -44,8 +44,8 @@
   // ─── Post Finders (resilient to class name changes) ───
   const POST_SELECTORS = {
     facebook: [
-      // Primary: feed posts inside [role="feed"] (most stable, excludes messenger)
-      '[role="feed"] [role="article"]',
+      // Primary: all articles (will filter out messenger via post-checks below)
+      '[role="article"]',
       // Fallback: posts with FB-specific data-pagelet attributes
       '[data-pagelet*="FeedUnit"]',
       '[data-pagelet*="ProfileTimeline"]',
@@ -347,22 +347,48 @@
   // ─── MutationObserver: Watch for new posts (SPA navigation) ───
   let debounceTimer = null;
 
+  // Determine if an "article" is really a feed post (not a chat message)
+  function isLikelyFeedPost(post) {
+    if (PLATFORM !== 'facebook') return true;
+
+    // Reject if inside Messenger chat (chat overlay, messenger panel)
+    const chatLabels = [
+      '[aria-label*="chat" i]',
+      '[aria-label*="Messenger" i]',
+      '[aria-label*="tin nh\u1eafn" i]',   // Vietnamese: "tin nhắn"
+      '[aria-label*="h\u1ed9p tho\u1ea1i chat" i]',  // "hộp thoại chat"
+    ].join(',');
+    if (post.closest(chatLabels)) return false;
+
+    // Feed posts have a toolbar (like/comment/share). Chat messages don't.
+    // Detecting via reaction counts or like button aria-labels.
+    const hasToolbar = post.querySelector('[role="toolbar"]')
+      || post.querySelector('[aria-label*="Like" i], [aria-label*="Th\u00edch" i]')
+      || post.querySelector('[aria-label*="Comment" i], [aria-label*="B\u00ecnh lu\u1eadn" i]')
+      || post.querySelector('[aria-label*="Share" i], [aria-label*="Chia s\u1ebb" i]');
+    if (!hasToolbar) return false;
+
+    // Size filter: chat messages are small. Real posts are ≥ 150px tall typically.
+    const rect = post.getBoundingClientRect();
+    if (rect.height < 150) return false;
+
+    return true;
+  }
+
   function scanForPosts() {
-    // Skip chat/messenger contexts entirely
+    // Skip chat/messenger contexts entirely (URL-based)
     if (PLATFORM === 'facebook' && isMessengerContext()) return;
 
     const selectors = POST_SELECTORS[PLATFORM] || [];
+    const seen = new Set();
     for (const sel of selectors) {
       const posts = document.querySelectorAll(sel);
       posts.forEach(post => {
-        // Extra safety: skip if the element is inside a chat/dialog context
-        if (PLATFORM === 'facebook') {
-          if (post.closest('[role="dialog"]')) return;  // Modal chat popup
-          if (post.closest('[aria-label*="chat" i], [aria-label*="message" i], [aria-label*="Messenger" i]')) return;
-        }
-        if (!post.hasAttribute(SCAN_ATTR)) {
-          injectCheckButton(post);
-        }
+        if (seen.has(post)) return;
+        seen.add(post);
+        if (post.hasAttribute(SCAN_ATTR)) return;
+        if (!isLikelyFeedPost(post)) return;
+        injectCheckButton(post);
       });
     }
   }
