@@ -1,0 +1,177 @@
+[
+  {
+    "post_id": "synth_synth_test_000",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 233474,
+    "scam_probability": 1.0,
+    "scam_type": "robux_phishing",
+    "detected_keywords": [
+      "robux",
+      "free",
+      "click",
+      "link",
+      "verify"
+    ],
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "realism_score": 0.85,
+    "processing_timestamp": "2026-05-04T15:08:22.257733"
+  },
+  {
+    "post_id": "synth_synth_test_001",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 657809,
+    "scam_probability": 0.6000000000000001,
+    "scam_type": "gift_card_scam",
+    "detected_keywords": [
+      "free",
+      "verify",
+      "card"
+    ],
+    "age_group": "11-13",
+    "conversation_turns": 4,
+    "realism_score": 0.86,
+    "processing_timestamp": "2026-05-04T15:08:22.257773"
+  },
+  {
+    "post_id": "synth_synth_test_002",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 482373,
+    "scam_probability": 0.4,
+    "scam_type": "malicious_link",
+    "detected_keywords": [
+      "click",
+      "link"
+    ],
+    "age_group": "14-17",
+    "conversation_turns": 4,
+    "realism_score": 0.87,
+    "processing_timestamp": "2026-05-04T15:08:22.257781"
+  },
+  {
+    "post_id": "synth_synth_test_003",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 233474,
+    "scam_probability": 1.0,
+    "scam_type": "robux_phishing",
+    "detected_keywords": [
+      "robux",
+      "free",
+      "click",
+      "link",
+      "verify"
+    ],
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "realism_score": 0.88,
+    "processing_timestamp": "2026-05-04T15:08:22.257788"
+  },
+  {
+    "post_id": "synth_synth_test_004",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 129266,
+    "scam_probability": 0.6000000000000001,
+    "scam_type": "gift_card_scam",
+    "detected_keywords": [
+      "free",
+      "verify",
+      "card"
+    ],
+    "age_group": "11-13",
+    "conversation_turns": 4,
+    "realism_score": 0.89,
+    "processing_timestamp": "2026-05-04T15:08:22.257801"
+  },
+  {
+    "post_id": "synth_synth_test_005",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 527466,
+    "scam_probability": 0.4,
+    "scam_type": "malicious_link",
+    "detected_keywords": [
+      "click",
+      "link"
+    ],
+    "age_group": "14-17",
+    "conversation_turns": 4,
+    "realism_score": 0.9,
+    "processing_timestamp": "2026-05-04T15:08:22.257807"
+  },
+  {
+    "post_id": "synth_synth_test_006",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 233474,
+    "scam_probability": 1.0,
+    "scam_type": "robux_phishing",
+    "detected_keywords": [
+      "robux",
+      "free",
+      "click",
+      "link",
+      "verify"
+    ],
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "realism_score": 0.91,
+    "processing_timestamp": "2026-05-04T15:08:22.257813"
+  },
+  {
+    "post_id": "synth_synth_test_007",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 542866,
+    "scam_probability": 0.6000000000000001,
+    "scam_type": "gift_card_scam",
+    "detected_keywords": [
+      "free",
+      "verify",
+      "card"
+    ],
+    "age_group": "11-13",
+    "conversation_turns": 4,
+    "realism_score": 0.92,
+    "processing_timestamp": "2026-05-04T15:08:22.257819"
+  },
+  {
+    "post_id": "synth_synth_test_008",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 346099,
+    "scam_probability": 0.4,
+    "scam_type": "malicious_link",
+    "detected_keywords": [
+      "click",
+      "link"
+    ],
+    "age_group": "14-17",
+    "conversation_turns": 4,
+    "realism_score": 0.93,
+    "processing_timestamp": "2026-05-04T15:08:22.257825"
+  },
+  {
+    "post_id": "synth_synth_test_009",
+    "platform": "synthetic",
+    "content_type": "conversation",
+    "content_hash": 233474,
+    "scam_probability": 1.0,
+    "scam_type": "robux_phishing",
+    "detected_keywords": [
+      "robux",
+      "free",
+      "click",
+      "link",
+      "verify"
+    ],
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "realism_score": 0.94,
+    "processing_timestamp": "2026-05-04T15:08:22.257831"
+  }
+]

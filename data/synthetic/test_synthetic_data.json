@@ -1,0 +1,282 @@
+[
+  {
+    "synthetic_id": "synth_test_000",
+    "scenario": "robux_phishing",
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "ae ơi, admin roblox đang event free robux nè!"
+      },
+      {
+        "role": "victim",
+        "text": "thật á? verify làm sao vậy bác?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào link này: bit.ly/fake-robux-{i}"
+      },
+      {
+        "role": "victim",
+        "text": "ok t đang click 😂"
+      }
+    ],
+    "language_variant": "teencode_heavy",
+    "realism_score": 0.85,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466502"
+  },
+  {
+    "synthetic_id": "synth_test_001",
+    "scenario": "gift_card_scam",
+    "age_group": "11-13",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "hello, t đang giveaway iTunes card 100k"
+      },
+      {
+        "role": "victim",
+        "text": "free á? tin được không?"
+      },
+      {
+        "role": "scammer",
+        "text": "cần verify tài khoản để nhận card"
+      },
+      {
+        "role": "victim",
+        "text": "t đã verify xong rồi"
+      }
+    ],
+    "language_variant": "mixed",
+    "realism_score": 0.86,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466529"
+  },
+  {
+    "synthetic_id": "synth_test_002",
+    "scenario": "malicious_link",
+    "age_group": "14-17",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "check out app mới skibidi này nè"
+      },
+      {
+        "role": "victim",
+        "text": "link đâu vậy bạn?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào đây: bit.ly/skibidi-2"
+      },
+      {
+        "role": "victim",
+        "text": "tài khoản t bị mất rồi!"
+      }
+    ],
+    "language_variant": "teencode_heavy",
+    "realism_score": 0.87,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466543"
+  },
+  {
+    "synthetic_id": "synth_test_003",
+    "scenario": "robux_phishing",
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "ae ơi, admin roblox đang event free robux nè!"
+      },
+      {
+        "role": "victim",
+        "text": "thật á? verify làm sao vậy bác?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào link này: bit.ly/fake-robux-{i}"
+      },
+      {
+        "role": "victim",
+        "text": "ok t đang click 😂"
+      }
+    ],
+    "language_variant": "mixed",
+    "realism_score": 0.88,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466550"
+  },
+  {
+    "synthetic_id": "synth_test_004",
+    "scenario": "gift_card_scam",
+    "age_group": "11-13",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "hello, t đang giveaway iTunes card 400k"
+      },
+      {
+        "role": "victim",
+        "text": "free á? tin được không?"
+      },
+      {
+        "role": "scammer",
+        "text": "cần verify tài khoản để nhận card"
+      },
+      {
+        "role": "victim",
+        "text": "t đã verify xong rồi"
+      }
+    ],
+    "language_variant": "teencode_heavy",
+    "realism_score": 0.89,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466557"
+  },
+  {
+    "synthetic_id": "synth_test_005",
+    "scenario": "malicious_link",
+    "age_group": "14-17",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "check out app mới skibidi này nè"
+      },
+      {
+        "role": "victim",
+        "text": "link đâu vậy bạn?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào đây: bit.ly/skibidi-5"
+      },
+      {
+        "role": "victim",
+        "text": "tài khoản t bị mất rồi!"
+      }
+    ],
+    "language_variant": "mixed",
+    "realism_score": 0.9,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466563"
+  },
+  {
+    "synthetic_id": "synth_test_006",
+    "scenario": "robux_phishing",
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "ae ơi, admin roblox đang event free robux nè!"
+      },
+      {
+        "role": "victim",
+        "text": "thật á? verify làm sao vậy bác?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào link này: bit.ly/fake-robux-{i}"
+      },
+      {
+        "role": "victim",
+        "text": "ok t đang click 😂"
+      }
+    ],
+    "language_variant": "teencode_heavy",
+    "realism_score": 0.91,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466569"
+  },
+  {
+    "synthetic_id": "synth_test_007",
+    "scenario": "gift_card_scam",
+    "age_group": "11-13",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "hello, t đang giveaway iTunes card 700k"
+      },
+      {
+        "role": "victim",
+        "text": "free á? tin được không?"
+      },
+      {
+        "role": "scammer",
+        "text": "cần verify tài khoản để nhận card"
+      },
+      {
+        "role": "victim",
+        "text": "t đã verify xong rồi"
+      }
+    ],
+    "language_variant": "mixed",
+    "realism_score": 0.92,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466577"
+  },
+  {
+    "synthetic_id": "synth_test_008",
+    "scenario": "malicious_link",
+    "age_group": "14-17",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "check out app mới skibidi này nè"
+      },
+      {
+        "role": "victim",
+        "text": "link đâu vậy bạn?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào đây: bit.ly/skibidi-8"
+      },
+      {
+        "role": "victim",
+        "text": "tài khoản t bị mất rồi!"
+      }
+    ],
+    "language_variant": "teencode_heavy",
+    "realism_score": 0.93,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466585"
+  },
+  {
+    "synthetic_id": "synth_test_009",
+    "scenario": "robux_phishing",
+    "age_group": "8-10",
+    "conversation_turns": 4,
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "ae ơi, admin roblox đang event free robux nè!"
+      },
+      {
+        "role": "victim",
+        "text": "thật á? verify làm sao vậy bác?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào link này: bit.ly/fake-robux-{i}"
+      },
+      {
+        "role": "victim",
+        "text": "ok t đang click 😂"
+      }
+    ],
+    "language_variant": "mixed",
+    "realism_score": 0.94,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:08:12.466590"
+  }
+]

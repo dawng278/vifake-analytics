@@ -1,0 +1,33 @@
+{
+  "dataset_info": {
+    "total_samples": 750,
+    "generation_date": "2026-05-04T15:12:03.917659",
+    "model_target": "PhoBERT",
+    "language": "Vietnamese",
+    "purpose": "Child scam detection with labels"
+  },
+  "label_distribution": {
+    "scam": 750
+  },
+  "scenario_distribution": {
+    "account_theft": 166,
+    "crypto_scam": 157,
+    "robux_phishing": 152,
+    "gift_card_scam": 132,
+    "malicious_link": 143
+  },
+  "age_group_distribution": {
+    "14-17": 249,
+    "8-10": 239,
+    "11-13": 262
+  },
+  "severity_distribution": {
+    "high": 323,
+    "medium": 427
+  },
+  "quality_metrics": {
+    "avg_realism_score": 0.9172666666666667,
+    "avg_safety_score": 1.0,
+    "avg_conversation_turns": 4.0
+  }
+}

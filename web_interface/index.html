@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ViFake Analytics - Bảng điều khiển kiểm thử</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #16a34a;
+            --warning-color: #f59e0b;
+            --danger-color: #dc2626;
+            --dark-color: #1f2937;
+            --light-color: #f3f4f6;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color), #4f46e5);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header-section h1 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .header-section p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online { background-color: var(--success-color); }
+        .status-offline { background-color: var(--danger-color); }
+        .status-warning { background-color: var(--warning-color); }
+
+        .analysis-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e5e7eb;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), #4f46e5);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            border-left: 4px solid var(--success-color);
+        }
+
+        .result-card.danger {
+            border-left-color: var(--danger-color);
+        }
+
+        .result-card.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .progress-bar-container {
+            background: #e5e7eb;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), #4f46e5);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+            width: 0%;
+        }
+
+        .metric-badge {
+            background: var(--light-color);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 5px;
+            display: inline-block;
+        }
+
+        .metric-badge.safe {
+            background: #dcfce7;
+            color: var(--success-color);
+        }
+
+        .metric-badge.danger {
+            background: #fee2e2;
+            color: var(--danger-color);
+        }
+
+        .metric-badge.warning {
+            background: #fef3c7;
+            color: var(--warning-color);
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading-spinner.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stage-indicator {
+            background: #f3f4f6;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 5px 0;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .stage-indicator.active {
+            background: #dbeafe;
+            border-left-color: var(--primary-color);
+        }
+
+        .stage-indicator.completed {
+            background: #dcfce7;
+            border-left-color: var(--success-color);
+        }
+
+        .feature-highlight {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .api-info {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .footer-section {
+            background: var(--dark-color);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .header-section h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="main-container">
+            <!-- Header -->
+            <div class="header-section">
+                <h1><i class="fas fa-shield-alt"></i> ViFake Analytics</h1>
+                <p>Bảng điều khiển kiểm thử hệ thống phát hiện lừa đảo trẻ em Việt Nam</p>
+                <div class="mt-3">
+                    <span class="status-indicator status-online"></span>
+                    <span id="connection-status">Đang kết nối...</span>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="p-4">
+                <div class="row">
+                    <!-- Left Column - Analysis Form -->
+                    <div class="col-lg-6">
+                        <div class="analysis-form">
+                            <h3><i class="fas fa-search"></i> Phân tích nội dung</h3>
+                            <p class="text-muted">Nhập URL để phân tích nội dung lừa đảo tiềm năng</p>
+                            
+                            <form id="analysis-form">
+                                <div class="mb-3">
+                                    <label for="url" class="form-label">URL cần phân tích</label>
+                                    <input type="url" class="form-control" id="url" 
+                                           placeholder="https://youtube.com/watch?v=..." required>
+                                    <div class="form-text">Hỗ trợ YouTube, Facebook, TikTok</div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="platform" class="form-label">Nền tảng</label>
+                                        <select class="form-select" id="platform" required>
+                                            <option value="">Chọn nền tảng</option>
+                                            <option value="youtube">YouTube</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="tiktok">TikTok</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="priority" class="form-label">Ưu tiên</label>
+                                        <select class="form-select" id="priority" required>
+                                            <option value="normal">Bình thường</option>
+                                            <option value="high">Cao</option>
+                                            <option value="low">Thấp</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-play"></i> Bắt đầu phân tích
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- System Status -->
+                        <div class="status-card">
+                            <h5><i class="fas fa-server"></i> Trạng thái hệ thống</h5>
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <small class="text-muted">API Gateway</small>
+                                    <div>
+                                        <span class="status-indicator" id="api-status"></span>
+                                        <span id="api-status-text">Đang kiểm tra...</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">AI Engine</small>
+                                    <div>
+                                        <span class="status-indicator" id="ai-status"></span>
+                                        <span id="ai-status-text">Đang kiểm tra...</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <small class="text-muted">Database</small>
+                                    <div>
+                                        <span class="status-indicator" id="db-status"></span>
+                                        <span id="db-status-text">Đang kiểm tra...</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Graph Analytics</small>
+                                    <div>
+                                        <span class="status-indicator" id="graph-status"></span>
+                                        <span id="graph-status-text">Đang kiểm tra...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- API Info -->
+                        <div class="api-info">
+                            <h6><i class="fas fa-info-circle"></i> Thông tin API</h6>
+                            <div><strong>Endpoint:</strong> http://localhost:8000</div>
+                            <div><strong>Authentication:</strong> Bearer demo-token-123</div>
+                            <div><strong>Documentation:</strong> <a href="http://localhost:8000/docs" target="_blank">/docs</a></div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Results -->
+                    <div class="col-lg-6">
+                        <!-- Loading -->
+                        <div class="loading-spinner" id="loading">
+                            <div class="spinner"></div>
+                            <p class="mt-3">Đang phân tích nội dung...</p>
+                        </div>
+
+                        <!-- Progress -->
+                        <div class="status-card" id="progress-card" style="display: none;">
+                            <h5><i class="fas fa-tasks"></i> Tiến trình phân tích</h5>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="progress-bar"></div>
+                            </div>
+                            <div id="progress-text">0%</div>
+                            
+                            <div class="mt-3">
+                                <div class="stage-indicator" id="stage-1">
+                                    <i class="fas fa-search"></i> Tìm kiếm metadata
+                                </div>
+                                <div class="stage-indicator" id="stage-2">
+                                    <i class="fas fa-shield-alt"></i> Kiểm tra an toàn
+                                </div>
+                                <div class="stage-indicator" id="stage-3">
+                                    <i class="fas fa-image"></i> Phân tích hình ảnh (CLIP)
+                                </div>
+                                <div class="stage-indicator" id="stage-4">
+                                    <i class="fas fa-language"></i> Phân tích văn bản (PhoBERT)
+                                </div>
+                                <div class="stage-indicator" id="stage-5">
+                                    <i class="fas fa-brain"></i> Hợp nhất kết quả (XGBoost)
+                                </div>
+                                <div class="stage-indicator" id="stage-6">
+                                    <i class="fas fa-project-diagram"></i> Cập nhật đồ thị
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Results -->
+                        <div id="results-container"></div>
+
+                        <!-- Sample Tests -->
+                        <div class="feature-highlight">
+                            <h6><i class="fas fa-lightbulb"></i> Test mẫu</h6>
+                            <p class="mb-2">Thử các URL mẫu để kiểm tra hệ thống:</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button class="btn btn-sm btn-outline-primary" onclick="testSample('https://youtube.com/watch?v=safe123')">
+                                    <i class="fas fa-play"></i> Nội dung an toàn
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="testSample('https://youtube.com/watch?v=scam456')">
+                                    <i class="fas fa-exclamation-triangle"></i> Nội dung lừa đảo
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="testSample('https://tiktok.com/@user/test789')">
+                                    <i class="fas fa-video"></i> Nội dung TikTok
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer-section">
+                <p><i class="fas fa-shield-alt"></i> ViFake Analytics - Hệ thống bảo vệ trẻ em trực tuyến</p>
+                <small>Privacy-by-Design • AI Ethics • 100% Synthetic Data Training</small>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Configuration
+        const API_BASE = 'http://localhost:8000';
+        const AUTH_TOKEN = 'demo-token-123';
+        
+        // State
+        let currentJobId = null;
+        let progressInterval = null;
+        
+        // DOM Elements
+        const analysisForm = document.getElementById('analysis-form');
+        const loadingDiv = document.getElementById('loading');
+        const progressCard = document.getElementById('progress-card');
+        const resultsContainer = document.getElementById('results-container');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSystemStatus();
+            setupEventListeners();
+        });
+        
+        // Event Listeners
+        function setupEventListeners() {
+            analysisForm.addEventListener('submit', handleAnalysisSubmit);
+        }
+        
+        // System Status Check
+        async function checkSystemStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/health`);
+                const data = await response.json();
+                
+                updateConnectionStatus(true);
+                updateComponentStatus('api', true);
+                updateComponentStatus('ai', true);
+                updateComponentStatus('db', true);
+                updateComponentStatus('graph', true);
+                
+                document.getElementById('connection-status').textContent = 'Kết nối thành công';
+                
+            } catch (error) {
+                console.error('Health check failed:', error);
+                updateConnectionStatus(false);
+                updateComponentStatus('api', false);
+                updateComponentStatus('ai', false);
+                updateComponentStatus('db', false);
+                updateComponentStatus('graph', false);
+                
+                document.getElementById('connection-status').textContent = 'Mất kết nối';
+            }
+        }
+        
+        function updateConnectionStatus(connected) {
+            const indicator = document.querySelector('#connection-status').previousElementSibling;
+            indicator.className = connected ? 'status-indicator status-online' : 'status-indicator status-offline';
+        }
+        
+        function updateComponentStatus(component, online) {
+            const statusElement = document.getElementById(`${component}-status`);
+            const textElement = document.getElementById(`${component}-status-text`);
+            
+            if (online) {
+                statusElement.className = 'status-indicator status-online';
+                textElement.textContent = 'Online';
+            } else {
+                statusElement.className = 'status-indicator status-offline';
+                textElement.textContent = 'Offline';
+            }
+        }
+        
+        // Analysis Handler
+        async function handleAnalysisSubmit(event) {
+            event.preventDefault();
+            
+            const url = document.getElementById('url').value;
+            const platform = document.getElementById('platform').value;
+            const priority = document.getElementById('priority').value;
+            
+            if (!url || !platform) {
+                alert('Vui lòng nhập đầy đủ thông tin');
+                return;
+            }
+            
+            await startAnalysis(url, platform, priority);
+        }
+        
+        async function startAnalysis(url, platform, priority) {
+            try {
+                // Show loading
+                showLoading();
+                
+                // Submit analysis request
+                const response = await fetch(`${API_BASE}/api/v1/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AUTH_TOKEN}`
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        platform: platform,
+                        priority: priority
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                currentJobId = result.job_id;
+                
+                // Show progress and start polling
+                showProgress();
+                startProgressPolling();
+                
+            } catch (error) {
+                console.error('Analysis failed:', error);
+                hideLoading();
+                showError('Không thể bắt đầu phân tích: ' + error.message);
+            }
+        }
+        
+        // Progress Polling
+        function startProgressPolling() {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+            
+            progressInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/api/v1/job/${currentJobId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${AUTH_TOKEN}`
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const jobData = await response.json();
+                    updateProgress(jobData);
+                    
+                    if (jobData.status === 'completed') {
+                        clearInterval(progressInterval);
+                        hideProgress();
+                        showResults(jobData.result);
+                    } else if (jobData.status === 'failed') {
+                        clearInterval(progressInterval);
+                        hideProgress();
+                        showError('Phân tích thất bại: ' + (jobData.error || 'Unknown error'));
+                    }
+                    
+                } catch (error) {
+                    console.error('Progress polling failed:', error);
+                    clearInterval(progressInterval);
+                    hideProgress();
+                    showError('Không thể cập nhật tiến trình: ' + error.message);
+                }
+            }, 1000);
+        }
+        
+        function updateProgress(jobData) {
+            const progress = jobData.progress || 0;
+            const stage = jobData.current_stage || '';
+            
+            // Update progress bar
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `${Math.round(progress)}%`;
+            
+            // Update stages
+            const stages = [
+                '🔍 Crawling metadata...',
+                '🛡️ Quarantine check passed...',
+                '🖼️ CLIP vision analysis running...',
+                '📝 PhoBERT NLP analysis running...',
+                '🧠 XGBoost decision fusion...',
+                '🕸️ Updating Neo4j graph...'
+            ];
+            
+            stages.forEach((stageText, index) => {
+                const stageElement = document.getElementById(`stage-${index + 1}`);
+                if (stageElement) {
+                    stageElement.classList.remove('active', 'completed');
+                    
+                    if (stage.includes(stageText.substring(0, 10))) {
+                        stageElement.classList.add('active');
+                    } else if (progress > (index + 1) * (100 / stages.length)) {
+                        stageElement.classList.add('completed');
+                    }
+                }
+            });
+        }
+        
+        // Results Display
+        function showResults(result) {
+            const riskLevel = result.risk_level || 'UNKNOWN';
+            const confidence = result.confidence || 0;
+            const isSafe = result.is_safe || false;
+            
+            let cardClass = 'result-card';
+            if (riskLevel === 'HIGH') {
+                cardClass += ' danger';
+            } else if (riskLevel === 'MEDIUM') {
+                cardClass += ' warning';
+            }
+            
+            const resultHtml = `
+                <div class="${cardClass}">
+                    <h5><i class="fas fa-${isSafe ? 'check-circle' : 'exclamation-triangle'}"></i> 
+                        Kết quả phân tích</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Phân loại:</strong>
+                            <div class="metric-badge ${isSafe ? 'safe' : 'danger'}">
+                                ${result.label || 'UNKNOWN'}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Mức độ rủi ro:</strong>
+                            <div class="metric-badge ${riskLevel === 'LOW' ? 'safe' : riskLevel === 'HIGH' ? 'danger' : 'warning'}">
+                                ${riskLevel}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Độ tin cậy:</strong>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${confidence * 100}%"></div>
+                            </div>
+                            <small>${(confidence * 100).toFixed(1)}%</small>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Cần xem xét:</strong>
+                            <div class="metric-badge ${result.needs_review ? 'warning' : 'safe'}">
+                                ${result.needs_review ? 'Có' : 'Không'}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6><i class="fas fa-chart-line"></i> Chi tiết phân tích</h6>
+                        <div class="api-info">
+                            <div><strong>Thời gian xử lý:</strong> ${(result.processing_time || 0).toFixed(2)}s</div>
+                            <div><strong>Phương pháp:</strong> Multi-modal AI (Vision + NLP + Fusion)</div>
+                            <div><strong>Mô hình:</strong> PhoBERT + CLIP + XGBoost</div>
+                        </div>
+                    </div>
+                    
+                    ${result.analysis_details ? `
+                    <div class="mt-3">
+                        <h6><i class="fas fa-microscope"></i> Phân tích chi tiết</h6>
+                        <div class="api-info">
+                            <div><strong>Vision Risk:</strong> ${(result.analysis_details.vision_risk || 0).toFixed(3)}</div>
+                            <div><strong>NLP Risk:</strong> ${(result.analysis_details.nlp_risk || 0).toFixed(3)}</div>
+                            <div><strong>Fusion Score:</strong> ${(result.analysis_details.fusion_score || 0).toFixed(3)}</div>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            resultsContainer.innerHTML = resultHtml;
+        }
+        
+        // UI Helpers
+        function showLoading() {
+            loadingDiv.classList.add('active');
+            progressCard.style.display = 'none';
+            resultsContainer.innerHTML = '';
+        }
+        
+        function hideLoading() {
+            loadingDiv.classList.remove('active');
+        }
+        
+        function showProgress() {
+            hideLoading();
+            progressCard.style.display = 'block';
+            resultsContainer.innerHTML = '';
+        }
+        
+        function hideProgress() {
+            progressCard.style.display = 'none';
+        }
+        
+        function showError(message) {
+            resultsContainer.innerHTML = `
+                <div class="result-card danger">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Lỗi</h5>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="location.reload()">
+                        <i class="fas fa-redo"></i> Thử lại
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Sample Test Functions
+        function testSample(url) {
+            document.getElementById('url').value = url;
+            
+            // Auto-detect platform
+            let platform = 'youtube';
+            if (url.includes('tiktok.com')) platform = 'tiktok';
+            else if (url.includes('facebook.com')) platform = 'facebook';
+            
+            document.getElementById('platform').value = platform;
+            document.getElementById('priority').value = 'normal';
+            
+            // Auto-submit
+            analysisForm.dispatchEvent(new Event('submit'));
+        }
+        
+        // Auto-refresh system status
+        setInterval(checkSystemStatus, 30000); // Every 30 seconds
+    </script>
+</body>
+</html>

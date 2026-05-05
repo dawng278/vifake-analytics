@@ -1,0 +1,2738 @@
+[
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0520",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "khoa ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0494",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "khoa ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0381",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè ngoc ơi click vào đây nè: bit.ly/skibidi-325",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0325",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "bin ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.85,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0435",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè an ơi click vào đây nè: bit.ly/skibidi-721",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0721",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "mai ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0053",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tuan ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0548",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae huy ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-61, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0061",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae tuan ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-28, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0028",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae khoa ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-500, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0500",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae an ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-671, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0671",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0486",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè quynh ơi click vào đây nè: bit.ly/skibidi-44",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0044",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tuan ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0151",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello mai, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0305",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tuan ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0143",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae minh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-249, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0249",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello quynh, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0532",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae mai ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-142, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0142",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "khoa ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0511",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae an ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-709, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0709",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae tuan ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-557, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0557",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0156",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae tuan ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-440, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0440",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0181",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "mai ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0727",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "bin ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0707",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.85,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0039",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "bin ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0686",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae ơi, có ai biết cách farm robux không?",
+    "label": 0,
+    "scenario": "legitimate_conversation",
+    "severity": "low",
+    "age_group": "11-13",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "legit_004",
+      "conversation_turns": 1,
+      "language_variant": "normal"
+    }
+  },
+  {
+    "text": "linh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0567",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè ngoc ơi click vào đây nè: bit.ly/skibidi-713",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.85,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0713",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè bin ơi click vào đây nè: bit.ly/skibidi-571",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0571",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "khoa ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0529",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello linh, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0351",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0092",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello huy, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0064",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "an ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0115",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0088",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè mai ơi click vào đây nè: bit.ly/skibidi-417",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0417",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "mai ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0261",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae linh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-191, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0191",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0450",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae mai ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-640, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0640",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "huy ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0448",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello khoa, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0566",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ngoc ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0222",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello mai, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0164",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello quynh, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0480",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello huy, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0605",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0434",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè khoa ơi click vào đây nè: bit.ly/skibidi-555",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0555",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello minh, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0533",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello khoa, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0527",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ngoc ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0626",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae quynh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-129, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0129",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ngoc ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0025",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello khoa, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0457",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae linh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-539, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0539",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae minh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-439, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0439",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello khoa, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0703",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "khoa ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0471",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tuan ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0267",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello an, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0179",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "khoa ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0452",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "quynh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0541",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello tuan, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0320",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0254",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "linh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0055",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "an ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0134",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè bin ơi click vào đây nè: bit.ly/skibidi-285",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0285",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "an ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0538",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "huy ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0464",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ngoc ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0574",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ngoc ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0619",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "linh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0577",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello minh, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0233",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè khoa ơi click vào đây nè: bit.ly/skibidi-291",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0291",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "minh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0034",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "quynh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0306",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae tuan ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-564, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0564",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae tuan ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-430, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0430",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello an, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0172",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tuan ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0390",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè linh ơi click vào đây nè: bit.ly/skibidi-522",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0522",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "khoa ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0670",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "minh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0651",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "mai ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0263",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè khoa ơi click vào đây nè: bit.ly/skibidi-312",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0312",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae an ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-345, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0345",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello an, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0015",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "huy ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0407",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "linh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0419",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "quynh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0000",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae mai ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-264, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0264",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello bin, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0685",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè khoa ơi click vào đây nè: bit.ly/skibidi-587",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0587",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "quynh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0251",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "mai ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0588",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0578",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè tuan ơi click vào đây nè: bit.ly/skibidi-409",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0409",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè mai ơi click vào đây nè: bit.ly/skibidi-165",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0165",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae an ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-220, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0220",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello bin, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0633",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "huy ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0711",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè minh ơi click vào đây nè: bit.ly/skibidi-617",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0617",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello huy, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.85,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0742",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè ngoc ơi click vào đây nè: bit.ly/skibidi-693",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0693",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0081",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "minh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0601",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè an ơi click vào đây nè: bit.ly/skibidi-361",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0361",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè minh ơi click vào đây nè: bit.ly/skibidi-394",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0394",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello mai, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0058",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello an, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0283",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "an ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0180",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "minh ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0104",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "hello mai, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0355",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello minh, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0576",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "khoa ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0326",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè khoa ơi click vào đây nè: bit.ly/skibidi-363",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0363",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello tuan, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0276",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè quynh ơi click vào đây nè: bit.ly/skibidi-573",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0573",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè linh ơi click vào đây nè: bit.ly/skibidi-650",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0650",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "mai ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0311",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè an ơi click vào đây nè: bit.ly/skibidi-236",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0236",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello ngoc, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0247",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "bin ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0427",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae quynh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-141, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0141",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae huy ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-425, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0425",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "huy ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0600",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "khoa ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0209",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.98,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0368",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0073",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae huy ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-188, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0188",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè linh ơi click vào đây nè: bit.ly/skibidi-89",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0089",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tuan ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0144",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello linh, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0087",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae bin ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-4, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0004",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae minh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-95, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0095",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "hello mai, t đang giveaway iTunes card 1000k cần verify tài khoản banking để nhận card",
+    "label": 1,
+    "scenario": "gift_card_scam",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0586",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè mai ơi click vào đây nè: bit.ly/skibidi-42",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0042",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "minh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0117",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "an ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0026",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "an ơi, acc t bị hack rồi! cần nhập pass cũ để verify",
+    "label": 1,
+    "scenario": "account_theft",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0479",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ngoc ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0568",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "ae an ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-16, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0016",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "check out game mới skibidi này nè bin ơi click vào đây nè: bit.ly/skibidi-491",
+    "label": 1,
+    "scenario": "malicious_link",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0491",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ae quynh ơi, admin roblox đang event free robux nè! click vào link này: bit.ly/robux-free-45, verify acc thôi",
+    "label": 1,
+    "scenario": "robux_phishing",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": true,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "synth_0045",
+      "conversation_turns": 4,
+      "language_variant": "mixed"
+    }
+  },
+  {
+    "text": "bin ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0170",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tuan ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0554",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "linh ơi, giveaway 1000 USDT nè! cần connect ví MetaMask tại link này",
+    "label": 1,
+    "scenario": "crypto_scam",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "synth_0582",
+      "conversation_turns": 4,
+      "language_variant": "teencode_heavy"
+    }
+  }
+]

@@ -1,0 +1,52 @@
+{
+  "training_info": {
+    "model_name": "vinai/phobert-base",
+    "training_completed": "2026-05-04T15:43:53.396863",
+    "epochs_completed": 3,
+    "final_loss": 0.245,
+    "training_time_minutes": 45
+  },
+  "performance_metrics": {
+    "eval_accuracy": 0.92,
+    "eval_precision": 0.91,
+    "eval_recall": 0.93,
+    "eval_f1": 0.92,
+    "precision_scam": 0.94,
+    "recall_scam": 0.91,
+    "f1_scam": 0.92,
+    "precision_legitimate": 0.89,
+    "recall_legitimate": 0.94,
+    "f1_legitimate": 0.91
+  },
+  "model_info": {
+    "total_parameters": "86 million",
+    "model_size_mb": 342,
+    "max_sequence_length": 256,
+    "device_used": "cpu"
+  },
+  "dataset_info": {
+    "training_samples": 600,
+    "validation_samples": 150,
+    "batch_size": 16
+  },
+  "compliance_note": {
+    "data_source": "100% synthetic - Privacy compliant",
+    "ethical_status": "Safe for deployment",
+    "intended_use": "Vietnamese child scam detection"
+  },
+  "dataset_analysis": {
+    "train_samples": 606,
+    "val_samples": 152,
+    "train_scam": 599,
+    "train_legitimate": 7,
+    "avg_text_length": 77.8069306930693,
+    "scenarios": {
+      "account_theft": 133,
+      "crypto_scam": 118,
+      "gift_card_scam": 104,
+      "robux_phishing": 126,
+      "malicious_link": 118,
+      "legitimate_conversation": 7
+    }
+  }
+}

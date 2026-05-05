@@ -1,0 +1,11 @@
+{
+  "model_name": "vinai/phobert-base",
+  "task": "binary_classification",
+  "labels": {
+    "scam": 1,
+    "legitimate": 0
+  },
+  "max_length": 256,
+  "created_at": "2026-05-04T15:43:53.397044",
+  "status": "demo_ready"
+}

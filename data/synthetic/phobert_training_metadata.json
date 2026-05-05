@@ -1,0 +1,23 @@
+{
+  "dataset_info": {
+    "total_samples": 758,
+    "train_samples": 606,
+    "val_samples": 152,
+    "creation_date": "2026-05-04T15:12:41.834581",
+    "model_target": "PhoBERT",
+    "task": "binary_classification",
+    "labels": {
+      "scam": 1,
+      "legitimate": 0
+    }
+  },
+  "class_distribution": {
+    "scam_samples": 750,
+    "legitimate_samples": 8
+  },
+  "data_characteristics": {
+    "avg_text_length": 77.52506596306068,
+    "max_text_length": 110,
+    "min_text_length": 30
+  }
+}

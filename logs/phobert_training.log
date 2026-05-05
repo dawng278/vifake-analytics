@@ -1,0 +1,73 @@
+2026-05-04 15:42:29,656 - INFO - 🚀 Starting PhoBERT Scam Detection Training
+2026-05-04 15:42:29,657 - INFO - 🎯 Purpose: Vietnamese child scam detection
+2026-05-04 15:42:29,657 - INFO - 🔒 Privacy: 100% synthetic data - Ethical AI
+2026-05-04 15:42:29,657 - INFO - 🚀 Initializing PhoBERT Scam Trainer
+2026-05-04 15:42:29,657 - INFO - 📱 Device: cuda
+2026-05-04 15:42:29,657 - INFO - 📊 Batch size: 16
+2026-05-04 15:42:29,657 - INFO - 🔄 Epochs: 3
+2026-05-04 15:42:29,657 - INFO - 📥 Loading training data...
+2026-05-04 15:42:29,659 - INFO - ✅ Loaded 606 training samples
+2026-05-04 15:42:29,659 - INFO - ✅ Loaded 152 validation samples
+2026-05-04 15:42:29,671 - INFO - 📊 Training - Scam: 599, Legitimate: 7
+2026-05-04 15:42:29,671 - INFO - 📊 Validation - Scam: 151, Legitimate: 1
+2026-05-04 15:42:29,671 - INFO - 🤖 Initializing PhoBERT model and tokenizer...
+2026-05-04 15:42:30,887 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 15:42:30,931 - INFO - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/vinai/phobert-base/c1e37c5c86f918761049cef6fa216b4779d0d01d/config.json "HTTP/1.1 200 OK"
+2026-05-04 15:42:31,724 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/tokenizer_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 15:42:32,514 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/tokenizer_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 15:42:32,515 - WARNING - Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-04 15:42:32,798 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-05-04 15:42:33,193 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-05-04 15:42:33,846 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/vocab.txt "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 15:42:33,884 - INFO - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/vinai/phobert-base/c1e37c5c86f918761049cef6fa216b4779d0d01d/vocab.txt "HTTP/1.1 200 OK"
+2026-05-04 15:42:34,304 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 15:42:34,352 - INFO - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/vinai/phobert-base/c1e37c5c86f918761049cef6fa216b4779d0d01d/config.json "HTTP/1.1 200 OK"
+2026-05-04 15:42:34,753 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-05-04 15:42:35,189 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base "HTTP/1.1 200 OK"
+2026-05-04 15:42:35,498 - INFO - ✅ Model loaded: vinai/phobert-base
+2026-05-04 15:42:35,498 - INFO - 📱 Model device: cuda
+2026-05-04 15:42:35,498 - INFO - 📊 Model parameters: 134,999,810
+2026-05-04 15:42:35,498 - INFO - 🔤 Tokenizing dataset...
+2026-05-04 15:42:35,595 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/commits/main "HTTP/1.1 200 OK"
+2026-05-04 15:42:36,469 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/discussions?p=0 "HTTP/1.1 200 OK"
+2026-05-04 15:42:36,878 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/commits/refs%2Fpr%2F7 "HTTP/1.1 200 OK"
+2026-05-04 15:42:37,335 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/refs%2Fpr%2F7/model.safetensors.index.json "HTTP/1.1 404 Not Found"
+2026-05-04 15:42:38,324 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/refs%2Fpr%2F7/model.safetensors "HTTP/1.1 302 Found"
+2026-05-04 15:42:47,407 - INFO - ✅ Tokenization completed
+2026-05-04 15:42:47,407 - INFO - 🔤 Tokenizing dataset...
+2026-05-04 15:42:59,010 - INFO - ✅ Tokenization completed
+2026-05-04 15:42:59,010 - INFO - ⚙️ Setting up trainer...
+2026-05-04 15:42:59,010 - ERROR - ❌ Training failed: TrainingArguments.__init__() got an unexpected keyword argument 'evaluation_strategy'
+2026-05-04 15:43:09,130 - INFO - 🚀 Starting PhoBERT Scam Detection Training
+2026-05-04 15:43:09,130 - INFO - 🎯 Purpose: Vietnamese child scam detection
+2026-05-04 15:43:09,130 - INFO - 🔒 Privacy: 100% synthetic data - Ethical AI
+2026-05-04 15:43:09,130 - INFO - 🚀 Initializing PhoBERT Scam Trainer
+2026-05-04 15:43:09,130 - INFO - 📱 Device: cuda
+2026-05-04 15:43:09,130 - INFO - 📊 Batch size: 16
+2026-05-04 15:43:09,130 - INFO - 🔄 Epochs: 3
+2026-05-04 15:43:09,130 - INFO - 📥 Loading training data...
+2026-05-04 15:43:09,132 - INFO - ✅ Loaded 606 training samples
+2026-05-04 15:43:09,132 - INFO - ✅ Loaded 152 validation samples
+2026-05-04 15:43:09,144 - INFO - 📊 Training - Scam: 599, Legitimate: 7
+2026-05-04 15:43:09,144 - INFO - 📊 Validation - Scam: 151, Legitimate: 1
+2026-05-04 15:43:09,144 - INFO - 🤖 Initializing PhoBERT model and tokenizer...
+2026-05-04 15:43:09,730 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 15:43:09,730 - WARNING - Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-05-04 15:43:09,824 - INFO - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/vinai/phobert-base/c1e37c5c86f918761049cef6fa216b4779d0d01d/config.json "HTTP/1.1 200 OK"
+2026-05-04 15:43:10,133 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/tokenizer_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 15:43:10,441 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/tokenizer_config.json "HTTP/1.1 404 Not Found"
+2026-05-04 15:43:10,745 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-05-04 15:43:11,053 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-05-04 15:43:11,362 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/vocab.txt "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 15:43:11,463 - INFO - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/vinai/phobert-base/c1e37c5c86f918761049cef6fa216b4779d0d01d/vocab.txt "HTTP/1.1 200 OK"
+2026-05-04 15:43:11,874 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-05-04 15:43:11,951 - INFO - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/vinai/phobert-base/c1e37c5c86f918761049cef6fa216b4779d0d01d/config.json "HTTP/1.1 200 OK"
+2026-05-04 15:43:12,282 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/main/model.safetensors "HTTP/1.1 404 Not Found"
+2026-05-04 15:43:12,609 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base "HTTP/1.1 200 OK"
+2026-05-04 15:43:12,667 - ERROR - ❌ Failed to initialize model: [Errno 32] Broken pipe
+2026-05-04 15:43:12,668 - ERROR - ❌ Training failed: [Errno 32] Broken pipe
+2026-05-04 15:43:12,999 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/commits/main "HTTP/1.1 200 OK"
+2026-05-04 15:43:13,377 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/discussions?p=0 "HTTP/1.1 200 OK"
+2026-05-04 15:43:13,740 - INFO - HTTP Request: GET https://huggingface.co/api/models/vinai/phobert-base/commits/refs%2Fpr%2F7 "HTTP/1.1 200 OK"
+2026-05-04 15:43:14,048 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/refs%2Fpr%2F7/model.safetensors.index.json "HTTP/1.1 404 Not Found"
+2026-05-04 15:43:14,396 - INFO - HTTP Request: HEAD https://huggingface.co/vinai/phobert-base/resolve/refs%2Fpr%2F7/model.safetensors "HTTP/1.1 302 Found"

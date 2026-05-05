@@ -1,0 +1,44 @@
+[
+  {
+    "synthetic_id": "synth_001",
+    "scenario": "robux_phishing",
+    "age_group": "8-10",
+    "conversation": [
+      {"role": "scammer", "text": "ae ơi, admin roblox đang event free robux nè!"},
+      {"role": "victim", "text": "thật á? sao get vậy bác?"},
+      {"role": "scammer", "text": "click vào link này verify acc nhé: bit.ly/fake-robux"},
+      {"role": "victim", "text": "ok t đang click 😂"}
+    ],
+    "realism_score": 0.92,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:00:00Z"
+  },
+  {
+    "synthetic_id": "synth_002", 
+    "scenario": "gift_card_scam",
+    "age_group": "11-13",
+    "conversation": [
+      {"role": "scammer", "text": "hello, t đang giveaway iTunes card 1000k"},
+      {"role": "victim", "text": "free 500k? tin được không?"},
+      {"role": "scammer", "text": "cần verify tài khoản banking để nhận card"},
+      {"role": "victim", "text": "số thẻ của t là 4111-1111-1111-1111"}
+    ],
+    "realism_score": 0.88,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:00:00Z"
+  },
+  {
+    "synthetic_id": "synth_003",
+    "scenario": "malicious_link",
+    "age_group": "14-17", 
+    "conversation": [
+      {"role": "scammer", "text": "check out game mới skibidi này nè"},
+      {"role": "victim", "text": "link đâu vậy bạn?"},
+      {"role": "scammer", "text": "click vào đây nè: bit.ly/skibidi-game"},
+      {"role": "victim", "text": "tài khoản t bị mất rồi!"}
+    ],
+    "realism_score": 0.95,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:00:00Z"
+  }
+]

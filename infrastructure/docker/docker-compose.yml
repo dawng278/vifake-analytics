@@ -1,0 +1,244 @@
+version: '3.8'
+
+services:
+  # === Data Storage Layer ===
+  mongodb:
+    image: mongo:7.0
+    container_name: vifake-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: vifake_mongo_2024
+      MONGO_INITDB_DATABASE: vifake
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - vifake-network
+
+  postgres:
+    image: postgres:15
+    container_name: vifake-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vifake_mart
+      POSTGRES_USER: vifake_user
+      POSTGRES_PASSWORD: vifake_postgres_2024
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql:ro
+    networks:
+      - vifake-network
+
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: vifake-neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: neo4j/vifake_neo4j_2024
+      NEO4J_dbms_default__database: vifake
+      NEO4J_dbms_memory_heap_initial__size: 512m
+      NEO4J_dbms_memory_heap_max__size: 4G
+      NEO4J_dbms_security_procedures_unrestricted: gds.*,apoc.*
+      NEO4J_dbms_security_procedures_allowlist: gds.*,apoc.*
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - ./neo4j-init.cypher:/var/lib/neo4j/import/neo4j-init.cypher:ro
+    networks:
+      - vifake-network
+
+  # === Object Storage ===
+  minio:
+    image: minio/minio:latest
+    container_name: vifake-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: vifake_admin
+      MINIO_ROOT_PASSWORD: vifake_secret_2024
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console
+    volumes:
+      - minio_data:/data
+    networks:
+      - vifake-network
+
+  # === Cache & Queue ===
+  redis:
+    image: redis:7-alpine
+    container_name: vifake-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - vifake-network
+
+  # === Analytics & Visualization ===
+  metabase:
+    image: metabase/metabase:latest
+    container_name: vifake-metabase
+    restart: unless-stopped
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER: vifake_user
+      MB_DB_PASS: vifake_postgres_2024
+      MB_DB_HOST: postgres
+    ports:
+      - "3001:3000"
+    depends_on:
+      - postgres
+    volumes:
+      - metabase_data:/metabase-data
+    networks:
+      - vifake-network
+
+  # === MLflow ===
+  mlflow:
+    image: python:3.11-slim
+    container_name: vifake-mlflow
+    restart: unless-stopped
+    command: >
+      bash -c "
+        pip install mlflow psycopg2-binary &&
+        mlflow server 
+        --host 0.0.0.0 
+        --port 5001 
+        --backend-store-uri postgresql://vifake_user:vifake_postgres_2024@postgres:5432/mlflow
+        --default-artifact-root /mlflow/artifacts
+      "
+    ports:
+      - "5001:5001"
+    depends_on:
+      - postgres
+    volumes:
+      - mlflow_data:/mlflow
+    networks:
+      - vifake-network
+
+  # === Application Services ===
+  api-gateway:
+    build:
+      context: ../../backend_services/api_gateway
+      dockerfile: Dockerfile
+    container_name: vifake-api
+    restart: unless-stopped
+    environment:
+      - MONGODB_URL=mongodb://admin:vifake_mongo_2024@mongodb:27017/vifake
+      - POSTGRES_URL=postgresql://vifake_user:vifake_postgres_2024@postgres:5432/vifake_mart
+      - REDIS_URL=redis://redis:6379
+      - NEO4J_URL=bolt://neo4j:vifake_neo4j_2024@neo4j:7687
+      - MINIO_ENDPOINT=http://minio:9000
+      - MINIO_ACCESS_KEY=vifake_admin
+      - MINIO_SECRET_KEY=vifake_secret_2024
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongodb
+      - postgres
+      - redis
+      - neo4j
+      - minio
+    volumes:
+      - ../../backend_services/api_gateway:/app
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    networks:
+      - vifake-network
+    # GPU access for AI models
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # === Frontend ===
+  review-ui:
+    build:
+      context: ../../backend_services/human_review_ui
+      dockerfile: Dockerfile
+    container_name: vifake-ui
+    restart: unless-stopped
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+    volumes:
+      - ../../backend_services/human_review_ui:/app
+      - /app/node_modules
+    networks:
+      - vifake-network
+
+  # === Monitoring ===
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: vifake-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - vifake-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: vifake-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=vifake_grafana_2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+    ports:
+      - "3002:3000"
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - vifake-network
+
+volumes:
+  mongodb_data:
+  postgres_data:
+  neo4j_data:
+  neo4j_logs:
+  minio_data:
+  redis_data:
+  metabase_data:
+  mlflow_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  vifake-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

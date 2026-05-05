@@ -1,0 +1,109 @@
+[
+  {
+    "original_id": "synth_synth_test_000",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {},
+    "perturbation_score": 0.0,
+    "realism_boost": 0.27,
+    "scenario": "robux_phishing",
+    "age_group": "8-10"
+  },
+  {
+    "original_id": "synth_synth_test_001",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {},
+    "perturbation_score": 0.0,
+    "realism_boost": 0.26,
+    "scenario": "gift_card_scam",
+    "age_group": "11-13"
+  },
+  {
+    "original_id": "synth_synth_test_002",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {},
+    "perturbation_score": 0.0,
+    "realism_boost": 0.21,
+    "scenario": "malicious_link",
+    "age_group": "14-17"
+  },
+  {
+    "original_id": "synth_synth_test_003",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {
+      "typos": true
+    },
+    "perturbation_score": 0.3333333333333333,
+    "realism_boost": 0.26,
+    "scenario": "robux_phishing",
+    "age_group": "8-10"
+  },
+  {
+    "original_id": "synth_synth_test_004",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {},
+    "perturbation_score": 0.0,
+    "realism_boost": 0.27,
+    "scenario": "gift_card_scam",
+    "age_group": "11-13"
+  },
+  {
+    "original_id": "synth_synth_test_005",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {},
+    "perturbation_score": 0.0,
+    "realism_boost": 0.21,
+    "scenario": "malicious_link",
+    "age_group": "14-17"
+  },
+  {
+    "original_id": "synth_synth_test_006",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "ehllo admin roblox free robux click link verify account",
+    "perturbations_applied": {
+      "typos": true,
+      "emoji": true
+    },
+    "perturbation_score": 0.6666666666666666,
+    "realism_boost": 0.19,
+    "scenario": "robux_phishing",
+    "age_group": "8-10"
+  },
+  {
+    "original_id": "synth_synth_test_007",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {},
+    "perturbation_score": 0.0,
+    "realism_boost": 0.28,
+    "scenario": "gift_card_scam",
+    "age_group": "11-13"
+  },
+  {
+    "original_id": "synth_synth_test_008",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {},
+    "perturbation_score": 0.0,
+    "realism_boost": 0.2,
+    "scenario": "malicious_link",
+    "age_group": "14-17"
+  },
+  {
+    "original_id": "synth_synth_test_009",
+    "original_text": "hello admin roblox free robux click link verify account",
+    "perturbed_text": "hello admin roblox free robux click link verify account",
+    "perturbations_applied": {
+      "emoji": true
+    },
+    "perturbation_score": 0.3333333333333333,
+    "realism_boost": 0.15,
+    "scenario": "robux_phishing",
+    "age_group": "8-10"
+  }
+]

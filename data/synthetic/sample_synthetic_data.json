@@ -1,0 +1,28 @@
+[
+  {
+    "synthetic_id": "synth_sample_001",
+    "scenario": "robux_phishing",
+    "age_group": "8-10",
+    "conversation": [
+      {
+        "role": "scammer",
+        "text": "ae ơi, admin roblox đang event free robux nè!"
+      },
+      {
+        "role": "victim",
+        "text": "thật á? sao get vậy bác?"
+      },
+      {
+        "role": "scammer",
+        "text": "click vào link này verify acc nhé: bit.ly/fake-robux"
+      },
+      {
+        "role": "victim",
+        "text": "ok t đang click 😂"
+      }
+    ],
+    "realism_score": 0.92,
+    "safety_score": 1.0,
+    "generation_timestamp": "2026-05-04T15:06:28.149250"
+  }
+]
