@@ -70,8 +70,8 @@ app = FastAPI(
 # Add middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
+    allow_origins=["*"],  # Public API; tighten to specific origins in production
+    allow_credentials=False,  # Must be False when allow_origins=["*"] (browser CORS rule)
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -729,6 +729,25 @@ def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data:
     }
 
 # API Endpoints
+@app.get("/")
+async def root():
+    """Root endpoint - API info and quick links"""
+    return {
+        "service": "ViFake Analytics API",
+        "version": "1.0.0",
+        "status": "running",
+        "docs": "/docs",
+        "health": "/api/v1/health",
+        "endpoints": {
+            "analyze": "POST /api/v1/analyze",
+            "job_status": "GET /api/v1/job/{job_id}",
+            "result": "GET /api/v1/result/{job_id}",
+            "stream": "GET /api/v1/stream/{job_id}",
+            "list_jobs": "GET /api/v1/jobs",
+            "stats": "GET /api/v1/stats",
+        }
+    }
+
 @app.post("/api/v1/analyze", response_model=AnalyzeResponse)
 async def analyze_post(
     request: AnalyzeRequest,

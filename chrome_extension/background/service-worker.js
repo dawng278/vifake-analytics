@@ -3,7 +3,7 @@
  * Handles API communication, state management, badge updates
  */
 
-const DEFAULT_API_URL = 'https://vifake-api.onrender.com';
+const DEFAULT_API_URL = 'https://vifake-analytics-api.onrender.com';
 const LOCAL_API_URL = 'http://localhost:8000';
 
 // ─── State ───

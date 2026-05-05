@@ -24,7 +24,7 @@ async function loadStatus() {
     document.getElementById('safeCount').textContent = safeCount;
 
     // Check API connection
-    const apiUrl = data.apiUrl || 'https://vifake-api.onrender.com';
+    const apiUrl = data.apiUrl || 'https://vifake-analytics-api.onrender.com';
     const token = data.authToken || 'demo-token-123';
 
     try {
@@ -142,7 +142,7 @@ function setupSettings() {
   // Test connection
   document.getElementById('testConnection').addEventListener('click', async () => {
     const statusEl = document.getElementById('settingsStatus');
-    const apiUrl = document.getElementById('apiUrlInput').value.trim() || 'https://vifake-api.onrender.com';
+    const apiUrl = document.getElementById('apiUrlInput').value.trim() || 'https://vifake-analytics-api.onrender.com';
 
     statusEl.textContent = 'Đang kiểm tra...';
     statusEl.className = 'settings-status';
