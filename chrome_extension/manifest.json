@@ -5,7 +5,9 @@
   "description": "Phát hiện nội dung lừa đảo nhắm vào trẻ em Việt Nam trên Facebook, YouTube, TikTok. 1-click kiểm tra, kết quả tức thì.",
   "permissions": [
     "storage",
-    "activeTab"
+    "activeTab",
+    "contextMenus",
+    "scripting"
   ],
   "host_permissions": [
     "https://*.facebook.com/*",

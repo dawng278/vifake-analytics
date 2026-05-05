@@ -72,27 +72,44 @@
   }
 
   function extractFacebookText(postEl) {
-    // Strategy: find the main text container using data-ad-preview or dir="auto"
     const textParts = [];
 
-    // 1. Primary: [dir="auto"] spans inside the post (FB wraps text in these)
-    const dirAutoEls = postEl.querySelectorAll('[dir="auto"]');
-    dirAutoEls.forEach(el => {
-      // Skip navigation / action bar text
+    // Strategy 1: [dir="auto"] spans inside the post (older FB UI)
+    postEl.querySelectorAll('[dir="auto"]').forEach(el => {
       const role = el.closest('[role="navigation"], [role="toolbar"], [role="banner"]');
       if (role) return;
-      // Skip tiny fragments (button labels, etc.)
       const text = el.innerText?.trim();
       if (text && text.length > 5) {
         textParts.push(text);
       }
     });
 
-    // 2. Fallback: all visible text minus action bar
+    // Strategy 2: data-ad-preview attribute (FB sponsored / regular posts)
+    if (textParts.length === 0) {
+      postEl.querySelectorAll('[data-ad-preview="message"], [data-ad-comet-preview="message"]').forEach(el => {
+        const text = el.innerText?.trim();
+        if (text) textParts.push(text);
+      });
+    }
+
+    // Strategy 3: ALL spans with substantive text (modern FB UI)
+    if (textParts.length === 0) {
+      postEl.querySelectorAll('span').forEach(el => {
+        // Skip if inside action bar / nav
+        if (el.closest('[role="toolbar"], [role="navigation"], [role="banner"]')) return;
+        // Skip if it has child spans (we want leaf text nodes)
+        if (el.querySelector('span')) return;
+        const text = el.innerText?.trim();
+        if (text && text.length > 10 && text.length < 5000) {
+          textParts.push(text);
+        }
+      });
+    }
+
+    // Strategy 4: Last resort - whole post innerText minus action bar
     if (textParts.length === 0) {
       const clone = postEl.cloneNode(true);
-      // Remove action buttons, comments section
-      clone.querySelectorAll('[role="toolbar"], [role="navigation"], form').forEach(el => el.remove());
+      clone.querySelectorAll('[role="toolbar"], [role="navigation"], [role="banner"], form, button').forEach(el => el.remove());
       const text = clone.innerText?.trim();
       if (text) textParts.push(text);
     }
@@ -132,7 +149,11 @@
     if (postEl.querySelector(`.${BTN_CLASS}`)) return;
 
     const text = extractPostText(postEl);
-    if (text.length < MIN_TEXT_LENGTH) return;
+    if (text.length < MIN_TEXT_LENGTH) {
+      console.log('[ViFake] Skipping post (text too short):', text.length, 'chars');
+      return;
+    }
+    console.log('[ViFake] Injecting button for post with', text.length, 'chars');
 
     // Create button container
     const container = document.createElement('div');
@@ -376,15 +397,21 @@
 
     const selectors = POST_SELECTORS[PLATFORM] || [];
     const seen = new Set();
+    let totalFound = 0, passedFilter = 0;
     for (const sel of selectors) {
       const posts = document.querySelectorAll(sel);
       posts.forEach(post => {
         if (seen.has(post)) return;
         seen.add(post);
+        totalFound++;
         if (post.hasAttribute(SCAN_ATTR)) return;
         if (!isLikelyFeedPost(post)) return;
+        passedFilter++;
         injectCheckButton(post);
       });
+    }
+    if (totalFound > 0) {
+      console.log(`[ViFake] Scan: ${totalFound} candidates, ${passedFilter} passed filter`);
     }
   }
 
@@ -403,6 +430,221 @@
   // Initial scan
   scanForPosts();
 
+  // ─── Right-click Context Menu Support ───
+  let lastRightClickedEl = null;
+
+  document.addEventListener('contextmenu', (e) => {
+    lastRightClickedEl = e.target;
+  }, true);
+
+  // Walk up DOM from clicked element to find post-like container
+  function findPostContainer(startEl) {
+    if (!startEl) return null;
+    let current = startEl;
+    let bestCandidate = null;
+    let bestScore = 0;
+
+    while (current && current !== document.body && current !== document.documentElement) {
+      const rect = current.getBoundingClientRect();
+      const text = (current.innerText || '').trim();
+
+      // Skip if too small or too big
+      if (rect.width < 300 || rect.height < 100 || rect.height > 5000) {
+        current = current.parentElement;
+        continue;
+      }
+
+      // Score this candidate
+      let score = 0;
+      // Has substantial text → likely a post
+      if (text.length >= 30) score += 2;
+      if (text.length >= 100) score += 2;
+      // Reasonable size for a post
+      if (rect.width >= 400 && rect.width <= 900) score += 2;
+      if (rect.height >= 200 && rect.height <= 2000) score += 2;
+      // Has images/videos → likely a post
+      if (current.querySelector('img, video')) score += 1;
+      // Has a role
+      if (current.getAttribute('role') === 'article') score += 3;
+      // Has FB post indicators
+      if (current.querySelector('[data-ad-preview], [data-ad-rendering-role]')) score += 2;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestCandidate = current;
+      }
+
+      current = current.parentElement;
+    }
+
+    return bestCandidate;
+  }
+
+  // Extract images and videos from a post
+  function extractMediaUrls(postEl) {
+    const images = [];
+    const videos = [];
+    postEl.querySelectorAll('img').forEach(img => {
+      const src = img.src;
+      if (!src || src.startsWith('data:')) return;
+      // Filter out tiny icons (avatars are OK, emojis aren't)
+      const rect = img.getBoundingClientRect();
+      if (rect.width >= 50 && rect.height >= 50) {
+        images.push(src);
+      }
+    });
+    postEl.querySelectorAll('video').forEach(video => {
+      if (video.src) videos.push(video.src);
+      video.querySelectorAll('source').forEach(s => { if (s.src) videos.push(s.src); });
+    });
+    return { images: [...new Set(images)].slice(0, 5), videos: [...new Set(videos)].slice(0, 3) };
+  }
+
+  // Listen for context-menu scan request from background
+  chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.action === 'scanFromContextMenu') {
+      handleContextMenuScan(msg.selectionText || '');
+      sendResponse({ ok: true });
+      return false;
+    }
+  });
+
+  async function handleContextMenuScan(selectionText) {
+    let postEl = lastRightClickedEl;
+    let text = '';
+
+    // Priority 1: User explicitly selected text → use that
+    if (selectionText && selectionText.length >= 10) {
+      text = selectionText;
+      postEl = lastRightClickedEl || document.body;
+    } else {
+      // Priority 2: Walk up from clicked element to find post container
+      postEl = findPostContainer(lastRightClickedEl);
+      if (!postEl) {
+        showFloatingNotice('error', 'Không tìm thấy bài viết. Hãy bôi đen text hoặc click chuột phải vào trong bài.');
+        return;
+      }
+      text = (postEl.innerText || '').trim();
+    }
+
+    if (text.length < 10) {
+      showFloatingNotice('error', 'Nội dung quá ngắn để phân tích (cần ≥10 ký tự).');
+      return;
+    }
+
+    // Limit text length
+    if (text.length > 5000) text = text.substring(0, 5000);
+
+    const media = postEl ? extractMediaUrls(postEl) : { images: [], videos: [] };
+    const url = location.href;
+
+    // Show scanning notice
+    const noticeEl = showFloatingNotice('scanning', `Đang quét bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''})...`);
+
+    try {
+      const result = await chrome.runtime.sendMessage({
+        action: 'analyze',
+        payload: { text, url, platform: PLATFORM, images: media.images, videos: media.videos },
+      });
+
+      noticeEl?.remove();
+      showFloatingResult(result, postEl);
+    } catch (err) {
+      noticeEl?.remove();
+      showFloatingNotice('error', `Lỗi: ${err.message || 'Không thể kết nối API'}`);
+    }
+  }
+
+  // Show floating notice (top-right corner)
+  function showFloatingNotice(type, message) {
+    const existing = document.querySelector('.vifake-floating-notice');
+    existing?.remove();
+
+    const notice = document.createElement('div');
+    notice.className = `vifake-floating-notice vifake-notice-${type}`;
+    notice.innerHTML = `
+      <div class="vifake-notice-content">
+        ${type === 'scanning' ? '<div class="vifake-spinner"></div>' : ''}
+        <span>${escapeHtml(message)}</span>
+      </div>
+      <button class="vifake-notice-close" aria-label="Đóng">×</button>
+    `;
+    notice.querySelector('.vifake-notice-close').addEventListener('click', () => notice.remove());
+
+    document.body.appendChild(notice);
+    if (type === 'error') {
+      setTimeout(() => notice.remove(), 6000);
+    }
+    return notice;
+  }
+
+  // Show full result panel (top-right, larger)
+  function showFloatingResult(result, postEl) {
+    const existing = document.querySelector('.vifake-floating-result');
+    existing?.remove();
+
+    const panel = document.createElement('div');
+    panel.className = 'vifake-floating-result';
+
+    if (result.error) {
+      panel.classList.add('vifake-error');
+      panel.innerHTML = `
+        <div class="vifake-result-header vifake-risk-error">
+          <span class="vifake-result-icon">⚠️</span>
+          <span class="vifake-result-label">Lỗi</span>
+          <button class="vifake-notice-close" aria-label="Đóng">×</button>
+        </div>
+        <div class="vifake-result-body"><p>${escapeHtml(result.error)}</p></div>
+      `;
+      panel.querySelector('.vifake-notice-close').addEventListener('click', () => panel.remove());
+      document.body.appendChild(panel);
+      return;
+    }
+
+    const label = result.label || result.prediction || 'UNKNOWN';
+    const confidence = result.confidence || 0;
+    const details = result.analysis_details || {};
+
+    const riskClass = {
+      'SAFE': 'vifake-risk-safe',
+      'SUSPICIOUS': 'vifake-risk-warn',
+      'FAKE_SCAM': 'vifake-risk-danger',
+      'TOXIC': 'vifake-risk-danger',
+    }[label] || 'vifake-risk-warn';
+
+    const riskIcon = { 'SAFE': '✅', 'SUSPICIOUS': '⚠️', 'FAKE_SCAM': '🚨', 'TOXIC': '🚨' }[label] || '❓';
+    const riskText = { 'SAFE': 'An toàn', 'SUSPICIOUS': 'Đáng ngờ', 'FAKE_SCAM': 'Lừa đảo', 'TOXIC': 'Độc hại' }[label] || label;
+    const confPct = Math.round(confidence * 100);
+
+    // Only show intent details when there's a real risk signal — hide for SAFE
+    // to avoid contradictory UI ("SAFE" + scary intent label).
+    const showIntent = label !== 'SAFE';
+
+    panel.innerHTML = `
+      <div class="vifake-result-header ${riskClass}">
+        <span class="vifake-result-icon">${riskIcon}</span>
+        <span class="vifake-result-label">${riskText}</span>
+        <span class="vifake-result-confidence">${confPct}%</span>
+        <button class="vifake-notice-close" aria-label="Đóng">×</button>
+      </div>
+      <div class="vifake-result-body">
+        ${showIntent && details.intent_label ? `<p><strong>Ý định:</strong> ${escapeHtml(details.intent_label)}</p>` : ''}
+        ${showIntent && details.intent_explanation ? `<p>${escapeHtml(details.intent_explanation)}</p>` : ''}
+        ${label === 'SAFE' ? `<p class="vifake-safe-msg">Không phát hiện dấu hiệu lừa đảo trong nội dung này.</p>` : ''}
+        ${label !== 'SAFE' ? `
+          <div class="vifake-action-hint">
+            <strong>💡 Gợi ý:</strong>
+            ${label === 'FAKE_SCAM' ? 'Có dấu hiệu lừa đảo. Hãy cảnh giác!' : ''}
+            ${label === 'SUSPICIOUS' ? 'Nội dung đáng ngờ, kiểm tra thêm trước khi tin.' : ''}
+            ${label === 'TOXIC' ? 'Nội dung có thể độc hại với trẻ.' : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+    panel.querySelector('.vifake-notice-close').addEventListener('click', () => panel.remove());
+    document.body.appendChild(panel);
+  }
+
   // ─── Helpers ───
   function escapeHtml(str) {
     const div = document.createElement('div');
@@ -410,5 +652,5 @@
     return div.innerHTML;
   }
 
-  console.log(`[ViFake] Content script loaded for ${PLATFORM}`);
+  console.log(`[ViFake] Content script loaded for ${PLATFORM}. Right-click on any post → "Quét bài viết với ViFake"`);
 })();

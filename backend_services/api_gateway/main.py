@@ -700,8 +700,21 @@ def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data:
     nlp_safe = nlp_result.get("is_safe", True)
     nlp_conf = nlp_result.get("confidence", 0.5)
     nlp_pred = nlp_result.get("prediction", "UNKNOWN")
-    
-    if nlp_safe and vision_risk < 0.5:
+
+    # Factor in intent detection score (separate signal from keyword matcher)
+    intent_data = nlp_result.get("intent", {}) or {}
+    intent_score = intent_data.get("risk_weighted_score", 0.0)
+    intent_max = intent_data.get("max_intent_score", 0.0)
+    primary_intent = intent_data.get("primary_intent", "none")
+    has_strong_intent = intent_score >= 0.5 or intent_max >= 0.6
+
+    # Strong intent signal → escalate regardless of keyword matcher
+    if has_strong_intent and primary_intent not in ("none", "unknown"):
+        prediction = "FAKE_SCAM"
+        confidence = max(0.65, intent_score, intent_max)
+        risk_level = "HIGH" if confidence >= 0.75 else "MEDIUM"
+        logger.info(f"🎯 Fusion: intent '{primary_intent}' triggers FAKE_SCAM (intent_score={intent_score:.2f}, max={intent_max:.2f})")
+    elif nlp_safe and vision_risk < 0.5:
         prediction = "SAFE"
         confidence = max(0.7, (1.0 - vision_risk + nlp_conf) / 2)
         risk_level = "LOW"
@@ -719,7 +732,13 @@ def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data:
         prediction = "FAKE_SCAM"
         confidence = 0.55
         risk_level = "MEDIUM"
-    
+
+    # Suppress intent label when prediction is SAFE (avoids contradictory UI)
+    # Don't strip it — keep for transparency, but mark as low-confidence
+    if prediction == "SAFE" and intent_max < 0.3:
+        # Truly safe, no significant intent detected
+        pass
+
     return {
         "prediction": prediction,
         "confidence": round(confidence, 3),

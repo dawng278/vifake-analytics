@@ -290,3 +290,104 @@
 .vifake-error .vifake-result-body {
   color: #9ca3af;
 }
+
+/* ─── Safe Message ─── */
+.vifake-safe-msg {
+  color: var(--vf-safe);
+  font-size: 12px;
+  margin: 6px 0 0;
+}
+
+/* ─── Floating Notice (top-right) ─── */
+.vifake-floating-notice {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 2147483647;
+  background: var(--vf-bg);
+  color: var(--vf-text);
+  border: 1px solid var(--vf-border);
+  border-radius: var(--vf-radius);
+  padding: 12px 16px;
+  font-family: var(--vf-font);
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 360px;
+  animation: vifake-slide-in 0.25s ease-out;
+}
+
+@keyframes vifake-slide-in {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.vifake-notice-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.vifake-notice-scanning {
+  border-left: 3px solid var(--vf-primary);
+}
+
+.vifake-notice-error {
+  border-left: 3px solid var(--vf-danger);
+}
+
+.vifake-notice-close {
+  background: none;
+  border: none;
+  color: var(--vf-text-muted);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  margin-left: 8px;
+}
+
+.vifake-notice-close:hover {
+  color: var(--vf-text);
+}
+
+/* ─── Floating Result Panel (top-right, larger) ─── */
+.vifake-floating-result {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 2147483647;
+  width: 360px;
+  max-width: calc(100vw - 40px);
+  background: var(--vf-bg);
+  color: var(--vf-text);
+  border: 1px solid var(--vf-border);
+  border-radius: var(--vf-radius);
+  font-family: var(--vf-font);
+  font-size: 13px;
+  line-height: 1.5;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  animation: vifake-slide-in 0.3s ease-out;
+  overflow: hidden;
+}
+
+.vifake-floating-result .vifake-result-header {
+  position: relative;
+  padding-right: 40px;
+}
+
+.vifake-floating-result .vifake-notice-close {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.vifake-floating-result .vifake-notice-close:hover {
+  color: #fff;
+}

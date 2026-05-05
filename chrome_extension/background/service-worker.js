@@ -23,7 +23,26 @@ chrome.runtime.onInstalled.addListener(() => {
     totalScans: 0,
     scamDetected: 0,
   });
+
+  // Register right-click context menu
+  chrome.contextMenus.create({
+    id: 'vifake-scan-post',
+    title: '🛡️ Quét bài viết với ViFake',
+    contexts: ['page', 'selection', 'image', 'video', 'link'],
+  });
+
   console.log('[ViFake] Extension installed');
+});
+
+// Handle right-click menu click
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId !== 'vifake-scan-post') return;
+  if (!tab?.id) return;
+  // Send message to content script to scan from last right-clicked element
+  chrome.tabs.sendMessage(tab.id, {
+    action: 'scanFromContextMenu',
+    selectionText: info.selectionText || '',
+  }).catch(err => console.error('[ViFake] Failed to send context menu message:', err));
 });
 
 // Load settings on startup
