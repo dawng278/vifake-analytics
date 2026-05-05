@@ -1,15 +1,17 @@
 services:
   - type: web
     name: vifake-api
-    runtime: docker
+    runtime: python
     repo: https://github.com/dawng278/vifake-analytics.git
     branch: main
     plan: free
+    buildCommand: pip install -r requirements-deploy.txt
+    startCommand: python -m uvicorn backend_services.api_gateway.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/v1/health
     envVars:
       - key: AUTH_TOKEN
         generateValue: true
       - key: PYTHONPATH
-        value: /app
+        value: /opt/render/project/src
       - key: MOCK_MODE
         value: "true"
