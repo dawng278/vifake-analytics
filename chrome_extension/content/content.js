@@ -16,7 +16,7 @@
   const BTN_CLASS = 'vifake-check-btn';
   const RESULT_CLASS = 'vifake-result-panel';
   const DEBOUNCE_MS = 500;
-  const MIN_TEXT_LENGTH = 15;
+  const MIN_TEXT_LENGTH = 10;
 
   // ─── Platform Detection ───
   function detectPlatform() {
@@ -356,21 +356,16 @@
       '[aria-label*="chat" i]',
       '[aria-label*="Messenger" i]',
       '[aria-label*="tin nh\u1eafn" i]',   // Vietnamese: "tin nhắn"
-      '[aria-label*="h\u1ed9p tho\u1ea1i chat" i]',  // "hộp thoại chat"
     ].join(',');
     if (post.closest(chatLabels)) return false;
 
-    // Feed posts have a toolbar (like/comment/share). Chat messages don't.
-    // Detecting via reaction counts or like button aria-labels.
-    const hasToolbar = post.querySelector('[role="toolbar"]')
-      || post.querySelector('[aria-label*="Like" i], [aria-label*="Th\u00edch" i]')
-      || post.querySelector('[aria-label*="Comment" i], [aria-label*="B\u00ecnh lu\u1eadn" i]')
-      || post.querySelector('[aria-label*="Share" i], [aria-label*="Chia s\u1ebb" i]');
-    if (!hasToolbar) return false;
-
-    // Size filter: chat messages are small. Real posts are ≥ 150px tall typically.
+    // Size filter: chat messages are small (typically <120px).
+    // Real feed posts are taller. Using 200 to be safe for posts with multiple lines.
     const rect = post.getBoundingClientRect();
-    if (rect.height < 150) return false;
+    if (rect.height < 200) return false;
+
+    // Width filter: feed posts span a reasonable width. Chat messages are narrow.
+    if (rect.width < 300) return false;
 
     return true;
   }
