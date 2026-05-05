@@ -1,0 +1,398 @@
+/**
+ * ViFake Analytics — Popup Styles
+ * Dark theme matching extension content styles
+ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 340px;
+  min-height: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-size: 13px;
+}
+
+.popup-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ─── Header ─── */
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #1e1b4b, #312e81);
+  border-bottom: 1px solid #334155;
+}
+
+.logo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  border-radius: 8px;
+}
+
+.popup-header h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.subtitle {
+  font-size: 11px;
+  color: #a5b4fc;
+  margin-top: 1px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #6b7280;
+  transition: background 0.3s;
+}
+
+.status-dot.online {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+.status-dot.offline {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.5);
+}
+
+/* ─── Stats ─── */
+.stats-row {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #1e293b;
+}
+
+.stat-card {
+  flex: 1;
+  text-align: center;
+  padding: 8px 6px;
+  background: #0f172a;
+  border-radius: 8px;
+  border: 1px solid #334155;
+}
+
+.stat-number {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.stat-danger .stat-number {
+  color: #ef4444;
+}
+
+.stat-safe .stat-number {
+  color: #22c55e;
+}
+
+.stat-label {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* ─── Tabs ─── */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #334155;
+  background: #1e293b;
+}
+
+.tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  font-family: inherit;
+}
+
+.tab:hover {
+  color: #e2e8f0;
+}
+
+.tab.active {
+  color: #a5b4fc;
+}
+
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  background: #6366f1;
+  border-radius: 2px 2px 0 0;
+}
+
+/* ─── Tab Content ─── */
+.tab-content {
+  display: none;
+  padding: 12px 16px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 280px;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* ─── Recent List ─── */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 24px 12px;
+  color: #64748b;
+}
+
+.empty-state .hint {
+  font-size: 11px;
+  margin-top: 8px;
+  color: #475569;
+}
+
+.scan-item {
+  padding: 10px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  cursor: default;
+  transition: border-color 0.2s;
+}
+
+.scan-item:hover {
+  border-color: #475569;
+}
+
+.scan-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.scan-label {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.scan-label.safe {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.scan-label.warn {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.scan-label.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.scan-time {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.scan-text {
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* ─── Settings ─── */
+.setting-group {
+  margin-bottom: 12px;
+}
+
+.setting-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.setting-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.setting-input:focus {
+  border-color: #6366f1;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.setting-row .setting-label {
+  margin-bottom: 0;
+}
+
+/* Toggle Switch */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #334155;
+  border-radius: 22px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.toggle input:checked + .toggle-slider {
+  background: #6366f1;
+}
+
+.toggle input:checked + .toggle-slider::before {
+  transform: translateX(18px);
+}
+
+/* Buttons */
+.btn-save,
+.btn-test {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-bottom: 6px;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #6366f1, #818cf8);
+  color: #fff;
+}
+
+.btn-save:hover {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+}
+
+.btn-test {
+  background: #1e293b;
+  color: #a5b4fc;
+  border: 1px solid #334155;
+}
+
+.btn-test:hover {
+  border-color: #6366f1;
+}
+
+.settings-status {
+  font-size: 11px;
+  color: #94a3b8;
+  text-align: center;
+  min-height: 16px;
+  margin-top: 4px;
+}
+
+.settings-status.success {
+  color: #22c55e;
+}
+
+.settings-status.error {
+  color: #ef4444;
+}
+
+/* ─── Footer ─── */
+.popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-top: 1px solid #1e293b;
+  font-size: 10px;
+  color: #475569;
+}
+
+.popup-footer a {
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.popup-footer a:hover {
+  text-decoration: underline;
+}

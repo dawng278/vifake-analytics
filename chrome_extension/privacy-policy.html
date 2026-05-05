@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ViFake Analytics — Chính sách Quyền riêng tư</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a; color: #e2e8f0;
+      padding: 40px 20px; line-height: 1.7;
+    }
+    .container { max-width: 680px; margin: 0 auto; }
+    h1 { font-size: 24px; color: #a5b4fc; margin-bottom: 24px; }
+    h2 { font-size: 18px; color: #818cf8; margin: 24px 0 12px; }
+    p, li { font-size: 14px; color: #cbd5e1; margin-bottom: 8px; }
+    ul { padding-left: 20px; }
+    .highlight { background: rgba(99, 102, 241, 0.1); border-left: 3px solid #6366f1; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+    .badge { display: inline-block; background: #22c55e; color: #fff; padding: 2px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #334155; font-size: 12px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🛡️ Chính sách Quyền riêng tư — ViFake Analytics</h1>
+    <p><strong>Cập nhật lần cuối:</strong> Tháng 5, 2026</p>
+
+    <div class="highlight">
+      <span class="badge">Privacy-by-Design</span>
+      <p style="margin-top: 8px;">ViFake Analytics được thiết kế theo nguyên tắc <strong>Privacy-by-Design</strong>: không lưu trữ, không theo dõi, xử lý hoàn toàn trong RAM.</p>
+    </div>
+
+    <h2>1. Dữ liệu chúng tôi thu thập</h2>
+    <p><strong>Chúng tôi KHÔNG thu thập bất kỳ dữ liệu cá nhân nào.</strong></p>
+    <ul>
+      <li>Extension chỉ đọc <strong>nội dung text</strong> của bài đăng khi người dùng chủ động nhấn nút "Kiểm tra"</li>
+      <li>Nội dung được gửi đến API phân tích, xử lý trong RAM, và <strong>không được lưu trữ</strong></li>
+      <li>Không thu thập tên người dùng, email, mật khẩu, hoặc bất kỳ thông tin cá nhân nào</li>
+      <li>Không thu thập cookie, lịch sử duyệt web, hoặc dữ liệu trình duyệt</li>
+    </ul>
+
+    <h2>2. Cách xử lý dữ liệu</h2>
+    <ul>
+      <li><strong>RAM-only processing:</strong> Nội dung bài đăng được phân tích hoàn toàn trong bộ nhớ RAM và bị xóa ngay sau khi trả kết quả</li>
+      <li><strong>Không lưu trữ vĩnh viễn:</strong> Không có cơ sở dữ liệu nào lưu nội dung bài đăng của bạn</li>
+      <li><strong>Lịch sử quét cục bộ:</strong> Kết quả quét gần đây (tối đa 20 bản ghi tóm tắt) được lưu trong Chrome Storage cục bộ trên máy bạn, không đồng bộ lên server</li>
+    </ul>
+
+    <h2>3. Quyền truy cập Extension</h2>
+    <ul>
+      <li><strong>activeTab:</strong> Chỉ truy cập tab hiện tại khi người dùng tương tác với extension</li>
+      <li><strong>storage:</strong> Lưu cài đặt cục bộ (API URL, token) trên máy người dùng</li>
+      <li><strong>host_permissions (facebook.com, youtube.com, tiktok.com):</strong> Chỉ để inject nút "Kiểm tra" vào giao diện bài đăng</li>
+    </ul>
+
+    <h2>4. Chia sẻ dữ liệu với bên thứ ba</h2>
+    <p><strong>Chúng tôi KHÔNG chia sẻ dữ liệu với bất kỳ bên thứ ba nào.</strong> Nội dung chỉ được gửi đến API phân tích ViFake (do bạn tự cấu hình URL).</p>
+
+    <h2>5. Bảo mật</h2>
+    <ul>
+      <li>Giao tiếp API qua HTTPS (mã hóa TLS)</li>
+      <li>Xác thực bằng Bearer Token</li>
+      <li>Không lưu token trong mã nguồn — người dùng tự nhập token</li>
+    </ul>
+
+    <h2>6. Quyền của người dùng</h2>
+    <ul>
+      <li>Bạn có thể <strong>gỡ extension bất cứ lúc nào</strong> — toàn bộ dữ liệu cục bộ sẽ bị xóa</li>
+      <li>Bạn có thể xóa lịch sử quét bằng cách xóa dữ liệu Chrome Storage</li>
+      <li>Bạn có toàn quyền kiểm soát khi nào nội dung được quét (nhấn nút chủ động)</li>
+    </ul>
+
+    <h2>7. Dành cho trẻ em</h2>
+    <p>ViFake Analytics được thiết kế để <strong>bảo vệ trẻ em</strong> khỏi nội dung lừa đảo trực tuyến. Extension tuân thủ:</p>
+    <ul>
+      <li>Nghị định 13/2023/NĐ-CP (Bảo vệ dữ liệu cá nhân Việt Nam)</li>
+      <li>Nguyên tắc COPPA về bảo vệ quyền riêng tư trẻ em</li>
+      <li>Không thu thập bất kỳ dữ liệu nào của trẻ em</li>
+    </ul>
+
+    <h2>8. Liên hệ</h2>
+    <p>Nếu có câu hỏi về chính sách quyền riêng tư, vui lòng liên hệ qua GitHub Issues:</p>
+    <p><a href="https://github.com/dawng278/vifake-analytics/issues" style="color: #a5b4fc;">github.com/dawng278/vifake-analytics/issues</a></p>
+
+    <footer>
+      <p>© 2026 ViFake Analytics. Bảo vệ trẻ em Việt Nam trực tuyến.</p>
+    </footer>
+  </div>
+</body>
+</html>

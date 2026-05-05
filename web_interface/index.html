@@ -275,8 +275,19 @@
                                 <div class="mb-3">
                                     <label for="url" class="form-label">URL cần phân tích</label>
                                     <input type="url" class="form-control" id="url" 
-                                           placeholder="https://youtube.com/watch?v=..." required>
-                                    <div class="form-text">Hỗ trợ YouTube, Facebook, TikTok</div>
+                                           placeholder="https://facebook.com/post/...">
+                                    <div class="form-text">Hỗ trợ YouTube, Facebook, TikTok (có thể bỏ trống nếu có nội dung văn bản)</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">
+                                        <i class="fas fa-font"></i> Nội dung văn bản 
+                                        <span class="badge bg-success">Khuyến nghị</span>
+                                    </label>
+                                    <textarea class="form-control" id="content" rows="4"
+                                              placeholder="Dán nội dung bài đăng, bình luận, tin nhắn Facebook cần phân tích...
+VD: ae ơi! admin roblox đang event free robux nè! click vào link này verify acc thôi, số lượng có hạn!"></textarea>
+                                    <div class="form-text">Dán nội dung thật từ Facebook để phân tích chính xác nhất</div>
                                 </div>
                                 
                                 <div class="row">
@@ -397,17 +408,23 @@
 
                         <!-- Sample Tests -->
                         <div class="feature-highlight">
-                            <h6><i class="fas fa-lightbulb"></i> Test mẫu</h6>
-                            <p class="mb-2">Thử các URL mẫu để kiểm tra hệ thống:</p>
-                            <div class="d-flex flex-wrap gap-2">
-                                <button class="btn btn-sm btn-outline-primary" onclick="testSample('https://youtube.com/watch?v=safe123')">
-                                    <i class="fas fa-play"></i> Nội dung an toàn
+                            <h6><i class="fas fa-lightbulb"></i> Test mẫu - Tin giả / Lừa đảo</h6>
+                            <p class="mb-2">Thử với nội dung scam tiếng Việt thực tế:</p>
+                            <div class="d-flex flex-column gap-2">
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('ae minh ơi, admin roblox đang event free robux nè! click vào link này verify acc thôi, số lượng có hạn! link: bit.ly/robux-free', 'facebook')">
+                                    🔴 Robux phishing — "ae minh ơi, admin roblox đang event free robux..."
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="testSample('https://youtube.com/watch?v=scam456')">
-                                    <i class="fas fa-exclamation-triangle"></i> Nội dung lừa đảo
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('CHÚ Ý! Tài khoản Facebook của bạn sẽ bị khóa trong 24h! Xác minh danh tính ngay tại: https://fb-verify.click/acc', 'facebook')">
+                                    🔴 Account theft — "Tài khoản Facebook của bạn sẽ bị khóa trong 24h!..."
                                 </button>
-                                <button class="btn btn-sm btn-outline-warning" onclick="testSample('https://tiktok.com/@user/test789')">
-                                    <i class="fas fa-video"></i> Nội dung TikTok
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('GIVEAWAY 1000 USDT cho 100 người đầu tiên! Chỉ cần connect ví MetaMask và xác nhận giao dịch tại link bên dưới. Nhanh tay kẻo hết!', 'facebook')">
+                                    🔴 Crypto scam — "GIVEAWAY 1000 USDT cho 100 người đầu tiên!..."
+                                </button>
+                                <button class="btn btn-sm btn-outline-success text-start" onclick="testSampleText('Chào các bạn, hôm nay mình chia sẻ cách học tiếng Anh hiệu quả cho các bé 8-12 tuổi. Phụ huynh có thể tham khảo thêm tại website chính thức của Bộ GDĐT.', 'facebook')">
+                                    🟢 Nội dung an toàn — "Chào các bạn, hôm nay mình chia sẻ cách học tiếng Anh..."
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('nạp thẻ gate 50k được 500k nè ae! ưu đãi đặc biệt hôm nay thôi, ib admin để được hướng dẫn nạp thẻ miễn phí', 'facebook')">
+                                    🔴 Gift card scam — "nạp thẻ gate 50k được 500k nè ae!..."
                                 </button>
                             </div>
                         </div>
@@ -427,7 +444,7 @@
     <script>
         // Configuration
         const API_BASE = 'http://localhost:8000';
-        const AUTH_TOKEN = 'YOUR_AUTH_TOKEN'; // Set this from your .env file
+        const AUTH_TOKEN = 'demo-token-123'; // Local dev token — change for production
         
         // State
         let currentJobId = null;
@@ -499,21 +516,37 @@
             event.preventDefault();
             
             const url = document.getElementById('url').value;
+            const content = document.getElementById('content').value;
             const platform = document.getElementById('platform').value;
             const priority = document.getElementById('priority').value;
             
-            if (!url || !platform) {
-                alert('Vui lòng nhập đầy đủ thông tin');
+            if (!url && !content) {
+                alert('Vui lòng nhập URL hoặc nội dung văn bản');
                 return;
             }
             
-            await startAnalysis(url, platform, priority);
+            if (!platform) {
+                alert('Vui lòng chọn nền tảng');
+                return;
+            }
+            
+            await startAnalysis(url || 'manual-input', platform, priority, content);
         }
         
-        async function startAnalysis(url, platform, priority) {
+        async function startAnalysis(url, platform, priority, content = '') {
             try {
                 // Show loading
                 showLoading();
+                
+                const requestBody = {
+                    url: url,
+                    platform: platform,
+                    priority: priority
+                };
+                
+                if (content) {
+                    requestBody.content = content;
+                }
                 
                 // Submit analysis request
                 const response = await fetch(`${API_BASE}/api/v1/analyze`, {
@@ -522,11 +555,7 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${AUTH_TOKEN}`
                     },
-                    body: JSON.stringify({
-                        url: url,
-                        platform: platform,
-                        priority: priority
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 if (!response.ok) {
@@ -672,7 +701,7 @@
                         <h6><i class="fas fa-chart-line"></i> Chi tiết phân tích</h6>
                         <div class="api-info">
                             <div><strong>Thời gian xử lý:</strong> ${(result.processing_time || 0).toFixed(2)}s</div>
-                            <div><strong>Phương pháp:</strong> Multi-modal AI (Vision + NLP + Fusion)</div>
+                            <div><strong>Phương pháp:</strong> ${result.analysis_details?.fusion_method || 'Multi-modal AI'}</div>
                             <div><strong>Mô hình:</strong> PhoBERT + CLIP + XGBoost</div>
                         </div>
                     </div>
@@ -684,6 +713,8 @@
                             <div><strong>Vision Risk:</strong> ${(result.analysis_details.vision_risk || 0).toFixed(3)}</div>
                             <div><strong>NLP Risk:</strong> ${(result.analysis_details.nlp_risk || 0).toFixed(3)}</div>
                             <div><strong>Fusion Score:</strong> ${(result.analysis_details.fusion_score || 0).toFixed(3)}</div>
+                            ${result.analysis_details.nlp_prediction ? `<div><strong>NLP Prediction:</strong> ${result.analysis_details.nlp_prediction}</div>` : ''}
+                            ${result.analysis_details.nlp_confidence ? `<div><strong>NLP Confidence:</strong> ${(result.analysis_details.nlp_confidence * 100).toFixed(1)}%</div>` : ''}
                         </div>
                     </div>
                     ` : ''}
@@ -727,8 +758,19 @@
         }
         
         // Sample Test Functions
+        function testSampleText(content, platform) {
+            document.getElementById('content').value = content;
+            document.getElementById('url').value = '';
+            document.getElementById('platform').value = platform;
+            document.getElementById('priority').value = 'normal';
+            
+            // Auto-submit
+            analysisForm.dispatchEvent(new Event('submit'));
+        }
+        
         function testSample(url) {
             document.getElementById('url').value = url;
+            document.getElementById('content').value = '';
             
             // Auto-detect platform
             let platform = 'youtube';

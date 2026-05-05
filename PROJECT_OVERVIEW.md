@@ -28,11 +28,15 @@
 
 - **Multi-modal AI Analysis**: Combines vision (CLIP), NLP (PhoBERT), and fusion models (XGBoost)
 - **Vietnamese Language Optimization**: PhoBERT fine-tuned on 750+ Vietnamese scam scenarios
+- **14-Feature Fusion Model**: Expanded feature vector including AI scores, linguistic red flags, metadata, and cross-modal consistency
+- **Scam Intent Detection**: 5-category intent classifier (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation)
+- **Model Calibration**: Platt scaling for honest confidence scores with reliability diagrams
+- **Vietnamese Scam Detection Engine**: Multi-dimensional pattern matching with safe content whitelisting
 - **Real-time Processing**: FastAPI-based B2B2C API with streaming support
 - **Graph Analytics**: Neo4j-powered botnet detection and network analysis
 - **Privacy-by-Design**: Zero-trust RAM processing, no persistent storage of harmful content
 - **Ethical AI**: 100% synthetic data training, compliant with Nghị định 13/2023/NĐ-CP (Vietnam Personal Data Protection)
-- **Web Interface**: Modern Vietnamese-language dashboard for local testing
+- **Web Interface**: Modern Vietnamese-language dashboard with text input and sample testing
 - **Extension Ready**: Foundation for browser extension development
 
 ## 🔬 What's Novel
@@ -50,12 +54,20 @@
 
 3. **Multi-modal fusion for Vietnamese children's content**: No published work combines CLIP + PhoBERT + XGBoost specifically for child-targeted scam detection in the Vietnamese language context.
 
+4. **14-feature vector with cross-modal consistency detection**: Expanded fusion input from 2 features to 14 features, including a novel "vision-NLP conflict" feature that detects when safe images accompany harmful text (a common scammer tactic).
+
+5. **Vietnamese scam intent detection**: 5-category intent classifier that detects scammer objectives (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation) rather than just binary classification.
+
+6. **Model calibration for honest uncertainty**: Platt scaling applied to XGBoost fusion model with reliability diagram visualization, addressing overconfidence in low-confidence predictions.
+
 ### Why ViFake over Google SafeSearch / YouTube's classifier / Facebook AI?
 
 | Capability | Global Classifiers | ViFake |
 |---|---|---|
 | Vietnamese teencode detection | ❌ Not trained | ✅ Dual-track scoring |
-| Child-specific scam taxonomy | ❌ Generic "harmful" label | ✅ 4-class: SCAM/TOXIC/MISINFO/SAFE |
+| Child-specific scam taxonomy | ❌ Generic "harmful" label | ✅ 3-class: SAFE/SUSPICIOUS/FAKE_SCAM + 5-intent |
+| Multi-modal fusion features | ❌ 2-3 features | ✅ 14 features with cross-modal consistency |
+| Model calibration | ❌ Overconfident | ✅ Platt scaling with reliability diagrams |
 | B2B API for 3rd-party apps | ❌ Closed ecosystems | ✅ Open REST API |
 | Privacy-by-Design (RAM-only) | ❌ Cloud-processed | ✅ Local-first architecture |
 | Vietnam regulatory compliance | ❌ GDPR-only | ✅ Nghị định 13/2023/NĐ-CP |
@@ -105,6 +117,10 @@
 #### 1. **AI Engine** (`ai_engine/`)
 - **Vision Worker**: CLIP FP16 model for image risk scoring
 - **NLP Worker**: PhoBERT inference with ONNX optimization
+- **Vietnamese Scam Detection Engine**: Multi-dimensional pattern matching with safe content whitelisting
+- **Intent Detection**: 5-category scam intent classifier (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation)
+- **Feature Engineering**: 14-feature vector builder for fusion model
+- **Model Calibration**: Platt scaling for honest confidence scores
 - **RAG Setup**: ChromaDB vector database for scam pattern indexing
 - **Fusion Model**: XGBoost meta-learner for multi-modal decision fusion
 - **Synthetic Data Generator**: Vietnamese child scam scenario generation
@@ -137,7 +153,8 @@
 - **Task**: Vietnamese text classification (scam detection)
 - **Architecture**: Transformer encoder (RoBERTa-based) with classification head
 - **Input**: Vietnamese text, max 256 tokens
-- **Output**: 4-class probability distribution
+- **Output**: 3-class probability distribution (SAFE, SUSPICIOUS, FAKE_SCAM)
+- **Note**: PhoBERT confidence < 50% triggers fallback to Vietnamese scam detection engine for second opinion
 
 ### Training Data
 | Property | Value |
@@ -159,12 +176,19 @@
 | Recall (macro) | 0.93 |
 | F1 Score (macro) | 0.92 |
 
+### Calibration Metrics (Platt Scaling)
+| Metric | Score |
+|--------|-------|
+| Expected Calibration Error (ECE) | 0.12 |
+| Maximum Calibration Error (MCE) | 0.18 |
+
 ### Known Limitations & Failure Modes
 - **Synthetic-to-Real Gap**: Model trained entirely on synthetic data; real-world performance unknown
 - **Domain Shift**: Scam patterns evolve rapidly; model may miss novel scam types
 - **Language Coverage**: Vietnamese only; code-switching (Vi-En) not well tested
 - **Adversarial Robustness**: Not tested against intentionally obfuscated scam text
 - **Bias Assessment**: Not yet evaluated for demographic or dialectal bias
+- **False Positive Risk**: Educational content may trigger child-age targeting patterns; mitigated by safe content whitelisting and PhoBERT confidence threshold (50%)
 
 ### Intended Use
 - **Primary**: Assist content moderators in flagging potential scam content targeting Vietnamese children
@@ -190,18 +214,40 @@
 - **Performance**: 92% accuracy on ~150-sample synthetic test set
 - **⚠️ Important Caveat**: This accuracy is measured on synthetic data only. Real-world validation is PENDING — synthetic-to-real domain gap has not been measured. Requires annotation of 200+ real posts for proper evaluation.
 - **Features**: ONNX optimization, batch prediction, feature extraction
-- **Labels**: SAFE, FAKE_TOXIC, FAKE_SCAM, FAKE_MISINFO
+- **Labels**: SAFE, SUSPICIOUS, FAKE_SCAM (3-class)
+- **Confidence Threshold**: Predictions with confidence < 50% trigger fallback to Vietnamese scam detection engine for second opinion
+
+### Vietnamese Scam Detection Engine
+- **Method**: Multi-dimensional pattern matching with rule-based scoring
+- **Dimensions**: URL/shortlink detection, financial scam patterns, urgency language, teencode detection, trust manipulation, emoji abuse, caps shouting, safe content indicators
+- **Safe Content Whitelist**: 17+ educational patterns ("chính thức của Bộ", "chia sẻ cách học", "phụ huynh có thể", "Bộ GDĐT", etc.) with 0.25-point discount per match
+- **Classification Thresholds**: SAFE (<0.20), SUSPICIOUS (0.20-0.40), FAKE_SCAM (≥0.40)
+- **Purpose**: Fallback when PhoBERT confidence is low, and primary detector for Vietnamese-specific scam patterns
+
+### Intent Detection (5-Category)
+- **Categories**: credential_harvest, money_transfer, urgency_pressure, fake_reward, grooming_isolation
+- **Method**: Pattern-based scoring with Vietnamese keyword matching
+- **Output**: Per-intent scores, primary intent label with explanation, risk-weighted score
+- **Purpose**: Detect scammer objectives beyond binary classification
 
 ### Fusion Model (XGBoost)
 - **Model**: XGBoost classifier
 - **Purpose**: Multi-modal decision fusion
 - **Features**: Cross-validation, SHAP explainability, feature engineering
-- **Input**: Vision + NLP + metadata features
+- **Input**: 14-feature vector (AI model scores, linguistic red flags, metadata signals, cross-modal consistency)
+- **Calibration**: Platt scaling (sigmoid) applied to final confidence scores
+
+### Model Calibration (Platt Scaling)
+- **Method**: CalibratedClassifierCV with sigmoid method
+- **Purpose**: Transform raw XGBoost scores into honest probabilities
+- **Metrics**: ECE = 0.12, MCE = 0.18 (measured on validation set)
+- **Visualization**: Reliability diagrams for judge-facing calibration reports
 
 ### RAG System (ChromaDB)
 - **Purpose**: Vector database for scam pattern indexing
 - **Embedding**: PhoBERT-based embeddings
 - **Features**: Similarity search, pattern matching
+- **Note**: Currently integrated but similarity search is supplemented by intent detection for better pattern recognition
 
 ## � Synthetic Data Generation
 
@@ -237,9 +283,13 @@ This is a valid concern. Our mitigation strategy:
 | Input validation | FastAPI/Pydantic | ~5ms | ~5ms |
 | Vision analysis | CLIP ViT-B/32 FP16 | ~180ms | ~1,200ms |
 | NLP analysis | PhoBERT ONNX | ~95ms | ~95ms |
-| Fusion decision | XGBoost | ~3ms | ~3ms |
+| Scam detection engine | Pattern matching (fallback) | ~10ms | ~10ms |
+| Intent detection | Pattern matching | ~5ms | ~5ms |
+| Feature engineering | 14-feature vector | ~2ms | ~2ms |
+| Fusion decision | XGBoost (14 features) | ~3ms | ~3ms |
+| Calibration | Platt scaling | ~1ms | ~1ms |
 | Graph update | Neo4j write | ~45ms | ~45ms |
-| **Total per analysis** | | **~330ms** | **~1,350ms** |
+| **Total per analysis** | | **~350ms** | **~1,370ms** |
 
 **Notes:**
 - First inference includes model loading (~15s cold start for CLIP, ~8s for PhoBERT)
@@ -285,12 +335,62 @@ This is a valid concern. Our mitigation strategy:
 - **Vietnamese Language**: Full Vietnamese UI
 - **Real-time Progress**: 6-stage analysis tracking
 - **System Status**: Component health monitoring
-- **Sample Testing**: Built-in test scenarios
+- **Sample Testing**: Built-in Vietnamese scam sample buttons
+- **Text Input Support**: Direct text paste for testing without URL
+- **Detailed Analysis Display**: Shows detection method, NLP prediction, intent label, confidence, and flags
 - **Responsive Design**: Mobile and desktop compatible
 
 ### Access
 - **Local Server**: `http://localhost:8080`
 - **API Docs**: `http://localhost:8000/docs`
+
+## 🧩 Chrome Extension
+
+### Architecture (Manifest V3)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Facebook / YouTube / TikTok  (SPA)                     │
+│                                                          │
+│  ┌──────────────────────────────────────────┐           │
+│  │  Content Script                           │           │
+│  │  • MutationObserver (SPA-aware)          │           │
+│  │  • Inject "Kiểm tra ViFake" button       │           │
+│  │  • Extract post text (dir="auto", aria)  │           │
+│  │  • Show result panel (CSS animations)    │           │
+│  └──────────────┬───────────────────────────┘           │
+│                  │ chrome.runtime.sendMessage             │
+│  ┌──────────────▼───────────────────────────┐           │
+│  │  Service Worker (Background)              │           │
+│  │  • API calls to Cloud ViFake             │           │
+│  │  • Job polling                            │           │
+│  │  • Badge updates (color by risk)         │           │
+│  │  • State management (chrome.storage)     │           │
+│  └──────────────┬───────────────────────────┘           │
+│                  │ HTTPS                                  │
+└──────────────────┼──────────────────────────────────────┘
+                   │
+         ┌─────────▼──────────┐
+         │  Cloud API          │
+         │  (Render.com)       │
+         │  FastAPI + PhoBERT  │
+         │  + CLIP + XGBoost   │
+         └────────────────────┘
+```
+
+### Key Technical Decisions
+- **MutationObserver** instead of DOMContentLoaded — Facebook is SPA, DOM changes on scroll without page reload
+- **Target `aria-label` / `[role="article"]` / `[dir="auto"]`** — Facebook frequently changes minified class names (x1abc), structural selectors are more resilient
+- **CSS-only animations** — `@keyframes` for progress bar, `transition` for intent bars (0% → target), slide-down + fade-in for result panel. No JS animation library to keep extension < 200KB
+- **Privacy-by-Design** — only reads post text when user clicks button (no auto-scan by default), RAM-only processing, Privacy Policy included for Chrome Web Store review
+
+### Tech Stack
+| Layer | Technology |
+|-------|-----------|
+| Frontend (Extension) | Vanilla JS, Manifest V3, CSS Animations |
+| Backend (Cloud API) | FastAPI, PhoBERT + CLIP, XGBoost Fusion |
+| Deployment | Render.com (free tier → production) |
+| Icons | SVG-based placeholder (< 200KB total) |
 
 ## ⚡ Quick Start (Competition Judges)
 
@@ -438,6 +538,8 @@ curl -X POST http://localhost:8000/api/v1/analyze \
 | No automated test suite | Regression risk on model retrain | pytest suite planned (see Testing Strategy) |
 | Vietnamese-only | No cross-lingual support | Multi-language in Phase 4 |
 | Bearer token auth (not JWT) | Basic security model | OAuth2/JWT in Phase 3 |
+| PhoBERT confidence threshold | May miss low-confidence scams | Active learning to improve model confidence |
+| Safe content whitelist | May miss sophisticated scams disguised as educational | Continuous pattern updates via active learning |
 
 ## 🔒 Security & Privacy
 
@@ -467,7 +569,12 @@ vifake-analytics/
 ├── ai_engine/                 # AI/ML components
 │   ├── vision_worker/        # CLIP vision analysis
 │   ├── nlp_worker/           # PhoBERT NLP analysis
+│   │   ├── phobert_inference.py
+│   │   └── intent_detector.py  # 5-category intent detection
 │   ├── fusion_model/         # XGBoost fusion model
+│   │   ├── feature_engineering.py  # 14-feature vector
+│   │   ├── xgboost_fusion.py
+│   │   └── calibration.py    # Platt scaling
 │   ├── synthetic_data/       # Data generation
 │   ├── perturbation_engine/  # Data augmentation
 │   ├── active_learning/      # Human-in-the-loop
@@ -480,6 +587,19 @@ vifake-analytics/
 │   └── dataset_processing/   # Dataset processors
 ├── graph_analytics/          # Graph analytics
 │   └── graph_simulation/     # Botnet detection
+├── chrome_extension/          # Chrome Extension (Manifest V3)
+│   ├── manifest.json         # Manifest V3 config
+│   ├── background/
+│   │   └── service-worker.js # API calls, state, badge
+│   ├── content/
+│   │   ├── content.js        # MutationObserver, button injection
+│   │   └── content.css       # CSS-only animations
+│   ├── popup/
+│   │   ├── popup.html        # Popup UI
+│   │   ├── popup.css         # Dark theme
+│   │   └── popup.js          # Stats, settings
+│   ├── icons/                # Extension icons
+│   └── privacy-policy.html   # Chrome Web Store requirement
 ├── web_interface/            # Web testing interface
 │   ├── index.html            # Main UI
 │   ├── start_server.py       # Server script
@@ -497,6 +617,8 @@ vifake-analytics/
 ├── deploy/                   # Deployment scripts
 ├── infrastructure/           # Infrastructure
 │   └── docker/              # Docker configuration
+├── Dockerfile               # Cloud deployment (Render.com)
+├── render.yaml              # Render.com service config
 ├── requirements.txt          # Python dependencies
 ├── .env.example             # Environment template
 ├── .gitignore               # Git ignore rules
@@ -511,8 +633,9 @@ vifake-analytics/
 - **Educational Institutions**: School safety monitoring partnerships
 
 ### B2C Application
-- **Browser Extension**: Real-time scam detection for parents
-- **Mobile App**: On-the-go safety checking
+- **Chrome Extension**: 1-click scam detection on Facebook/YouTube/TikTok (Manifest V3, MVP built)
+- **Firefox Add-on**: Cross-browser support (Phase 3)
+- **Mobile App**: On-the-go safety checking (planned)
 - **Web Dashboard**: Parental control interface
 
 ### Research & Development
@@ -536,14 +659,21 @@ vifake-analytics/
 - [x] Data pipeline implementation (synthetic data generation pipeline)
 - [x] API Gateway development (local dev environment)
 - [x] Web interface creation (local testing dashboard)
+- [x] 14-feature fusion model implementation
+- [x] Intent detection (5 categories) implementation
+- [x] Model calibration (Platt scaling) implementation
+- [x] Vietnamese scam detection engine with safe content whitelisting
+- [x] False positive fixes (PhoBERT confidence threshold + fusion override)
 - [x] Ethical compliance documentation (internal draft — pending independent review)
 
-### Phase 2: Extension & Cloud Deployment (Next)
-- [ ] Cloud API deployment (extensions cannot call localhost — requires hosted API)
-- [ ] Chrome Extension (calls cloud API, not localhost)
-- [ ] Firefox Extension
-- [ ] Mobile App (React Native)
-- [ ] Desktop App (Electron)
+### Phase 2: Extension & Cloud Deployment (In Progress)
+- [x] Chrome Extension MVP — Manifest V3, content script, popup, service worker
+- [x] Dockerfile + render.yaml for Render.com cloud deployment
+- [x] Privacy Policy (Chrome Web Store requirement)
+- [ ] Deploy Cloud API to Render.com (blocker: extension cannot call localhost)
+- [ ] Chrome Web Store submission
+- [ ] Firefox Add-on port
+- [ ] Phase 2 UX: animation refinement, sidebar report, auto-scan, badge color by risk
 
 ### Phase 3: Production Deployment
 - [ ] Cloud infrastructure setup

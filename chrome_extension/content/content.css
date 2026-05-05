@@ -1,0 +1,292 @@
+/**
+ * ViFake Analytics — Content Script Styles
+ * Pure CSS animations: @keyframes for progress, transition for intent bars,
+ * slide-down + fade-in for result panel. No JS animation library.
+ * Target: < 200KB total extension size.
+ */
+
+/* ─── Variables ─── */
+:root {
+  --vf-primary: #6366f1;
+  --vf-safe: #22c55e;
+  --vf-warn: #f59e0b;
+  --vf-danger: #ef4444;
+  --vf-bg: #1a1a2e;
+  --vf-bg-light: #16213e;
+  --vf-text: #e2e8f0;
+  --vf-text-muted: #94a3b8;
+  --vf-border: #334155;
+  --vf-radius: 10px;
+  --vf-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ─── Container ─── */
+.vifake-container {
+  margin: 8px 16px;
+  font-family: var(--vf-font);
+  font-size: 13px;
+  line-height: 1.5;
+  position: relative;
+  z-index: 100;
+}
+
+/* ─── Check Button ─── */
+.vifake-check-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, var(--vf-primary), #818cf8);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--vf-font);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  user-select: none;
+}
+
+.vifake-check-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+}
+
+.vifake-check-btn:active {
+  transform: translateY(0);
+}
+
+.vifake-check-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.vifake-check-btn .vifake-icon {
+  flex-shrink: 0;
+}
+
+/* ─── Scanning Animation ─── */
+.vifake-scanning {
+  background: linear-gradient(135deg, #6366f1, #a78bfa) !important;
+}
+
+.vifake-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: vifake-spin 0.8s linear infinite;
+}
+
+@keyframes vifake-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Progress Bar ─── */
+.vifake-progress {
+  margin-top: 8px;
+  height: 3px;
+  background: rgba(99, 102, 241, 0.15);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.vifake-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--vf-primary), #a78bfa, var(--vf-primary));
+  background-size: 200% 100%;
+  border-radius: 3px;
+  animation: vifake-progress-scan 1.5s ease-in-out infinite;
+}
+
+@keyframes vifake-progress-scan {
+  0%   { background-position: 200% 0; width: 30%; }
+  50%  { width: 70%; }
+  100% { background-position: -200% 0; width: 30%; }
+}
+
+/* ─── Result Panel: slide-down + fade-in ─── */
+.vifake-result-panel {
+  margin-top: 8px;
+  background: var(--vf-bg);
+  border: 1px solid var(--vf-border);
+  border-radius: var(--vf-radius);
+  overflow: hidden;
+  animation: vifake-slide-in 0.35s ease-out;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+@keyframes vifake-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 600px;
+  }
+}
+
+/* ─── Result Header ─── */
+.vifake-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.vifake-result-icon {
+  font-size: 18px;
+}
+
+.vifake-result-label {
+  flex: 1;
+}
+
+.vifake-result-confidence {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.8;
+  background: rgba(255, 255, 255, 0.15);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* Risk level colors */
+.vifake-risk-safe {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+  color: var(--vf-safe);
+  border-bottom: 2px solid var(--vf-safe);
+}
+
+.vifake-risk-warn {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+  color: var(--vf-warn);
+  border-bottom: 2px solid var(--vf-warn);
+}
+
+.vifake-risk-danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+  color: var(--vf-danger);
+  border-bottom: 2px solid var(--vf-danger);
+}
+
+.vifake-risk-error {
+  background: linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(107, 114, 128, 0.05));
+  color: #9ca3af;
+  border-bottom: 2px solid #6b7280;
+}
+
+/* ─── Result Body ─── */
+.vifake-result-body {
+  padding: 10px 14px;
+  color: var(--vf-text);
+  font-size: 12px;
+}
+
+.vifake-result-body p {
+  margin: 0 0 6px 0;
+}
+
+.vifake-intent-primary {
+  font-size: 13px;
+}
+
+.vifake-intent-expl {
+  color: var(--vf-text-muted);
+  font-size: 11px;
+}
+
+/* ─── Intent Bars: animate from 0% to target ─── */
+.vifake-intent-section {
+  margin-top: 8px;
+}
+
+.vifake-intent-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.vifake-intent-name {
+  flex: 0 0 120px;
+  font-size: 11px;
+  color: var(--vf-text-muted);
+  text-align: right;
+}
+
+.vifake-intent-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.vifake-intent-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--vf-primary), #a78bfa);
+  border-radius: 3px;
+  animation: vifake-bar-grow 0.6s ease-out 0.2s forwards;
+}
+
+@keyframes vifake-bar-grow {
+  to { width: var(--target-width); }
+}
+
+.vifake-intent-pct {
+  flex: 0 0 35px;
+  font-size: 11px;
+  color: var(--vf-text-muted);
+  text-align: right;
+}
+
+/* ─── Flags ─── */
+.vifake-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.vifake-flag-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* ─── Action Hint ─── */
+.vifake-action-hint {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: rgba(99, 102, 241, 0.08);
+  border-left: 3px solid var(--vf-primary);
+  border-radius: 0 6px 6px 0;
+  font-size: 11px;
+  color: var(--vf-text-muted);
+  line-height: 1.6;
+}
+
+.vifake-action-hint strong {
+  color: var(--vf-text);
+}
+
+/* ─── Error Panel ─── */
+.vifake-error .vifake-result-body {
+  color: #9ca3af;
+}

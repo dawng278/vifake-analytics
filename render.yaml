@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: vifake-api
+    runtime: docker
+    repo: https://github.com/dawng278/vifake-analytics.git
+    branch: main
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: AUTH_TOKEN
+        generateValue: true
+      - key: PYTHONPATH
+        value: /app
+      - key: MOCK_MODE
+        value: "true"

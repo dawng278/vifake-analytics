@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>ViFake Analytics</title>
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="logo-row">
+        <img src="../icons/icon48.png" alt="ViFake" class="logo-icon" width="28" height="28">
+        <div>
+          <h1>ViFake Analytics</h1>
+          <p class="subtitle">Bảo vệ trẻ em Việt Nam trực tuyến</p>
+        </div>
+      </div>
+      <div class="status-dot" id="statusDot" title="Trạng thái kết nối"></div>
+    </header>
+
+    <!-- Stats -->
+    <section class="stats-row">
+      <div class="stat-card">
+        <span class="stat-number" id="totalScans">0</span>
+        <span class="stat-label">Đã quét</span>
+      </div>
+      <div class="stat-card stat-danger">
+        <span class="stat-number" id="scamDetected">0</span>
+        <span class="stat-label">Lừa đảo</span>
+      </div>
+      <div class="stat-card stat-safe">
+        <span class="stat-number" id="safeCount">0</span>
+        <span class="stat-label">An toàn</span>
+      </div>
+    </section>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="recent">Gần đây</button>
+      <button class="tab" data-tab="settings">Cài đặt</button>
+    </nav>
+
+    <!-- Recent Scans Tab -->
+    <section class="tab-content active" id="tab-recent">
+      <div id="recentList" class="recent-list">
+        <div class="empty-state">
+          <p>Chưa có kết quả quét nào.</p>
+          <p class="hint">Mở Facebook và nhấn nút "Kiểm tra ViFake" dưới bài đăng.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Settings Tab -->
+    <section class="tab-content" id="tab-settings">
+      <div class="setting-group">
+        <label class="setting-label">API URL</label>
+        <input type="url" id="apiUrlInput" class="setting-input" placeholder="https://vifake-api.onrender.com">
+      </div>
+      <div class="setting-group">
+        <label class="setting-label">Auth Token</label>
+        <input type="password" id="authTokenInput" class="setting-input" placeholder="Nhập token xác thực">
+      </div>
+      <div class="setting-group setting-row">
+        <label class="setting-label">Tự động quét</label>
+        <label class="toggle">
+          <input type="checkbox" id="autoScanToggle">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <button id="saveSettings" class="btn-save">Lưu cài đặt</button>
+      <button id="testConnection" class="btn-test">Kiểm tra kết nối</button>
+      <p id="settingsStatus" class="settings-status"></p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="popup-footer">
+      <span>ViFake v1.0.0</span>
+      <a href="#" id="privacyLink">Chính sách</a>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
