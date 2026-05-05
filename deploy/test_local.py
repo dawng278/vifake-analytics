@@ -36,7 +36,7 @@ def test_analysis_endpoint(api_process):
     print('🧪 Testing Analysis Endpoint...')
     
     try:
-        headers = {'Authorization': 'Bearer demo-token-123'}
+        headers = {'Authorization': 'Bearer $AUTH_TOKEN'}
         payload = {
             'url': 'https://example.com/test-safe',
             'platform': 'youtube',

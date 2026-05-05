@@ -60,7 +60,7 @@ python3 -m http.server 8080
 
 ### Authentication
 ```javascript
-const AUTH_TOKEN = 'demo-token-123';
+const AUTH_TOKEN = '$AUTH_TOKEN';
 const headers = {
     'Authorization': `Bearer ${AUTH_TOKEN}`,
     'Content-Type': 'application/json'
@@ -121,7 +121,7 @@ const headers = {
 
 ### Common issues
 1. **API không phản hồi**: Kiểm tra API Gateway đang chạy
-2. **Authentication failed**: Verify token `demo-token-123`
+2. **Authentication failed**: Verify token `$AUTH_TOKEN`
 3. **CORS errors**: API Gateway cần cấu hình CORS
 4. **Timeout**: Tăng timeout cho request lớn
 

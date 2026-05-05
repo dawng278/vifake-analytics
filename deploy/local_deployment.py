@@ -383,7 +383,7 @@ RELOAD=True
                 return False
             
             # Test analysis endpoint (with auth)
-            headers = {"Authorization": "Bearer demo-token-123"}
+            headers = {"Authorization": "Bearer $AUTH_TOKEN"}
             payload = {
                 "url": "https://example.com/test",
                 "platform": "youtube",
@@ -536,7 +536,7 @@ RELOAD=True
             import requests
             
             # 1. Submit analysis request
-            headers = {"Authorization": "Bearer demo-token-123"}
+            headers = {"Authorization": "Bearer $AUTH_TOKEN"}
             payload = {
                 "url": "https://example.com/test-safe",
                 "platform": "youtube",

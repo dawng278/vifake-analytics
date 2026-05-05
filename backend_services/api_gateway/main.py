@@ -138,10 +138,11 @@ async def verify_token(credentials: HTTPAuthorizationCredentials = Security(secu
     """Verify JWT token or API key"""
     token = credentials.credentials
     
-    # Simple token validation (in production, use proper JWT verification)
+    # Token validation (reads from environment variable, falls back to demo token for local dev)
+    import os
+    auth_token = os.getenv("AUTH_TOKEN", "demo-token-123")
     valid_tokens = {
-        "demo-token-123": {"user": "demo", "permissions": ["analyze"]},
-        "test-token-456": {"user": "test", "permissions": ["analyze", "admin"]}
+        auth_token: {"user": "api_user", "permissions": ["analyze"]},
     }
     
     if token not in valid_tokens:

@@ -16,7 +16,7 @@ class WebInterfaceTester:
     
     def __init__(self):
         self.api_base = "http://localhost:8000"
-        self.auth_token = "demo-token-123"
+        self.auth_token = "$AUTH_TOKEN"
         self.web_port = 8080
         
     def test_api_gateway(self):

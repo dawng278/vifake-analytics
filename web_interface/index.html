@@ -349,7 +349,7 @@
                         <div class="api-info">
                             <h6><i class="fas fa-info-circle"></i> Thông tin API</h6>
                             <div><strong>Endpoint:</strong> http://localhost:8000</div>
-                            <div><strong>Authentication:</strong> Bearer demo-token-123</div>
+                            <div><strong>Authentication:</strong> Bearer token from .env</div>
                             <div><strong>Documentation:</strong> <a href="http://localhost:8000/docs" target="_blank">/docs</a></div>
                         </div>
                     </div>
@@ -427,7 +427,7 @@
     <script>
         // Configuration
         const API_BASE = 'http://localhost:8000';
-        const AUTH_TOKEN = 'demo-token-123';
+        const AUTH_TOKEN = 'YOUR_AUTH_TOKEN'; // Set this from your .env file
         
         // State
         let currentJobId = null;
