@@ -20,23 +20,23 @@ minio==7.2.0
 # === AI/ML Frameworks ===
 torch>=2.9.0
 torchvision>=0.20.0
-transformers==4.36.0
-optimum[onnxruntime]==1.16.0
-xgboost==2.0.0
-scikit-learn==1.3.2
-numpy==1.24.3
-pandas==2.1.4
+transformers>=4.36.0
+optimum[onnxruntime]>=1.16.0
+xgboost>=2.0.0
+scikit-learn>=1.3.2
+numpy>=1.26.0
+pandas>=2.1.4
 
 # === Computer Vision ===
-Pillow==10.1.0
-opencv-python==4.8.1.78
+Pillow>=10.1.0
+opencv-python>=4.8.1.78
 # clip: install via git+https://github.com/openai/CLIP.git or open_clip_torch
 open-clip-torch>=2.20.0
 
 # === NLP ===
 # vinai/phobert-base loaded via transformers (no separate pip package)
-sentence-transformers==2.2.2
-chromadb==0.4.18
+sentence-transformers>=2.2.2
+chromadb>=0.4.18
 langchain==0.0.350
 tiktoken==0.5.2
 
@@ -64,7 +64,6 @@ optuna==3.4.0
 # === Authentication & Security ===
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-python-multipart==0.0.6
 
 # === Monitoring & Logging ===
 prometheus-client==0.19.0
