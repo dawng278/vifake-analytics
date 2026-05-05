@@ -29,15 +29,27 @@
 
   const PLATFORM = detectPlatform();
 
+  // ─── Skip Messenger / Chat contexts ───
+  function isMessengerContext() {
+    const path = location.pathname;
+    // Messenger paths on facebook.com
+    if (/^\/messages(\/|$)/i.test(path)) return true;
+    if (/^\/t\//i.test(path)) return true;
+    if (/^\/chat(\/|$)/i.test(path)) return true;
+    // Messenger.com domain
+    if (location.hostname.includes('messenger.com')) return true;
+    return false;
+  }
+
   // ─── Post Finders (resilient to class name changes) ───
   const POST_SELECTORS = {
     facebook: [
-      // Primary: role-based selectors (most stable)
-      '[role="article"]',
-      // Fallback: feed posts by aria
-      '[aria-label*="post" i]',
+      // Primary: feed posts inside [role="feed"] (most stable, excludes messenger)
+      '[role="feed"] [role="article"]',
+      // Fallback: posts with FB-specific data-pagelet attributes
       '[data-pagelet*="FeedUnit"]',
       '[data-pagelet*="ProfileTimeline"]',
+      '[data-pagelet*="GroupFeed"]',
     ],
     youtube: [
       'ytd-rich-item-renderer',
@@ -336,10 +348,18 @@
   let debounceTimer = null;
 
   function scanForPosts() {
+    // Skip chat/messenger contexts entirely
+    if (PLATFORM === 'facebook' && isMessengerContext()) return;
+
     const selectors = POST_SELECTORS[PLATFORM] || [];
     for (const sel of selectors) {
       const posts = document.querySelectorAll(sel);
       posts.forEach(post => {
+        // Extra safety: skip if the element is inside a chat/dialog context
+        if (PLATFORM === 'facebook') {
+          if (post.closest('[role="dialog"]')) return;  // Modal chat popup
+          if (post.closest('[aria-label*="chat" i], [aria-label*="message" i], [aria-label*="Messenger" i]')) return;
+        }
         if (!post.hasAttribute(SCAN_ATTR)) {
           injectCheckButton(post);
         }
