@@ -42,7 +42,7 @@ tiktoken==0.5.2
 
 # === Big Data ===
 pyspark==3.5.0
-pyarrow==14.0.1
+pyarrow>=4.0.0,<14
 
 # === Web Crawling ===
 playwright==1.40.0
