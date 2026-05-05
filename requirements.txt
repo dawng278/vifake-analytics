@@ -18,8 +18,8 @@ boto3==1.34.0
 minio==7.2.0
 
 # === AI/ML Frameworks ===
-torch==2.1.0
-torchvision==0.16.0
+torch>=2.9.0
+torchvision>=0.20.0
 transformers==4.36.0
 optimum[onnxruntime]==1.16.0
 xgboost==2.0.0
@@ -30,10 +30,11 @@ pandas==2.1.4
 # === Computer Vision ===
 Pillow==10.1.0
 opencv-python==4.8.1.78
-clip-by-openai==1.0
+# clip: install via git+https://github.com/openai/CLIP.git or open_clip_torch
+open-clip-torch>=2.20.0
 
 # === NLP ===
-vinai==1.0.0
+# vinai/phobert-base loaded via transformers (no separate pip package)
 sentence-transformers==2.2.2
 chromadb==0.4.18
 langchain==0.0.350
