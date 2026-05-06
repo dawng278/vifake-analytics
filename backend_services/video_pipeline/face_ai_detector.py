@@ -24,12 +24,19 @@ logger = logging.getLogger(__name__)
 # ── Optional MediaPipe ──────────────────────────────────────────────────────
 try:
     import mediapipe as mp
-    _mp_face = mp.solutions.face_detection
-    MEDIAPIPE_AVAILABLE = True
-except ImportError:
+    # mp.solutions was removed in mediapipe 0.10.x — use new Tasks API if available
+    if hasattr(mp, "solutions") and hasattr(mp.solutions, "face_detection"):
+        _mp_face = mp.solutions.face_detection
+        MEDIAPIPE_AVAILABLE = True
+    else:
+        # mediapipe 0.10+ Tasks API — not trivially replaceable; fall back to OpenCV
+        _mp_face = None
+        MEDIAPIPE_AVAILABLE = False
+        logger.info("MediaPipe >= 0.10 detected (no mp.solutions) — falling back to OpenCV Haar cascade")
+except (ImportError, AttributeError):
     _mp_face = None
     MEDIAPIPE_AVAILABLE = False
-    logger.info("MediaPipe not installed — falling back to OpenCV Haar cascade")
+    logger.info("MediaPipe not available — falling back to OpenCV Haar cascade")
 
 # ── OpenCV Haar cascade (always available) ──────────────────────────────────
 _HAAR_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
