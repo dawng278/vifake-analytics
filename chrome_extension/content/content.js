@@ -366,7 +366,7 @@
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       e.preventDefault();
-      handleCheckClick(postEl, btn, container);
+      handleCheckClick(targetEl, btn, container);
     });
 
     container.appendChild(btn);
@@ -741,10 +741,37 @@
 
   // Initial scan
   scanForPosts();
-
-  // For TikTok, also scan every 2 seconds since content loads dynamically
+  
+  // Clear processed videos when page changes significantly
   if (PLATFORM === 'tiktok') {
-    setInterval(scanForPosts, 2000);
+    // Listen for navigation changes
+    let lastUrl = location.href;
+    setInterval(() => {
+      if (location.href !== lastUrl) {
+        console.log('[ViFake] Page changed, clearing video cache');
+        window.vifakeProcessedVideos = new Set();
+        lastUrl = location.href;
+      }
+    }, 1000);
+  }
+
+  // For TikTok, also scan every 3 seconds since content loads dynamically
+  // Reduced frequency to prevent infinite loop
+  if (PLATFORM === 'tiktok') {
+    // Add debounce to prevent excessive scanning
+    let lastScanTime = 0;
+    const SCAN_INTERVAL = 3000; // 3 seconds
+    const DEBOUNCE_TIME = 500; // 500ms debounce
+    
+    function debouncedScan() {
+      const now = Date.now();
+      if (now - lastScanTime > DEBOUNCE_TIME) {
+        lastScanTime = now;
+        scanForPosts();
+      }
+    }
+    
+    setInterval(debouncedScan, SCAN_INTERVAL);
     
     // Debug: Add command to clear all scan markers
     console.log('[ViFake] TikTok mode enabled. Run this in console to reset all buttons:');

@@ -977,7 +977,7 @@ async def analyze_video(
         import sys
         from pathlib import Path
         sys.path.insert(0, str(Path(__file__).parent.parent))
-        from video_pipeline.pipeline_coordinator import VideoAnalysisPipeline
+        from backend_services.video_pipeline.pipeline_coordinator import VideoAnalysisPipeline
         
         pipeline = VideoAnalysisPipeline()
         result = await pipeline.run(
