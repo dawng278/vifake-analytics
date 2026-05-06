@@ -447,6 +447,11 @@
       } else {
         showResult(container, result);
         postEl.setAttribute(SCAN_ATTR, 'checked');
+        // Highlight scam keywords in the original post text
+        const label = result.label || result.prediction || 'UNKNOWN';
+        if (label === 'FAKE_SCAM' || label === 'SUSPICIOUS') {
+          highlightScamKeywords(postEl, result);
+        }
       }
     } catch (err) {
       progress.remove();
@@ -555,6 +560,94 @@
         panel.classList.add('vifake-dismiss');
         setTimeout(() => panel.remove(), 280);
       }, 10000);
+    }
+  }
+
+  // ─── Highlight scam keywords in post DOM ───────────────────────────────
+  /**
+   * Walk text nodes inside postEl and wrap scam keyword matches with
+   * <span class="vifake-hl" data-vifake-tip="⚠ Nghi ngờ lừa đảo">...</span>
+   * Uses API-returned flags + a hardcoded keyword list so it works even when
+   * flags are empty.
+   */
+  function highlightScamKeywords(postEl, result) {
+    try {
+      const details = result.analysis_details || {};
+      const flags   = details.nlp_flags || [];
+
+      // Build keyword set from flags + universal scam signals
+      const UNIVERSAL = [
+        'free robux', 'free robux', 'bit.ly', 'cutt.ly', 'tinyurl', 'shorturl',
+        'link xác nhận', 'verify acc', 'xác minh', 'mật khẩu', 'password',
+        'click vào link', 'nạp thẻ', 'nạp tiền', 'chuyển khoản',
+        'giveaway', 'airdrop', 'usdt', 'eth', 'metamask', 'seed phrase',
+        'private key', 'connect ví', 'số lượng có hạn', 'nhanh tay',
+        'khẩn cấp', 'khẩn', 'miễn phí', 'free', 'trúng thưởng', 'trúng giải',
+        'nhận quà', 'nhận thưởng', 'hack acc', 'tool hack', 'kim cương free',
+        'robux', 'skin free', 'tài khoản bị khóa',
+      ];
+
+      // Extract keyword strings from flags (e.g. "FINANCIAL_SCAM:robux_phishing" → "robux_phishing")
+      const flagKeywords = flags
+        .map(f => f.includes(':') ? f.split(':')[1].replace(/_/g, ' ') : null)
+        .filter(Boolean);
+
+      const allKeywords = [...new Set([...UNIVERSAL, ...flagKeywords])]
+        .sort((a, b) => b.length - a.length); // longest first to avoid partial matches
+
+      if (allKeywords.length === 0) return;
+
+      // Build one regex from all keywords
+      const escapedParts = allKeywords.map(k =>
+        k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      );
+      const regex = new RegExp(`(${escapedParts.join('|')})`, 'gi');
+
+      // Walk text nodes — skip script/style/our own injected nodes
+      const SKIP_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'INPUT']);
+      const walker = document.createTreeWalker(postEl, NodeFilter.SHOW_TEXT, {
+        acceptNode(node) {
+          if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          const p = node.parentElement;
+          if (!p) return NodeFilter.FILTER_REJECT;
+          if (SKIP_TAGS.has(p.tagName)) return NodeFilter.FILTER_REJECT;
+          if (p.classList.contains('vifake-hl')) return NodeFilter.FILTER_REJECT;
+          if (p.closest('.vifake-result-panel, .vifake-container')) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+
+      const nodesToProcess = [];
+      let node;
+      while ((node = walker.nextNode())) nodesToProcess.push(node);
+
+      nodesToProcess.forEach(textNode => {
+        const text = textNode.nodeValue;
+        if (!regex.test(text)) return;
+        regex.lastIndex = 0;
+
+        const frag = document.createDocumentFragment();
+        let last = 0;
+        let match;
+        while ((match = regex.exec(text)) !== null) {
+          if (match.index > last) {
+            frag.appendChild(document.createTextNode(text.slice(last, match.index)));
+          }
+          const span = document.createElement('span');
+          span.className = 'vifake-hl';
+          span.setAttribute('data-vifake-tip', '⚠ Nghi ngờ lừa đảo');
+          span.textContent = match[0];
+          frag.appendChild(span);
+          last = regex.lastIndex;
+        }
+        if (last < text.length) {
+          frag.appendChild(document.createTextNode(text.slice(last)));
+        }
+        textNode.parentNode.replaceChild(frag, textNode);
+      });
+    } catch (e) {
+      // Never crash the page — highlighting is cosmetic only
+      console.debug('[ViFake] highlight error:', e);
     }
   }
 
