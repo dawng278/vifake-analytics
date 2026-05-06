@@ -58,6 +58,41 @@ chrome.storage.local.get(['apiUrl', 'authToken', 'recentScans'], (data) => {
   if (Object.keys(toSet).length > 0) chrome.storage.local.set(toSet);
 });
 
+// ─── Notification helpers ───
+function sendDangerNotification({ title, message, tabId, url }) {
+  const notifId = `vifake-${Date.now()}`;
+  chrome.notifications.create(notifId, {
+    type: 'basic',
+    iconUrl: chrome.runtime.getURL('icons/icon48.png'),
+    title,
+    message,
+    priority: 2,
+  });
+  // Clicking notification focuses the tab
+  chrome.notifications.onClicked.addListener(function handler(id) {
+    if (id !== notifId) return;
+    chrome.notifications.onClicked.removeListener(handler);
+    if (tabId) chrome.tabs.update(tabId, { active: true });
+  });
+}
+
+function maybeNotify(label, verdict, tabId, url) {
+  const effective = verdict || label;
+  if (effective === 'FAKE_SCAM') {
+    sendDangerNotification({
+      title: '🚨 ViFake: Phát hiện lừa đảo!',
+      message: 'Nội dung này có dấu hiệu lừa đảo nhắm vào trẻ em. Nhấn để xem chi tiết.',
+      tabId, url,
+    });
+  } else if (effective === 'SUSPICIOUS') {
+    sendDangerNotification({
+      title: '⚠️ ViFake: Nội dung đáng ngờ',
+      message: 'Phát hiện nội dung có dấu hiệu đáng ngờ trên trang này.',
+      tabId, url,
+    });
+  }
+}
+
 // ─── Message Handler ───
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'analyze') {
@@ -91,6 +126,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.action === 'getRecentScans') {
     chrome.storage.local.get(['recentScans'], (data) => {
       sendResponse(data.recentScans || []);
+    });
+    return true;
+  }
+
+  if (msg.action === 'clearHistory') {
+    chrome.storage.local.set({ recentScans: [], totalScans: 0, scamDetected: 0 }, () => {
+      sendResponse({ ok: true });
     });
     return true;
   }
@@ -153,10 +195,11 @@ async function handleAnalyze(payload, tabId) {
 
     await addRecentScan(scanRecord);
 
-    // Step 4: Update badge
+    // Step 4: Update badge + notification
     if (tabId) {
       updateBadge(tabId, result);
     }
+    maybeNotify(result.label, result.prediction, tabId, url);
 
     return result;
   } catch (err) {
@@ -266,8 +309,20 @@ async function handleAnalyzeVideo(payload, tabId) {
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`API error: ${response.status} - ${error}`);
+      let errDetail = `HTTP ${response.status}`;
+      try {
+        const errBody = await response.json();
+        // FastAPI wraps errors as {"detail": "..."}
+        errDetail = errBody.detail || errBody.message || errDetail;
+      } catch {
+        errDetail = await response.text().catch(() => errDetail);
+      }
+      console.error(`[ViFake] Video API error ${response.status}:`, errDetail);
+      // 5xx = server error → return friendly message, don't throw
+      if (response.status >= 500) {
+        return { error: `Lỗi máy chủ (${response.status}): ${errDetail}` };
+      }
+      throw new Error(errDetail);
     }
 
     const result = await response.json();
@@ -295,9 +350,12 @@ async function handleAnalyzeVideo(payload, tabId) {
 
     await addRecentScan(scanRecord);
 
-    // Step 3: Update badge
+    // Step 3: Update badge + notification
     if (tabId) {
       updateVideoBadge(tabId, result);
+    }
+    maybeNotify(result.verdict, null, tabId, page_url);
+    if (tabId) {
     }
 
     return result;

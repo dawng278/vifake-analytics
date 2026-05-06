@@ -50,5 +50,13 @@ scikit-learn>=1.3.0        # ML classifiers for voice spoofing detection
 Pillow>=10.1.0             # PIL — image loading/processing (required by vision pipeline)
 opencv-python>=4.8.1      # Image processing for face crops (used by face_ai_detector.py)
 
-# === Lightweight ML (no torch/CUDA) ===
+# === AI Core (CPU-only, Render compatible) ===
+# torch CPU build — MUST use +cpu variant, CUDA not available on Render
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0+cpu
+torchvision==0.17.0+cpu
+transformers>=4.40.0        # PhoBERT tokenizer + model
+onnxruntime>=1.17.1          # ONNX inference (lightweight, no CUDA)
+
+# === Lightweight ML ===
 numpy>=1.26.0
