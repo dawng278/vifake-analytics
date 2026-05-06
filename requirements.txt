@@ -49,6 +49,8 @@ scikit-learn>=1.3.0        # ML classifiers for voice spoofing detection
 # face-recognition         # Optional: requires dlib — code uses opencv as fallback
 Pillow>=10.1.0             # PIL — image loading/processing (required by vision pipeline)
 opencv-python>=4.8.1      # Image processing for face crops (used by face_ai_detector.py)
+mediapipe>=0.10.9          # Face detection (CPU-friendly, no GPU needed)
+easyocr>=1.7.1             # OCR on-screen text from video frames (vi+en)
 
 # === AI Core (CPU-only, Render compatible) ===
 # torch CPU build — MUST use +cpu variant, CUDA not available on Render

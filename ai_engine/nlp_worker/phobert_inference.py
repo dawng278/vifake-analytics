@@ -77,11 +77,14 @@ class PhoBERTInference:
         self.model.eval()
         self.model.to(self.config.device)
 
-        # Label mapping
+        # Label mapping — internal 3-class
         self.labels = {0: "SAFE", 1: "TOXIC", 2: "MANIPULATIVE"}
-
-        # ONNX model placeholder (for future optimization)
-        self.onnx_model = None
+        # Pipeline verdict mapping: translate PhoBERT classes → pipeline verdicts
+        self.verdict_map = {
+            "SAFE":         "SAFE",
+            "TOXIC":        "SUSPICIOUS",
+            "MANIPULATIVE": "FAKE_SCAM",
+        }
         
         logger.info(f"✅ PhoBERT loaded on {self.config.device}")
         logger.info(f"📝 Labels: {list(self.labels.values())}")
@@ -126,18 +129,22 @@ class PhoBERTInference:
             # Risk assessment
             risk_level = self._assess_risk_level(pred_id, confidence)
             
+            raw_pred = self.labels.get(pred_id, "UNKNOWN")
+            verdict  = self.verdict_map.get(raw_pred, raw_pred)
+            
             return {
                 "text": text,
-                "prediction": self.labels.get(pred_id, "UNKNOWN"),
-                "confidence": confidence,
+                "prediction":   raw_pred,     # PhoBERT class (SAFE/TOXIC/MANIPULATIVE)
+                "verdict":      verdict,       # Pipeline verdict (SAFE/SUSPICIOUS/FAKE_SCAM)
+                "confidence":   confidence,
                 "probabilities": {self.labels[i]: probs[i] for i in range(len(probs))},
-                "risk_level": risk_level,
-                "is_safe": pred_id == 0,
+                "risk_level":   risk_level,
+                "is_safe":      pred_id == 0,
                 "requires_review": pred_id in [1, 2] and confidence < 0.8,
                 "model_info": {
-                    "model": self.config.model_name,
+                    "model":      self.config.model_name,
                     "max_length": self.config.max_length,
-                    "device": self.config.device
+                    "device":     self.config.device
                 }
             }
             

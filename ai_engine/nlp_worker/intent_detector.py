@@ -12,7 +12,7 @@ import re
 from typing import Dict, List
 
 
-# === 5 Scam Intent Categories ===
+# === 7 Scam Intent Categories ===
 
 SCAM_INTENTS = {
     "credential_harvest": {
@@ -26,6 +26,14 @@ SCAM_INTENTS = {
             r'điền\s*thông\s*tin\s*đăng\s*nhập',
             r'nhập\s*mật\s*khẩu', r'cho\s*biết\s*mật\s*khẩu',
             r'xác\s*minh\s*danh\s*tính', r'verify\s*identity',
+            # Additional patterns
+            r'nhập\s*otp', r'mã\s*xác\s*nhận', r'mã\s*xác\s*thực',
+            r'nhập\s*số\s*điện\s*thoại', r'cung\s*cấp\s*email',
+            r'đăng\s*nhập\s*tài\s*khoản', r'truy\s*cập\s*tài\s*khoản',
+            r'confirm\s*your\s*account', r'account\s*verification',
+            r'nhập\s*thông\s*tin\s*cá\s*nhân', r'thông\s*tin\s*ngân\s*hàng',
+            r'số\s*cmnd', r'số\s*căn\s*cước', r'ngày\s*sinh\s*để\s*xác\s*minh',
+            r'📱\s*nhập\s*mã', r'🔐\s*xác\s*minh',
         ],
     },
     "money_transfer": {
@@ -38,6 +46,15 @@ SCAM_INTENTS = {
             r'phí\s*dịch\s*vụ', r'lệ\s*phí', r'phí\s*đăng\s*ký',
             r'chuyển\s*tiền\s*qua', r'gửi\s*tiền\s*cho',
             r'transfer\s*money', r'send\s*money',
+            # Additional patterns
+            r'nạp\s*thẻ\s*cào', r'mua\s*thẻ\s*cào', r'thẻ\s*điện\s*thoại',
+            r'momo\s*chuyển', r'zalopay', r'vnpay',
+            r'số\s*tài\s*khoản\s*ngân\s*hàng',
+            r'quét\s*mã\s*qr\s*để\s*thanh\s*toán', r'scan\s*qr\s*to\s*pay',
+            r'phí\s*rút\s*tiền', r'phí\s*giải\s*ngân', r'phí\s*kích\s*hoạt',
+            r'nộp\s*phí\s*trước', r'ứng\s*trước\s*tiền',
+            r'💸\s*chuyển', r'💰\s*nạp', r'🏧\s*atm',
+            r'banking\s*xác\s*nhận', r'internet\s*banking',
         ],
     },
     "urgency_pressure": {
@@ -50,6 +67,15 @@ SCAM_INTENTS = {
             r'sẽ\s*bị\s*xóa', r'sẽ\s*bị\s*khóa', r'sẽ\s*bị\s*vô\s*hiệu',
             r'cảnh\s*cáo\s*cuối\s*cùng', r'final\s*warning',
             r'khóa\s*vĩnh\s*viễn', r'permanently\s*banned',
+            # Additional patterns
+            r'số\s*lượng\s*có\s*hạn', r'hết\s*slot', r'còn\s*\d+\s*suất',
+            r'chỉ\s*còn\s*\d+\s*phút', r'hết\s*hạn\s*hôm\s*nay',
+            r'hành\s*động\s*ngay', r'ngay\s*lập\s*tức',
+            r'trước\s*\d+h', r'trong\s*vòng\s*\d+\s*phút',
+            r'cảnh\s*báo\s*khẩn', r'thông\s*báo\s*khẩn\s*cấp',
+            r'tài\s*khoản\s*sẽ\s*bị', r'bị\s*tạm\s*dừng',
+            r'⚠️', r'🚨', r'❗', r'❌\s*tài\s*khoản',
+            r'urgent', r'immediately', r'act\s*now',
         ],
     },
     "fake_reward": {
@@ -64,6 +90,15 @@ SCAM_INTENTS = {
             r'nhận\s*ngay\s*\d+k', r'nhận\s*ngay\s*\d+tr',
             r'free\s*fire\s*kim\s*cương', r'free\s*fire\s*diamond',
             r'nạp\s*\d+k\s*được\s*\d+k', r'nạp\s*\d+k\s*được\s*\d+tr',
+            # Additional patterns
+            r'trúng\s*thưởng', r'giải\s*thưởng\s*\d+',
+            r'nhận\s*\d+\s*usdt', r'airdrop\s*free',
+            r'spin\s*free', r'quay\s*thưởng\s*miễn\s*phí',
+            r'lucky\s*draw', r'vòng\s*quay\s*may\s*mắn',
+            r'gift\s*card\s*free', r'voucher\s*miễn\s*phí',
+            r'phiếu\s*mua\s*hàng\s*miễn\s*phí',
+            r'🎁\s*tặng', r'🎰\s*trúng', r'💎\s*nhận\s*ngay',
+            r'nhận\s*tiền\s*miễn\s*phí', r'tiền\s*mặt\s*miễn\s*phí',
         ],
     },
     "grooming_isolation": {
@@ -77,6 +112,53 @@ SCAM_INTENTS = {
             r'không\s*cho\s*ai\s*biết', r'chỉ\s*2\s*đứa\s*mình',
             r'ba\s*mẹ\s*ko\s*biết\s*đâu', r'đừng\s*cho\s*phụ\s*huynh\s*biết',
             r'don\'?t\s*tell\s*your\s*parents', r'keep\s*this\s*secret',
+            # Additional patterns
+            r'nhắn\s*tin\s*riêng', r'zalo\s*riêng', r'telegram\s*riêng',
+            r'chỉ\s*anh\s*em\s*mình\s*biết', r'mình\s*tao\s*mày\s*biết',
+            r'đừng\s*share', r'đừng\s*đăng\s*lên',
+            r'bố\s*mẹ\s*sẽ\s*không\s*hiểu', r'người\s*lớn\s*sẽ\s*ngăn',
+            r'connect\s*zalo', r'thêm\s*zalo\s*riêng',
+            r'private\s*message', r'dm\s*me',
+        ],
+    },
+    "fake_job": {
+        "label": "Việc làm giả mạo lương cao",
+        "risk_weight": 0.8,
+        "patterns": [
+            r'việc\s*làm\s*online\s*lương\s*cao',
+            r'làm\s*tại\s*nhà\s*\d+.*ngày', r'làm\s*tại\s*nhà\s*\d+.*tháng',
+            r'thu\s*nhập\s*\d+.*ngày\s*không\s*cần\s*kinh\s*nghiệm',
+            r'không\s*cần\s*kinh\s*nghiệm.*lương\s*cao',
+            r'part\s*time\s*online\s*\d+k',
+            r'tuyển\s*cộng\s*tác\s*viên\s*online',
+            r'commission\s*\d+%\s*mỗi\s*đơn',
+            r'kiếm\s*tiền\s*tại\s*nhà\s*\d+',
+            r'việc\s*nhẹ\s*lương\s*cao', r'nhẹ\s*nhàng\s*lương\s*cao',
+            r'chỉ\s*cần\s*điện\s*thoại\s*kiếm\s*tiền',
+            r'nhân\s*viên\s*bán\s*hàng\s*online\s*không\s*cần',
+            r'tuyển\s*gấp.*không\s*cần\s*bằng\s*cấp',
+            r'affiliate.*\d+%', r'ctv\s*online',
+            r'💼\s*tuyển\s*dụng', r'📢\s*tuyển\s*cộng\s*tác\s*viên',
+        ],
+    },
+    "crypto_fraud": {
+        "label": "Lừa đảo tiền điện tử / đầu tư giả",
+        "risk_weight": 0.9,
+        "patterns": [
+            r'đầu\s*tư\s*bitcoin', r'đầu\s*tư\s*usdt',
+            r'connect\s*ví\s*metamask', r'kết\s*nối\s*ví',
+            r'airdrop\s*\d+\s*usdt', r'nhận\s*\d+\s*usdt\s*free',
+            r'giveaway\s*\d+\s*usdt', r'\d+\s*usdt\s*miễn\s*phí',
+            r'đầu\s*tư\s*sinh\s*lời\s*\d+%', r'lợi\s*nhuận\s*\d+%.*ngày',
+            r'sàn\s*crypto', r'coin\s*listing',
+            r'presale\s*token', r'ico\s*token',
+            r'rug\s*pull', r'pump\s*and\s*dump',
+            r'nạp\s*usdt\s*để\s*nhận', r'deposit\s*usdt',
+            r'withdraw\s*usdt', r'rút\s*usdt',
+            r'ví\s*crypto\s*của\s*bạn', r'seed\s*phrase',
+            r'private\s*key', r'metamask\s*verify',
+            r'💰\s*crypto', r'🪙\s*bitcoin', r'₿\s*btc',
+            r'defi\s*farming', r'yield\s*farming\s*\d+%',
         ],
     },
 }
@@ -169,6 +251,16 @@ def get_intent_explanation(intent_name: str) -> str:
             "CỰC KỲ NGUY HIỂM: Nội dung cố ý tách trẻ em khỏi sự giám sát của người lớn. "
             "Dấu hiệu: 'đừng nói với bố mẹ', 'chỉ mình mình biết thôi', 'nhắn tin riêng cho anh/chị'. "
             "Đây có thể là hành vi grooming — cần báo cáo ngay lập tức."
+        ),
+        "fake_job": (
+            "Quảng cáo việc làm giả mạo với lời hứa 'lương cao không cần kinh nghiệm', 'làm tại nhà 5tr/ngày'. "
+            "Thường yêu cầu nộp phí đào tạo, phí đăng ký hoặc mua sản phẩm trước khi làm việc. "
+            "Việc làm hợp pháp KHÔNG BAO GIỜ yêu cầu bạn trả tiền trước."
+        ),
+        "crypto_fraud": (
+            "Lừa đảo liên quan đến tiền điện tử: hứa 'lợi nhuận X% mỗi ngày', 'airdrop USDT miễn phí', "
+            "'connect ví MetaMask để nhận thưởng'. Thực chất là chiếm đoạt ví hoặc tài sản crypto. "
+            "Không bao giờ kết nối ví hoặc cung cấp seed phrase cho bất kỳ ai."
         ),
     }
     return explanations.get(intent_name, "Dấu hiệu bất thường được phát hiện trong nội dung")

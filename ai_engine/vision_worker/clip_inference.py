@@ -65,17 +65,28 @@ class CLIPVisionWorker:
         self.processor = None
         self.inference_count = 0
         
-        # Risk classification labels
+        # Risk classification labels — ordered, index matters for _calculate_risk_scores
         self.CANDIDATE_LABELS = [
-            "child-safe cartoon content",
-            "educational content for children", 
-            "violent or disturbing content targeting children",
-            "scam or phishing content",
-            "sexual content",
-            "inappropriate content for minors",
-            "normal social media content",
-            "advertisement targeting children"
+            # Index 0-1: safe content
+            "safe cooking recipe food video",
+            "educational tutorial content",
+            # Index 2-5: risk content
+            "online scam phishing fraud warning message",
+            "bank transfer payment QR code on screen",
+            "fake prize giveaway lottery winner announcement",
+            "deepfake AI-generated face synthetic video",
+            # Index 6-7: neutral
+            "normal social media entertainment content",
+            "celebrity advertisement promotion",
         ]
+        
+        # Map label index → risk category
+        self.LABEL_RISK_MAP = {
+            2: "scam_risk",          # phishing/fraud
+            3: "money_risk",         # payment QR
+            4: "fake_reward_risk",   # fake prize
+            5: "deepfake_risk",      # AI-generated face
+        }
         
         # Initialize model
         self._load_model()
@@ -196,20 +207,24 @@ class CLIPVisionWorker:
         for i, label in enumerate(self.CANDIDATE_LABELS):
             scores[label] = float(probs[i])
         
-        # Aggregate risk categories
-        violent_score = probs[2]  # "violent or disturbing content targeting children"
-        scam_score = probs[3]     # "scam or phishing content"
-        sexual_score = probs[4]    # "sexual content"
-        inappropriate_score = probs[5]  # "inappropriate content for minors"
+        # Aggregate risk scores using label_risk_map
+        risk_subscores = {}
+        for idx, category in self.LABEL_RISK_MAP.items():
+            risk_subscores[category] = float(probs[idx]) if idx < len(probs) else 0.0
+
+        scam_score       = risk_subscores.get("scam_risk", 0.0)
+        money_score      = risk_subscores.get("money_risk", 0.0)
+        fake_reward_score= risk_subscores.get("fake_reward_risk", 0.0)
+        deepfake_score   = risk_subscores.get("deepfake_risk", 0.0)
+
+        # Combined content risk (max across scam-related labels)
+        combined_risk = max(scam_score, money_score, fake_reward_score, deepfake_score)
         
-        # Combined risk score
-        combined_risk = max(violent_score, scam_score, sexual_score, inappropriate_score)
-        
-        # Safety score (inverse of risk)
-        safe_content = probs[0] + probs[1]  # "child-safe" + "educational"
+        # Safety score: safe labels vs risk labels
+        safe_content = probs[0] + probs[1]  # cooking + educational
         safety_score = safe_content / (safe_content + combined_risk + 1e-8)
         
-        # Categorize risk level
+        # Risk level
         if combined_risk >= self.config.risk_threshold:
             risk_level = "HIGH"
         elif combined_risk >= 0.4:
@@ -217,23 +232,21 @@ class CLIPVisionWorker:
         else:
             risk_level = "LOW"
         
-        # Additional metrics
         scores.update({
             "combined_risk_score": float(combined_risk),
-            "safety_score": float(safety_score),
-            "risk_level": risk_level,
-            "is_safe": combined_risk < self.config.risk_threshold,
-            "requires_review": combined_risk >= 0.5,
-            
-            # Specific risk breakdowns
-            "violent_risk": float(violent_score),
-            "scam_risk": float(scam_score),
-            "sexual_risk": float(sexual_score),
-            "inappropriate_risk": float(inappropriate_score),
-            
-            # Metadata
-            "inference_timestamp": torch.cuda.get_device_properties(0).total_memory / (1024**3) if torch.cuda.is_available() else 0,
-            "vram_usage_gb": self._get_vram_usage()
+            "safety_score":        float(safety_score),
+            "risk_level":          risk_level,
+            "is_safe":             combined_risk < self.config.risk_threshold,
+            "requires_review":     combined_risk >= 0.5,
+            # Per-category breakdowns
+            "scam_risk":           scam_score,
+            "money_risk":          money_score,
+            "fake_reward_risk":    fake_reward_score,
+            "deepfake_risk":       deepfake_score,
+            # Legacy aliases kept for pipeline compatibility
+            "violent_risk":        0.0,
+            "sexual_risk":         0.0,
+            "inappropriate_risk":  0.0,
         })
         
         return scores

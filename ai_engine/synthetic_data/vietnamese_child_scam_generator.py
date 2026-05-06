@@ -38,6 +38,11 @@ class ScamScenario(Enum):
     MALICIOUS_LINK_CLICK = "malicious_link_click"
     OTP_THEFT = "otp_theft"
     PARENT_ACCOUNT_ACCESS = "parent_account_access"
+    # New 2026 scenarios
+    FAKE_JOB_AD = "fake_job_ad"
+    CRYPTO_NFT_SCAM = "crypto_nft_scam"
+    ROMANCE_SCAM = "romance_scam"
+    FAKE_GIVEAWAY_QR = "fake_giveaway_qr"
 
 class AgeGroup(Enum):
     """Nhóm tuổi mục tiêu"""
@@ -51,7 +56,7 @@ class SyntheticConfig:
     mongo_uri: str = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
     db_name: str = "vifake_analytics"
     output_file: str = "data/synthetic/vietnamese_child_scams.json"
-    num_samples: int = 500
+    num_samples: int = 3000
     min_conversation_turns: int = 3
     max_conversation_turns: int = 8
 
@@ -218,7 +223,125 @@ class SyntheticDataGenerator:
                         "tài khoản t bị mất rồi!"
                     ]
                 }
-            ]
+            ],
+
+            # ── New 2026 scenarios ──────────────────────────────────────────
+
+            ScamScenario.FAKE_JOB_AD: [
+                {
+                    "scammer_opening": [
+                        "CẦN GẤP {name} ơi! Tuyển cộng tác viên online lương 5tr/ngày không cần kinh nghiệm!",
+                        "ae {name}, t đang tuyển part-time online nhẹ nhàng lương 300k/h, muốn không?",
+                        "{name} ơi, việc làm tại nhà siêu nhẹ chỉ cần điện thoại, 10-15 triệu/tháng đó!",
+                        "thông báo tuyển dụng gấp! không cần bằng cấp, làm online được ngay hôm nay",
+                    ],
+                    "victim_responses": [
+                        "thật á? việc gì vậy bạn?",
+                        "lương cao vậy? có cần đi đâu không?",
+                        "t muốn đăng ký, làm như thế nào?",
+                        "nghe hay đấy, cần làm gì không?"
+                    ],
+                    "scammer_pressure": [
+                        "chỉ cần nộp phí đào tạo 300k rồi bắt đầu ngay, vào đây đăng ký: {fake_link}",
+                        "cần mua kit làm việc 500k trước, hoàn tiền sau 1 tháng, chuyển khoản vào: {fake_link}",
+                        "phí kích hoạt tài khoản 200k thôi, xong là làm được ngay, link thanh toán: {fake_link}",
+                        "nộp phí bảo đảm 400k, sau 2 ngày hoàn lại + lương ngay! {fake_link}",
+                    ],
+                    "victim_compliance": [
+                        "ok t chuyển khoản rồi, sao chưa thấy gì?",
+                        "t đã nộp phí rồi, bao giờ bắt đầu làm?",
+                        "t trả tiền xong rồi, tài khoản làm việc đâu?",
+                        "chờ mãi không thấy liên lạc lại, lừa đảo à?"
+                    ]
+                }
+            ],
+
+            ScamScenario.CRYPTO_NFT_SCAM: [
+                {
+                    "scammer_opening": [
+                        "🚀 AIRDROP ALERT! Nhận ngay 500 USDT miễn phí! Connect ví MetaMask ngay hôm nay!",
+                        "{name} ơi, t vừa nhận 1000 USDT từ event crypto mới, bạn cũng tham gia đi!",
+                        "DeFi farming mới ra, lợi nhuận 50% mỗi tháng! deposit USDT là nhận ngay!",
+                        "NFT exclusive chỉ 100 slot! mint ngay kẻo hết, giá floor 10x sau khi launch!",
+                    ],
+                    "victim_responses": [
+                        "nhận USDT free á? làm sao vậy?",
+                        "50% mỗi tháng? thật không bạn?",
+                        "NFT là gì? có kiếm tiền được không?",
+                        "connect ví như thế nào?"
+                    ],
+                    "scammer_pressure": [
+                        "vào đây connect ví MetaMask: {fake_link} — event chỉ 24h!",
+                        "deposit tối thiểu 100 USDT để activate, link đây: {fake_link}",
+                        "nhập seed phrase ví của bạn vào đây để xác thực: {fake_link}",
+                        "approve smart contract này để nhận airdrop: {fake_link} nhanh lên!",
+                    ],
+                    "victim_compliance": [
+                        "t đã connect ví rồi, sao mất USDT vậy?",
+                        "t nhập seed phrase rồi, tài sản biến mất rồi!",
+                        "t deposit 100 USDT rồi không rút được",
+                        "contract approve rồi nhưng không nhận được gì"
+                    ]
+                }
+            ],
+
+            ScamScenario.ROMANCE_SCAM: [
+                {
+                    "scammer_opening": [
+                        "hi {name}, t thấy profile bạn hay quá, kết bạn được không?",
+                        "{name} ơi, t là du học sinh ở Mỹ, muốn có bạn Việt Nam nói chuyện",
+                        "chào {name}, t thấy mình hợp nhau lắm, nói chuyện thêm nhé?",
+                        "hello, t là model đang casting ở HN, {name} trông dễ thương quá!",
+                    ],
+                    "victim_responses": [
+                        "bạn là ai vậy? biết t từ đâu?",
+                        "du học sinh á? học ở đâu vậy?",
+                        "uh, bạn cũng vui tính ha",
+                        "cảm ơn bạn! bạn tên gì?"
+                    ],
+                    "scammer_pressure": [
+                        "t muốn gặp bạn lắm, nhưng cần tiền vé máy bay, bạn cho t mượn 2tr được không?",
+                        "t đang kẹt tiền ở sân bay, cần 500k để về, {name} giúp t với",
+                        "t có quà từ nước ngoài gửi cho bạn nhưng phải nộp phí hải quan 300k: {fake_link}",
+                        "đừng nói với bố mẹ nhé, mình chuyển tiền riêng cho t qua: {fake_link}",
+                    ],
+                    "victim_compliance": [
+                        "t chuyển tiền rồi, bạn ổn không?",
+                        "t đã nộp phí hải quan rồi, bao giờ có quà?",
+                        "t chuyển khoản rồi nhưng số tiền mất đi",
+                        "bạn đột ngột biến mất, t bị lừa rồi!"
+                    ]
+                }
+            ],
+
+            ScamScenario.FAKE_GIVEAWAY_QR: [
+                {
+                    "scammer_opening": [
+                        "🎁 GIVEAWAY KHỔNG LỒ! Quét QR code này để nhận 1,000,000đ ngay!",
+                        "event đặc biệt từ {celebrity}! scan QR nhận quà độc quyền chỉ 100 người!",
+                        "{name} ơi, bạn được chọn nhận thưởng! quét mã QR trong video này đi!",
+                        "⚡ FLASH SALE! Scan QR mua 1 tặng 10, chỉ hôm nay thôi!!!",
+                    ],
+                    "victim_responses": [
+                        "qr ở đâu vậy?",
+                        "scan xong nhận tiền luôn á?",
+                        "thật không? scan thử xem",
+                        "cho t link qr với!"
+                    ],
+                    "scammer_pressure": [
+                        "scan QR này: {fake_link} — nhập thông tin ngân hàng để nhận tiền",
+                        "link QR đây: {fake_link} cần verify số thẻ để gửi tiền thưởng",
+                        "scan đi rồi đăng nhập tài khoản để xác nhận giải thưởng: {fake_link}",
+                        "nhanh lên! QR hết hạn sau 10 phút: {fake_link} nhập OTP ngân hàng vào",
+                    ],
+                    "victim_compliance": [
+                        "t scan rồi nhập thông tin rồi, tiền đâu?",
+                        "t nhập otp xong thì bị mất tiền trong tài khoản",
+                        "scan xong đăng nhập rồi mà không nhận được gì",
+                        "bị hack tài khoản ngân hàng rồi!"
+                    ]
+                }
+            ],
         }
         return templates
     
