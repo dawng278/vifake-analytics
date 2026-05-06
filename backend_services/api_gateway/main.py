@@ -973,10 +973,7 @@ async def analyze_video(
     logger.info(f"🎬 Video analysis request from {auth_user['user']}: {request.video_url}")
     
     try:
-        # Import pipeline coordinator with correct path
-        import sys
-        from pathlib import Path
-        sys.path.insert(0, str(Path(__file__).parent.parent))
+        # Import pipeline coordinator (sys.path already set at top of file)
         from backend_services.video_pipeline.pipeline_coordinator import VideoAnalysisPipeline
         
         pipeline = VideoAnalysisPipeline()
