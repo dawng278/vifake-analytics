@@ -24,6 +24,19 @@
 
 **ViFake Analytics** is a comprehensive AI-powered system designed to detect and prevent child-targeted scams on Vietnamese social media platforms. The system uses multi-modal AI analysis (vision, NLP, graph analytics) to identify malicious content targeting children, with a Privacy-by-Design architecture ensuring complete ethical compliance.
 
+### 🔄 Recent Updates (May 6, 2026)
+
+- Completed a major pipeline update and engineering sprint:
+  - Rewrote `backend_services/video_pipeline/frame_analyzer.py` with QR detection, EasyOCR (vi+en), CLIP-based deepfake scoring, and texture-based signals.
+  - Rewrote `backend_services/video_pipeline/face_ai_detector.py` to use MediaPipe when available and fall back to OpenCV Haar cascades; added 4 signal-based deepfake heuristics (texture, symmetry, color uniformity, FFT noise). Compatibility fix added for MediaPipe 0.10+.
+  - Updated `ai_engine/vision_worker/clip_inference.py` to use scam-aware CLIP labels and named risk mappings (scam_risk, money_risk, fake_reward_risk, deepfake_risk).
+  - Expanded `ai_engine/synthetic_data/vietnamese_child_scam_generator.py` with 4 new scenarios (FAKE_JOB_AD, CRYPTO_NFT_SCAM, ROMANCE_SCAM, FAKE_GIVEAWAY_QR) and increased samples to ~3000 for richer PhoBERT fine-tuning.
+  - Added `verdict_map` and `verdict` output in `ai_engine/nlp_worker/phobert_inference.py` so PhoBERT predictions map to pipeline verdicts (SAFE, SUSPICIOUS, FAKE_SCAM).
+  - Added `mediapipe>=0.10.9` and `easyocr>=1.7.1` to `requirements.txt` (note: EasyOCR may download model files on first run; set `EASYOCR_MODEL_STORAGE_DIRECTORY` in deployments to control storage).
+  - All edits committed and pushed (commits include b7d8200 and follow-up fix 3bff805).
+
+  Impact: stronger multi-modal detection, QR/OTP/URL evidence support, and improved mapping between model outputs and user-facing verdicts.
+
 ### 🌟 Key Features
 
 - **Multi-modal AI Analysis**: Combines vision (CLIP), NLP (PhoBERT), and fusion models (XGBoost)
