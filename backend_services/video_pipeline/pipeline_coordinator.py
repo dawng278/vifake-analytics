@@ -245,6 +245,13 @@ class VideoAnalysisPipeline:
         """
         text_verdict = text_result.get("verdict", "UNKNOWN")
         text_conf = text_result.get("confidence", 0.0)
+
+        # If text analysis failed entirely (UNKNOWN), treat as SAFE with low confidence
+        # rather than propagating an error state as a false positive
+        if text_verdict == "UNKNOWN":
+            logger.warning("⚠️ Text analysis returned UNKNOWN (likely extraction failed) — defaulting to SAFE")
+            text_verdict = "SAFE"
+            text_conf = 0.3  # Low confidence to signal uncertainty
         
         # Get AI detection scores
         vision_ai_conf = vision_result.get("confidence", 0.0)

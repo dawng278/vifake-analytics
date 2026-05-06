@@ -467,10 +467,11 @@
   // ─── Shared helpers ───
 
   const RISK_META = {
-    SAFE:       { cls: 'vifake-risk-safe',   icon: '✅', text: 'An toàn',   badge: 'safe' },
-    SUSPICIOUS: { cls: 'vifake-risk-warn',   icon: '⚠️', text: 'Đáng ngờ', badge: 'warn' },
-    FAKE_SCAM:  { cls: 'vifake-risk-danger', icon: '🚨', text: 'Lừa đảo',  badge: 'danger' },
-    TOXIC:      { cls: 'vifake-risk-danger', icon: '🚨', text: 'Độc hại',   badge: 'danger' },
+    SAFE:       { cls: 'vifake-risk-safe',    icon: '✅', text: 'An toàn',         badge: 'safe' },
+    SUSPICIOUS: { cls: 'vifake-risk-warn',    icon: '⚠️', text: 'Đáng ngờ',       badge: 'warn' },
+    FAKE_SCAM:  { cls: 'vifake-risk-danger',  icon: '🚨', text: 'Lừa đảo',        badge: 'danger' },
+    TOXIC:      { cls: 'vifake-risk-danger',  icon: '🚨', text: 'Độc hại',         badge: 'danger' },
+    UNKNOWN:    { cls: 'vifake-risk-neutral', icon: '❓', text: 'Không xác định', badge: 'neutral' },
   };
 
   const RISK_LEVEL_META = {

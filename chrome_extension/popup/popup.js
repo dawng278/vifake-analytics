@@ -6,10 +6,11 @@ document.addEventListener('DOMContentLoaded', init);
 
 const PLATFORM_ICON = { facebook: '📘', youtube: '▶️', tiktok: '🎵', unknown: '🌐' };
 const LABEL_META = {
-  SAFE:       { cls: 'safe',   text: 'An toàn',   icon: '✅' },
-  SUSPICIOUS: { cls: 'warn',   text: 'Đáng ngờ',  icon: '⚠️' },
-  FAKE_SCAM:  { cls: 'danger', text: 'Lừa đảo',   icon: '🚨' },
-  TOXIC:      { cls: 'danger', text: 'Độc hại',    icon: '🚨' },
+  SAFE:       { cls: 'safe',    text: 'An toàn',        icon: '✅' },
+  SUSPICIOUS: { cls: 'warn',    text: 'Đáng ngờ',       icon: '⚠️' },
+  FAKE_SCAM:  { cls: 'danger',  text: 'Lừa đảo',        icon: '🚨' },
+  TOXIC:      { cls: 'danger',  text: 'Độc hại',         icon: '🚨' },
+  UNKNOWN:    { cls: 'neutral', text: 'Không xác định', icon: '❓' },
 };
 
 function init() {

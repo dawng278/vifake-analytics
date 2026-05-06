@@ -166,11 +166,92 @@ body {
   display: block;
 }
 
-/* ─── Recent List ─── */
-.recent-list {
+/* ─── Recent Header ─── */
+.recent-header {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  min-height: 22px;
+}
+
+.recent-count {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.btn-clear {
+  background: none;
+  border: 1px solid #334155;
+  border-radius: 5px;
+  color: #64748b;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-clear:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* ─── Empty state ─── */
+.empty-icon {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+/* ─── Scan Items — enhancements ─── */
+.scan-item-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.scan-platform {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.scan-conf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.scan-conf-track {
+  flex: 1;
+  height: 4px;
+  background: #1e293b;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.scan-conf-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease-out;
+}
+.scan-conf-pct {
+  font-size: 10px;
+  color: #64748b;
+  flex: 0 0 28px;
+  text-align: right;
+}
+
+.scan-transcript {
+  font-size: 10px;
+  color: #475569;
+  line-height: 1.4;
+  margin-top: 3px;
+  font-style: italic;
+}
+
+.scan-intent {
+  font-size: 10px;
+  color: #f59e0b;
+  margin-top: 2px;
 }
 
 .empty-state {
@@ -225,6 +306,11 @@ body {
 .scan-label.danger {
   background: rgba(239, 68, 68, 0.15);
   color: #ef4444;
+}
+
+.scan-label.neutral {
+  background: rgba(100, 116, 139, 0.15);
+  color: #64748b;
 }
 
 .scan-time {

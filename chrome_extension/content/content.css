@@ -186,6 +186,12 @@
   border-bottom: 2px solid #6b7280;
 }
 
+.vifake-risk-neutral {
+  background: linear-gradient(135deg, rgba(100, 116, 139, 0.15), rgba(100, 116, 139, 0.05));
+  color: #64748b;
+  border-bottom: 2px solid #64748b;
+}
+
 /* ─── Result Body ─── */
 .vifake-result-body {
   padding: 10px 14px;
@@ -270,33 +276,191 @@
   font-weight: 500;
 }
 
-/* ─── Action Hint ─── */
+/* ─── Close Button ─── */
+.vifake-close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  font-family: var(--vf-font);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+.vifake-close-btn:hover { color: #fff; }
+
+/* ─── Auto-dismiss progress bar ─── */
+.vifake-autodismiss-bar {
+  height: 2px;
+  background: var(--vf-safe);
+  opacity: 0.5;
+  transform-origin: left;
+  animation: vifake-shrink linear 10s forwards;
+}
+@keyframes vifake-shrink {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+
+/* ─── Dismiss animation ─── */
+.vifake-dismiss {
+  animation: vifake-fade-out 0.28s ease-in forwards;
+}
+@keyframes vifake-fade-out {
+  from { opacity: 1; transform: translateY(0); max-height: 600px; }
+  to   { opacity: 0; transform: translateY(-8px); max-height: 0; }
+}
+
+/* ─── Confidence bar ─── */
+.vifake-conf-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.vifake-conf-label {
+  flex: 0 0 80px;
+  font-size: 11px;
+  color: var(--vf-text-muted);
+}
+.vifake-conf-track {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.vifake-conf-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  background: var(--conf-color, var(--vf-primary));
+  animation: vifake-conf-grow 0.5s ease-out 0.1s forwards;
+}
+@keyframes vifake-conf-grow {
+  to { width: var(--conf-w, 0%); }
+}
+.vifake-conf-pct {
+  flex: 0 0 36px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--vf-text);
+  text-align: right;
+}
+
+/* ─── Risk level badge ─── */
+.vifake-risk-level-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-right: 4px;
+}
+.vifake-rl-high   { background: rgba(239,68,68,0.25); color: #fca5a5; }
+.vifake-rl-medium { background: rgba(245,158,11,0.25); color: #fcd34d; }
+.vifake-rl-low    { background: rgba(34,197,94,0.20); color: #86efac; }
+
+/* ─── Section title ─── */
+.vifake-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--vf-text-muted);
+  margin: 0 0 5px 0;
+}
+
+/* ─── Intent bars — color by danger level ─── */
+.vifake-intent-bar.vifake-intent-high { background: linear-gradient(90deg, #ef4444, #f87171); }
+.vifake-intent-bar.vifake-intent-mid  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.vifake-intent-bar.vifake-intent-low  { background: linear-gradient(90deg, var(--vf-primary), #a78bfa); }
+
+/* ─── AI badge in header ─── */
+.vifake-ai-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+  margin-right: 4px;
+}
+
+/* ─── AI confidence row ─── */
+.vifake-ai-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.vifake-ai-conf-track {
+  flex: 1;
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.vifake-ai-conf-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  transition: width 0.5s ease-out;
+}
+.vifake-ai-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: #93c5fd;
+  flex: 0 0 36px;
+  text-align: right;
+}
+
+/* ─── Transcript toggle ─── */
+.vifake-transcript-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--vf-border);
+  border-radius: 6px;
+  color: var(--vf-text-muted);
+  font-size: 11px;
+  font-family: var(--vf-font);
+  padding: 4px 10px;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 4px;
+  transition: border-color 0.2s, color 0.2s;
+}
+.vifake-transcript-toggle:hover {
+  border-color: var(--vf-primary);
+  color: var(--vf-text);
+}
+.vifake-toggle-arrow { font-size: 9px; margin-left: auto; }
+.vifake-transcript-collapsed { display: none; }
+
+/* ─── Advisory hint ─── */
 .vifake-action-hint {
   margin-top: 10px;
-  padding: 8px 10px;
-  background: rgba(99, 102, 241, 0.08);
+  padding: 8px 12px;
+  background: rgba(99, 102, 241, 0.07);
   border-left: 3px solid var(--vf-primary);
   border-radius: 0 6px 6px 0;
   font-size: 11px;
   color: var(--vf-text-muted);
   line-height: 1.6;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
 }
+.vifake-hint-icon { flex-shrink: 0; }
+.vifake-action-hint strong { color: var(--vf-text); }
 
-.vifake-action-hint strong {
-  color: var(--vf-text);
-}
-
-/* ─── Error Panel ─── */
-.vifake-error .vifake-result-body {
-  color: #9ca3af;
-}
-
-/* ─── Safe Message ─── */
-.vifake-safe-msg {
-  color: var(--vf-safe);
-  font-size: 12px;
-  margin: 6px 0 0;
-}
+/* ─── Error styling ─── */
+.vifake-error-msg  { color: #fca5a5; font-size: 12px; margin-bottom: 4px; }
+.vifake-error-hint { color: var(--vf-text-muted); font-size: 11px; }
 
 /* ─── TikTok Progress Stages ─── */
 .vifake-tiktok-progress {
