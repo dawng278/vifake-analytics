@@ -32,19 +32,26 @@ except ImportError as _e:
     torch = None
     Image = None
 
+# Safe no_grad decorator — evaluated at class-definition time, must not call torch when None
+if CLIP_AVAILABLE:
+    _no_grad = torch.no_grad()
+else:
+    def _no_grad(fn):  # type: ignore
+        return fn
+
 @dataclass
 class VisionConfig:
     """Cấu hình cho Vision Worker"""
     model_name: str = "openai/clip-vit-base-patch32"
-    device: str = "cuda" if (CLIP_AVAILABLE and torch.cuda.is_available()) else "cpu"
+    device: str = "cuda" if (CLIP_AVAILABLE and torch is not None and torch.cuda.is_available()) else "cpu"
     dtype: object = None  # torch.float16 when torch is available
     max_image_size: Tuple[int, int] = (336, 336)
     batch_size: int = 1  # Conservative for 4GB VRAM
-    
+
     # Risk scoring thresholds
     risk_threshold: float = 0.7
     nsfw_threshold: float = 0.8
-    
+
     # Memory management
     cleanup_frequency: int = 10  # Clean up every N inferences
     memory_cleanup_threshold: float = 0.8  # Clean when 80% VRAM used
@@ -116,7 +123,7 @@ class CLIPVisionWorker:
         gc.collect()
         logger.debug(f"🧹 VRAM after cleanup: {self._get_vram_usage():.2f} GB")
     
-    def preprocess_image(self, image_path: str) -> torch.Tensor:
+    def preprocess_image(self, image_path: str) -> object:
         """Preprocess image for CLIP inference"""
         try:
             # Load and resize image
@@ -143,7 +150,7 @@ class CLIPVisionWorker:
             logger.error(f"❌ Failed to preprocess image {image_path}: {e}")
             raise
     
-    @torch.no_grad()
+    @_no_grad
     def analyze_image(self, image_path: str) -> Dict[str, float]:
         """Analyze image and return risk scores"""
         logger.info(f"🔍 Analyzing image: {image_path}")
