@@ -8,14 +8,25 @@ Leverages the vision worker already implemented in the project.
 import asyncio
 import logging
 from typing import List, Dict
-from PIL import Image
 import sys
 from pathlib import Path
 
 # Add project root to path for AI engine imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from ai_engine.vision_worker.clip_inference import CLIPVisionWorker, VisionConfig
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+
+try:
+    from ai_engine.vision_worker.clip_inference import CLIPVisionWorker, VisionConfig
+    CLIP_AVAILABLE = True
+except ImportError as _e:
+    logging.getLogger(__name__).warning(f"⚠️  CLIP not available ({_e}). Frame analysis will be skipped.")
+    CLIP_AVAILABLE = False
+    CLIPVisionWorker = None
+    VisionConfig = None
 
 logger = logging.getLogger(__name__)
 
@@ -23,12 +34,15 @@ class FrameAnalyzer:
     """Analyze video frames to detect AI-generated content"""
     
     def __init__(self):
+        self.worker = None
+        if not CLIP_AVAILABLE:
+            logger.warning("⚠️ CLIP unavailable — frame analysis disabled")
+            return
         self.config = VisionConfig(
             device="cpu",  # Use CPU for Render.com compatibility
-            dtype="float32",  # Use float32 on CPU
+            dtype=None,     # float32 on CPU
             batch_size=1
         )
-        self.worker = None
         self._load_model()
     
     def _load_model(self):

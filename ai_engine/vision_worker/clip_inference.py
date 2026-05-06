@@ -9,26 +9,35 @@ Tuân thủ Privacy-by-Design:
 - Memory optimization for GPU constraints
 """
 
-import torch
-import torch.nn.functional as F
-from PIL import Image
 import logging
 import gc
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
-from transformers import CLIPProcessor, CLIPModel
 import numpy as np
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Optional heavy dependencies
+try:
+    import torch
+    import torch.nn.functional as F
+    from PIL import Image
+    from transformers import CLIPProcessor, CLIPModel
+    CLIP_AVAILABLE = True
+except ImportError as _e:
+    logger.warning(f"⚠️  CLIP/transformers not available ({_e}). Vision worker will run in mock mode.")
+    CLIP_AVAILABLE = False
+    torch = None
+    Image = None
+
 @dataclass
 class VisionConfig:
     """Cấu hình cho Vision Worker"""
     model_name: str = "openai/clip-vit-base-patch32"
-    device: str = "cuda" if torch.cuda.is_available() else "cpu"
-    dtype: torch.dtype = torch.float16  # FP16 for memory efficiency
+    device: str = "cuda" if (CLIP_AVAILABLE and torch.cuda.is_available()) else "cpu"
+    dtype: object = None  # torch.float16 when torch is available
     max_image_size: Tuple[int, int] = (336, 336)
     batch_size: int = 1  # Conservative for 4GB VRAM
     
