@@ -195,20 +195,26 @@ class VideoAnalysisPipeline:
             # Import existing analysis functions from main.py
             # This reuses the exact same logic as text analysis
             from backend_services.api_gateway.main import (
-                _run_nlp_inference, 
-                _run_vision_inference,
-                _run_fusion_analysis
+                _run_nlp_analysis,
+                _run_fusion,
             )
-            
-            # Run NLP analysis
-            nlp_result = await _run_nlp_inference(text, "tiktok")
-            
-            # Run vision analysis (placeholder for video context)
-            vision_result = await _run_vision_inference([], "tiktok")
-            
-            # Run fusion
-            fusion_result = await _run_fusion_analysis(vision_result, nlp_result, "tiktok")
-            
+
+            # Run NLP analysis (sync function)
+            nlp_result = _run_nlp_analysis(text)
+
+            # Neutral vision placeholder — actual vision/frame analysis is
+            # handled by branch_b in the calling pipeline; here we only need
+            # the NLP + fusion pass on the transcript text.
+            vision_placeholder = {
+                "combined_risk_score": 0.5,
+                "safety_score": 0.5,
+                "is_ai_generated": False,
+                "confidence": 0.0,
+            }
+
+            # Run fusion (sync function)
+            fusion_result = _run_fusion(vision_placeholder, nlp_result, "tiktok")
+
             return {
                 "verdict": fusion_result.get("prediction", "SAFE"),
                 "confidence": fusion_result.get("confidence", 0.0),

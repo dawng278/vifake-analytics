@@ -220,6 +220,92 @@
             border-left: 4px solid var(--warning-color);
         }
 
+        .flag-tag {
+            display: inline-block;
+            background: #fee2e2;
+            color: #dc2626;
+            border-radius: 6px;
+            padding: 3px 9px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            margin: 3px 2px;
+        }
+
+        .flag-tag.safe {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .flag-tag.info {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+
+        .detail-table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+
+        .detail-table td:first-child {
+            font-weight: 600;
+            color: #475569;
+            white-space: nowrap;
+            width: 42%;
+        }
+
+        .risk-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .risk-bar-track {
+            flex: 1;
+            background: #e5e7eb;
+            border-radius: 6px;
+            height: 7px;
+            overflow: hidden;
+        }
+
+        .risk-bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.6s ease;
+        }
+
+        .risk-bar-fill.low  { background: #16a34a; }
+        .risk-bar-fill.med  { background: #f59e0b; }
+        .risk-bar-fill.high { background: #dc2626; }
+
+        .verdict-badge {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            padding: 6px 18px;
+            border-radius: 10px;
+        }
+
+        .verdict-FAKE_SCAM  { background:#fee2e2; color:#dc2626; }
+        .verdict-SUSPICIOUS { background:#fef3c7; color:#b45309; }
+        .verdict-SAFE       { background:#dcfce7; color:#16a34a; }
+        .verdict-UNKNOWN    { background:#f3f4f6; color:#6b7280; }
+
+        .section-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #94a3b8;
+            margin: 14px 0 6px;
+        }
+
         .api-info {
             background: #f8fafc;
             border-radius: 10px;
@@ -411,21 +497,61 @@ VD: ae ơi! admin roblox đang event free robux nè! click vào link này verify
                             <h6><i class="fas fa-lightbulb"></i> Test mẫu - Tin giả / Lừa đảo</h6>
                             <p class="mb-2">Thử với nội dung scam tiếng Việt thực tế:</p>
                             <div class="d-flex flex-column gap-2">
+
+                                <!-- ── FAKE / SCAM ── -->
+                                <div class="section-title" style="font-size:.7rem">🔴 FAKE / SCAM</div>
+
                                 <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('ae minh ơi, admin roblox đang event free robux nè! click vào link này verify acc thôi, số lượng có hạn! link: bit.ly/robux-free', 'facebook')">
-                                    🔴 Robux phishing — "ae minh ơi, admin roblox đang event free robux..."
+                                    🎮 Robux phishing — "ae minh ơi, admin roblox đang event free robux..."
                                 </button>
+
                                 <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('CHÚ Ý! Tài khoản Facebook của bạn sẽ bị khóa trong 24h! Xác minh danh tính ngay tại: https://fb-verify.click/acc', 'facebook')">
-                                    🔴 Account theft — "Tài khoản Facebook của bạn sẽ bị khóa trong 24h!..."
+                                    🔐 Account theft — "Tài khoản Facebook của bạn sẽ bị khóa trong 24h!"
                                 </button>
+
                                 <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('GIVEAWAY 1000 USDT cho 100 người đầu tiên! Chỉ cần connect ví MetaMask và xác nhận giao dịch tại link bên dưới. Nhanh tay kẻo hết!', 'facebook')">
-                                    🔴 Crypto scam — "GIVEAWAY 1000 USDT cho 100 người đầu tiên!..."
+                                    🪙 Crypto scam — "GIVEAWAY 1000 USDT cho 100 người đầu tiên!"
                                 </button>
-                                <button class="btn btn-sm btn-outline-success text-start" onclick="testSampleText('Chào các bạn, hôm nay mình chia sẻ cách học tiếng Anh hiệu quả cho các bé 8-12 tuổi. Phụ huynh có thể tham khảo thêm tại website chính thức của Bộ GDĐT.', 'facebook')">
-                                    🟢 Nội dung an toàn — "Chào các bạn, hôm nay mình chia sẻ cách học tiếng Anh..."
-                                </button>
+
                                 <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('nạp thẻ gate 50k được 500k nè ae! ưu đãi đặc biệt hôm nay thôi, ib admin để được hướng dẫn nạp thẻ miễn phí', 'facebook')">
-                                    🔴 Gift card scam — "nạp thẻ gate 50k được 500k nè ae!..."
+                                    🎁 Gift card scam — "nạp thẻ gate 50k được 500k nè ae!"
                                 </button>
+
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('Ê ae skibidi sigma ngon lành nè!! Admin garena chính thức tặng skin free cho 200 bạn đầu tiên like + share bài này và click link xác nhận: bit.ly/skin-free-2024', 'facebook')">
+                                    🎮 Gaming skin scam — "Admin garena chính thức tặng skin free..."
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('BÁO KHẨN! Con bạn đang xem video bẩn trên YouTube! Cài ngay app bảo vệ tại: shorturl.at/protect-kid. Số lượng có hạn, miễn phí hôm nay thôi!', 'youtube')">
+                                    🚨 Fake parental app — "Con bạn đang xem video bẩn trên YouTube!"
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('Mình hack acc game được 9999 kim cương FREE! Ae muốn hack liên hệ inbox mình, đã test thật 100%, đảm bảo không die acc! Link tool: cutt.ly/hack-diamond', 'tiktok')">
+                                    💎 Game hack scam — "hack acc game được 9999 kim cương FREE!"
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('KHẨN CẤP! Bộ GD&ĐT thông báo học sinh được nghỉ học 2 tuần do dịch bùng phát. Phụ huynh click link đăng ký học online ngay: tinyurl.com/hoc-online-mien-phi. GẤP!', 'facebook')">
+                                    📢 Fake BGDĐT notice — "Bộ GD&ĐT thông báo học sinh được nghỉ học..."
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-danger text-start" onclick="testSampleText('tin mình đi, nhận thưởng USDT thật nha! Chỉ cần connect ví và xác nhận giao dịch 0.01 ETH để nhận lại 1 ETH. Đã có 500 người nhận rồi!', 'tiktok')">
+                                    💰 ETH doubling scam — "connect ví và xác nhận giao dịch 0.01 ETH..."
+                                </button>
+
+                                <!-- ── SAFE ── -->
+                                <div class="section-title" style="font-size:.7rem;margin-top:8px">🟢 NỘI DUNG AN TOÀN</div>
+
+                                <button class="btn btn-sm btn-outline-success text-start" onclick="testSampleText('Chào các bạn, hôm nay mình chia sẻ cách học tiếng Anh hiệu quả cho các bé 8-12 tuổi. Phụ huynh có thể tham khảo thêm tại website chính thức của Bộ GDĐT.', 'facebook')">
+                                    📚 Giáo dục — "chia sẻ cách học tiếng Anh hiệu quả cho các bé"
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-success text-start" onclick="testSampleText('Thầy cô chia sẻ bộ đề ôn tập môn Toán lớp 6 học kỳ 2 theo chương trình sách giáo khoa mới của Bộ Giáo dục. Các em tải về ôn bài nhé!', 'facebook')">
+                                    📖 Tài liệu học — "bộ đề ôn tập môn Toán lớp 6 học kỳ 2"
+                                </button>
+
+                                <button class="btn btn-sm btn-outline-success text-start" onclick="testSampleText('Hướng dẫn cách làm bài tập lập trình Python cơ bản cho học sinh THCS. Video có phụ đề tiếng Việt, lớp học miễn phí trên kênh YouTube chính thức.', 'youtube')">
+                                    💻 Lập trình học sinh — "Hướng dẫn cách làm bài tập lập trình Python"
+                                </button>
+
                             </div>
                         </div>
                     </div>
@@ -655,76 +781,136 @@ VD: ae ơi! admin roblox đang event free robux nè! click vào link này verify
         function showResults(result) {
             const riskLevel = result.risk_level || 'UNKNOWN';
             const confidence = result.confidence || 0;
-            const isSafe = result.is_safe || false;
-            
+            const label = result.label || 'UNKNOWN';
+            const isSafe = label === 'SAFE';
+            const details = result.analysis_details || {};
+
             let cardClass = 'result-card';
-            if (riskLevel === 'HIGH') {
-                cardClass += ' danger';
-            } else if (riskLevel === 'MEDIUM') {
-                cardClass += ' warning';
+            if (riskLevel === 'HIGH') cardClass += ' danger';
+            else if (riskLevel === 'MEDIUM') cardClass += ' warning';
+
+            // ── helper: mini risk bar ──────────────────────
+            function riskBar(val) {
+                const pct = Math.round((val || 0) * 100);
+                const cls = pct >= 65 ? 'high' : pct >= 35 ? 'med' : 'low';
+                return `<div class="risk-bar-wrap">
+                    <div class="risk-bar-track"><div class="risk-bar-fill ${cls}" style="width:${pct}%"></div></div>
+                    <span style="font-size:.82rem;width:36px;text-align:right">${pct}%</span>
+                </div>`;
             }
-            
+
+            // ── flags / indicators ─────────────────────────
+            const flags = details.nlp_flags || [];
+            const flagsHtml = flags.length
+                ? flags.map(f => `<span class="flag-tag">${f}</span>`).join('')
+                : '<span class="flag-tag safe">Không phát hiện cờ đỏ</span>';
+
+            // ── intent section ─────────────────────────────
+            const intent = details.intent || {};
+            const intentLabel = details.intent_label || intent.primary_intent_label || '';
+            const intentExpl  = details.intent_explanation || '';
+            const intentScore = intent.risk_weighted_score || 0;
+            const intentMax   = intent.max_intent_score   || 0;
+            const intentHtml = intentLabel
+                ? `<tr><td>Intent chính</td><td><span class="flag-tag info">${intentLabel}</span></td></tr>
+                   <tr><td>Intent score</td><td>${riskBar(intentScore)}</td></tr>
+                   <tr><td>Max intent</td><td>${riskBar(intentMax)}</td></tr>
+                   ${intentExpl ? `<tr><td>Giải thích</td><td style="font-style:italic;color:#475569">${intentExpl}</td></tr>` : ''}`
+                : `<tr><td colspan="2"><em style="color:#94a3b8">Không phát hiện intent nguy hiểm</em></td></tr>`;
+
+            // ── platform context ───────────────────────────
+            const platform = details.platform_specific || {};
+            const platformHtml = `
+                <tr><td>Nền tảng</td><td>${platform.platform || result.platform || '—'}</td></tr>
+                <tr><td>Loại nội dung</td><td>${platform.content_type || '—'}</td></tr>
+                <tr><td>Độ dài văn bản</td><td>${platform.text_length || '—'} ký tự</td></tr>
+            `;
+
+            // ── calibration ────────────────────────────────
+            const calibrated    = details.calibration_applied ? '✅ Đã áp dụng' : '⚠️ Chưa áp dụng';
+            const confRaw       = details.confidence_raw != null ? (details.confidence_raw * 100).toFixed(1) + '%' : '—';
+            const confCal       = (confidence * 100).toFixed(1) + '%';
+
             const resultHtml = `
                 <div class="${cardClass}">
-                    <h5><i class="fas fa-${isSafe ? 'check-circle' : 'exclamation-triangle'}"></i> 
-                        Kết quả phân tích</h5>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Phân loại:</strong>
-                            <div class="metric-badge ${isSafe ? 'safe' : 'danger'}">
-                                ${result.label || 'UNKNOWN'}
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Mức độ rủi ro:</strong>
-                            <div class="metric-badge ${riskLevel === 'LOW' ? 'safe' : riskLevel === 'HIGH' ? 'danger' : 'warning'}">
-                                ${riskLevel}
-                            </div>
+                    <!-- ── VERDICT HEADER ── -->
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <span class="verdict-badge verdict-${label}">${label}</span>
+                        <div>
+                            <div class="fw-bold" style="font-size:1rem">Mức rủi ro: <span class="metric-badge ${riskLevel==='LOW'?'safe':riskLevel==='HIGH'?'danger':'warning'} mb-0">${riskLevel}</span></div>
+                            <small class="text-muted">Cần xem xét thủ công: <strong>${result.needs_review ? 'Có' : 'Không'}</strong> &nbsp;·&nbsp; Xử lý trong: <strong>${(result.processing_time||0).toFixed(2)}s</strong></small>
                         </div>
                     </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <strong>Độ tin cậy:</strong>
-                            <div class="progress-bar-container">
-                                <div class="progress-bar-fill" style="width: ${confidence * 100}%"></div>
-                            </div>
-                            <small>${(confidence * 100).toFixed(1)}%</small>
-                        </div>
-                        <div class="col-md-6">
-                            <strong>Cần xem xét:</strong>
-                            <div class="metric-badge ${result.needs_review ? 'warning' : 'safe'}">
-                                ${result.needs_review ? 'Có' : 'Không'}
+
+                    <!-- ── CONFIDENCE BAR ── -->
+                    <div class="section-title">Độ tin cậy tổng hợp</div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div style="flex:1">
+                            <div class="progress-bar-container" style="height:12px">
+                                <div class="progress-bar-fill" style="width:${confidence*100}%;background:${
+                                    confidence>=0.7?'linear-gradient(90deg,#dc2626,#ef4444)'
+                                    :confidence>=0.45?'linear-gradient(90deg,#f59e0b,#fbbf24)'
+                                    :'linear-gradient(90deg,#16a34a,#4ade80)'}"></div>
                             </div>
                         </div>
+                        <span style="font-size:1.4rem;font-weight:700">${(confidence*100).toFixed(1)}%</span>
                     </div>
-                    
-                    <div class="mt-3">
-                        <h6><i class="fas fa-chart-line"></i> Chi tiết phân tích</h6>
-                        <div class="api-info">
-                            <div><strong>Thời gian xử lý:</strong> ${(result.processing_time || 0).toFixed(2)}s</div>
-                            <div><strong>Phương pháp:</strong> ${result.analysis_details?.fusion_method || 'Multi-modal AI'}</div>
-                            <div><strong>Mô hình:</strong> PhoBERT + CLIP + XGBoost</div>
-                        </div>
+
+                    <!-- ── RISK BREAKDOWN ── -->
+                    <div class="section-title">Phân tích rủi ro chi tiết</div>
+                    <table class="detail-table mb-3">
+                        <tr><td>Vision Risk (CLIP)</td><td>${riskBar(details.vision_risk)}</td></tr>
+                        <tr><td>NLP Risk (PhoBERT)</td><td>${riskBar(details.nlp_risk)}</td></tr>
+                        <tr><td>Fusion Score (XGBoost)</td><td>${riskBar(details.fusion_score)}</td></tr>
+                        <tr><td>Vision Safety</td><td>${riskBar(1 - (details.vision_safety || 0))} <small class="text-muted">(inverted)</small></td></tr>
+                    </table>
+
+                    <!-- ── NLP MODEL ── -->
+                    <div class="section-title">Kết quả mô hình NLP</div>
+                    <table class="detail-table mb-3">
+                        <tr><td>Dự đoán NLP</td><td><span class="flag-tag ${details.nlp_prediction==='SAFE'?'safe':''}">${details.nlp_prediction || '—'}</span></td></tr>
+                        <tr><td>Độ tin cậy NLP</td><td>${riskBar(details.nlp_confidence)}</td></tr>
+                        <tr><td>Phương pháp NLP</td><td><code style="font-size:.8rem">${details.nlp_method || '—'}</code></td></tr>
+                        <tr><td>Fusion method</td><td><code style="font-size:.8rem">${details.fusion_method || '—'}</code></td></tr>
+                    </table>
+
+                    <!-- ── FLAGS ── -->
+                    <div class="section-title">Cờ cảnh báo phát hiện (NLP Flags)</div>
+                    <div class="mb-3">${flagsHtml}</div>
+
+                    <!-- ── INTENT ── -->
+                    <div class="section-title">Phân tích ý định (Intent Detection)</div>
+                    <table class="detail-table mb-3">${intentHtml}</table>
+
+                    <!-- ── CALIBRATION ── -->
+                    <div class="section-title">Hiệu chỉnh mô hình (Platt Calibration)</div>
+                    <table class="detail-table mb-3">
+                        <tr><td>Trạng thái calibration</td><td>${calibrated}</td></tr>
+                        <tr><td>Confidence raw</td><td>${confRaw}</td></tr>
+                        <tr><td>Confidence sau calibration</td><td>${confCal}</td></tr>
+                    </table>
+
+                    <!-- ── PLATFORM CONTEXT ── -->
+                    <div class="section-title">Ngữ cảnh nền tảng</div>
+                    <table class="detail-table mb-3">${platformHtml}</table>
+
+                    <!-- ── RAW JSON toggle ── -->
+                    <div class="section-title" style="cursor:pointer" onclick="document.getElementById('raw-json').classList.toggle('d-none')">
+                        <i class="fas fa-code"></i> Raw JSON response <small class="text-muted">(click để mở/đóng)</small>
                     </div>
-                    
-                    ${result.analysis_details ? `
-                    <div class="mt-3">
-                        <h6><i class="fas fa-microscope"></i> Phân tích chi tiết</h6>
-                        <div class="api-info">
-                            <div><strong>Vision Risk:</strong> ${(result.analysis_details.vision_risk || 0).toFixed(3)}</div>
-                            <div><strong>NLP Risk:</strong> ${(result.analysis_details.nlp_risk || 0).toFixed(3)}</div>
-                            <div><strong>Fusion Score:</strong> ${(result.analysis_details.fusion_score || 0).toFixed(3)}</div>
-                            ${result.analysis_details.nlp_prediction ? `<div><strong>NLP Prediction:</strong> ${result.analysis_details.nlp_prediction}</div>` : ''}
-                            ${result.analysis_details.nlp_confidence ? `<div><strong>NLP Confidence:</strong> ${(result.analysis_details.nlp_confidence * 100).toFixed(1)}%</div>` : ''}
-                        </div>
-                    </div>
-                    ` : ''}
+                    <pre id="raw-json" class="api-info d-none" style="white-space:pre-wrap;font-size:.75rem;max-height:260px;overflow-y:auto">${JSON.stringify(result, null, 2)}</pre>
                 </div>
             `;
-            
+
             resultsContainer.innerHTML = resultHtml;
+            // Animate bars
+            setTimeout(() => {
+                resultsContainer.querySelectorAll('.progress-bar-fill').forEach(el => {
+                    const w = el.style.width;
+                    el.style.width = '0';
+                    requestAnimationFrame(() => { el.style.width = w; });
+                });
+            }, 50);
         }
         
         // UI Helpers
