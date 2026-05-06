@@ -235,109 +235,157 @@ class VideoAnalysisPipeline:
 
     def _merge_results(self, text_result: Dict, vision_result: Dict) -> Dict:
         """
-        Enhanced fusion with 60/40 weighting and high-confidence rules.
-        
-        NEW Logic:
-        - final_ai_score = 0.6 * vision_score + 0.4 * audio_score
-        - If either score > 0.85 → flag immediately (high-confidence)
-        - Text verdict still primary for FAKE_SCAM
-        - AI detection upgrades SAFE → SUSPICIOUS
+        Merge text + vision results into final verdict.
+        Logic: no evidence → SAFE; evidence proportional to confidence/intent hits.
         """
         text_verdict = text_result.get("verdict", "UNKNOWN")
-        text_conf = text_result.get("confidence", 0.0)
+        text_conf    = text_result.get("confidence", 0.0)
 
-        # If text analysis failed entirely (UNKNOWN), treat as SAFE with low confidence
-        # rather than propagating an error state as a false positive
+        # UNKNOWN means extraction/analysis failed entirely → default SAFE (avoid false positive)
         if text_verdict == "UNKNOWN":
-            logger.warning("⚠️ Text analysis returned UNKNOWN (likely extraction failed) — defaulting to SAFE")
+            logger.warning("⚠️ Text analysis returned UNKNOWN — defaulting to SAFE")
             text_verdict = "SAFE"
-            text_conf = 0.3  # Low confidence to signal uncertainty
-        
-        # Get AI detection scores
+            text_conf    = 0.3
+
+        # ── AI generation scores ────────────────────────────────
         vision_ai_conf = vision_result.get("confidence", 0.0)
-        audio_ai_conf = text_result.get("audio_ai", {}).get("ai_confidence", 0.0)
-        
-        # Apply 60/40 weighting (vision 60%, audio 40%)
+        audio_ai_conf  = text_result.get("audio_ai", {}).get("ai_confidence", 0.0)
         final_ai_score = 0.6 * vision_ai_conf + 0.4 * audio_ai_conf
         is_ai_generated = vision_result.get("is_ai_generated", False)
-        
-        # High-confidence rule: if either score > 0.85, flag immediately
         high_confidence_ai = (vision_ai_conf > 0.85) or (audio_ai_conf > 0.85)
         if high_confidence_ai:
             is_ai_generated = True
-            logger.info(f"🚨 High-confidence AI detection: Vision={vision_ai_conf:.3f}, Audio={audio_ai_conf:.3f}")
-        
-        # Determine final verdict
+
+        # ── Intent analysis ─────────────────────────────────────
+        intents = text_result.get("intents", {})
+        intent_count   = sum(1 for v in intents.values() if v > 0.25)
+        max_intent     = max(intents.values()) if intents else 0.0
+        primary_intent = max(intents, key=intents.get) if intents else "none"
+
+        # Intent labels (Vietnamese)
+        INTENT_LABELS = {
+            "credential_harvest": "Thu thập thông tin đăng nhập",
+            "money_transfer":     "Yêu cầu chuyển tiền",
+            "urgency_pressure":   "Tạo áp lực khẩn cấp",
+            "fake_reward":        "Phần thưởng giả mạo",
+            "grooming_isolation": "Cô lập trẻ khỏi người lớn",
+        }
+        INTENT_RISK = {
+            "credential_harvest": 0.9,
+            "money_transfer":     0.95,
+            "urgency_pressure":   0.7,
+            "fake_reward":        0.85,
+            "grooming_isolation": 1.0,
+        }
+
+        # ── Verdict decision ────────────────────────────────────
+        # Priority: text NLP verdict is always primary
+        # AI detection only upgrades (never downgrades) if there is real evidence
         final_verdict = text_verdict
-        
-        # Text verdict is primary for scams
+
         if text_verdict == "FAKE_SCAM":
             final_verdict = "FAKE_SCAM"
-        # Upgrade SAFE to SUSPICIOUS if AI detected
-        elif text_verdict == "SAFE" and is_ai_generated and final_ai_score > 0.5:
-            final_verdict = "SUSPICIOUS"
-            logger.info(f"🔍 Upgraded SAFE to SUSPICIOUS (AI score: {final_ai_score:.3f})")
-        # Upgrade to SUSPICIOUS for high AI confidence
-        elif text_verdict in ["SAFE", "SUSPICIOUS"] and high_confidence_ai:
-            final_verdict = "SUSPICIOUS"
-            logger.info(f"🔍 Upgraded to SUSPICIOUS due to high AI confidence")
-        
-        # Create comprehensive explanation
-        explanations = []
-        
-        # Text-based explanations
-        if text_verdict == "FAKE_SCAM":
-            explanations.append("Nội dung có dấu hiệu lừa đảo rõ ràng")
         elif text_verdict == "SUSPICIOUS":
-            explanations.append("Nội dung có khả năng lừa đảo")
-        
-        # AI-based explanations
-        if is_ai_generated:
-            if high_confidence_ai:
-                explanations.append(f"Video có dấu hiệu AI-generated rõ ràng ({round(final_ai_score*100)}% confidence)")
+            final_verdict = "SUSPICIOUS"
+        elif text_verdict == "SAFE":
+            # Only upgrade if AI confidence is genuinely high AND there is some
+            # corroborating evidence (intent hits or audio anomaly)
+            has_supporting_evidence = (intent_count > 0) or (audio_ai_conf > 0.6)
+            if is_ai_generated and final_ai_score > 0.6 and has_supporting_evidence:
+                final_verdict = "SUSPICIOUS"
+            elif high_confidence_ai and final_ai_score > 0.7:
+                final_verdict = "SUSPICIOUS"
             else:
-                explanations.append(f"Video có thể được tạo bằng AI ({round(final_ai_score*100)}% confidence)")
-        
-        # Specific AI indicators
-        if audio_ai_conf > 0.7:
-            explanations.append("Giọng nói có đặc điểm bất thường (có thể là AI voice clone)")
-        
-        if vision_ai_conf > 0.7:
-            faces_detected = vision_result.get("faces_detected", 0)
-            if faces_detected > 0:
-                explanations.append(f"Phát hiện {faces_detected} khuôn mặt có dấu hiệu AI-generated")
-        
-        if not explanations:
-            explanations.append("Không phát hiện dấu hiệu nguy hiểm")
-        
-        # Build final result with enhanced AI information
+                final_verdict = "SAFE"  # No evidence → stay SAFE
+
+        # ── Build rich explanation ──────────────────────────────
+        reasons = []
+
+        # 1. NLP / text verdict reasons
+        if text_verdict == "FAKE_SCAM":
+            reasons.append("🚨 Văn bản phát hiện nội dung lừa đảo rõ ràng")
+        elif text_verdict == "SUSPICIOUS":
+            reasons.append("⚠️ Văn bản có một số từ ngữ đáng ngờ")
+
+        # 2. Per-intent reasons (only those with meaningful score)
+        active_intents = [(k, v) for k, v in intents.items() if v > 0.25]
+        active_intents.sort(key=lambda x: -x[1])
+        for intent_key, score in active_intents:
+            label = INTENT_LABELS.get(intent_key, intent_key)
+            pct   = round(score * 100)
+            risk  = INTENT_RISK.get(intent_key, 0.5)
+            if risk >= 0.95:
+                icon = "🔴"
+            elif risk >= 0.8:
+                icon = "🟠"
+            else:
+                icon = "🟡"
+            reasons.append(f"{icon} {label} ({pct}%)")
+
+        # 3. AI voice / deepfake reasons
+        if audio_ai_conf > 0.6:
+            pct = round(audio_ai_conf * 100)
+            if audio_ai_conf > 0.85:
+                reasons.append(f"🤖 Giọng nói có khả năng cao là AI-cloned ({pct}%)")
+            else:
+                reasons.append(f"🎙 Giọng nói có dấu hiệu bất thường, có thể là AI ({pct}%)")
+
+        if vision_ai_conf > 0.6:
+            pct   = round(vision_ai_conf * 100)
+            faces = vision_result.get("faces_detected", 0)
+            if faces > 0:
+                reasons.append(f"👤 Phát hiện {faces} khuôn mặt có khả năng AI-generated ({pct}%)")
+            else:
+                reasons.append(f"🖼 Hình ảnh có dấu hiệu AI-generated ({pct}%)")
+
+        # 4. Positive signals when verdict is SAFE
+        if final_verdict == "SAFE":
+            if not active_intents and audio_ai_conf < 0.4 and vision_ai_conf < 0.4:
+                reasons.append("✅ Không phát hiện từ khoá lừa đảo")
+                reasons.append("✅ Giọng nói và hình ảnh bình thường")
+            else:
+                reasons.append("✅ Không đủ dấu hiệu để phân loại nguy hiểm")
+
+        explanation = " · ".join(reasons) if reasons else "Không phát hiện dấu hiệu nguy hiểm"
+
+        # ── Final confidence ────────────────────────────────────
+        # For SAFE: confidence = 1 - max(text_conf_of_danger, ai_score, max_intent)
+        # For FAKE_SCAM/SUSPICIOUS: use the positive danger confidence
+        if final_verdict == "SAFE":
+            danger_evidence = max(
+                (text_conf if text_verdict != "SAFE" else 0.0),
+                final_ai_score,
+                max_intent * 0.5,
+            )
+            final_conf = max(0.5, 1.0 - danger_evidence)
+        else:
+            final_conf = max(text_conf, final_ai_score, max_intent)
+
+        # Risk level
+        if final_verdict == "FAKE_SCAM":
+            risk_level = "HIGH"
+        elif final_verdict == "SUSPICIOUS":
+            risk_level = "MEDIUM"
+        else:
+            risk_level = "LOW"
+
         return {
-            "verdict": final_verdict,
-            "confidence": max(text_conf, final_ai_score),  # Use higher of text or AI
+            "verdict":        final_verdict,
+            "confidence":     round(final_conf, 3),
             "is_ai_generated": is_ai_generated,
-            "ai_confidence": final_ai_score,  # Weighted AI confidence
-            
-            # Individual AI scores for debugging
-            "ai_vision_confidence": vision_ai_conf,
-            "ai_audio_confidence": audio_ai_conf,
-            "ai_weighted_score": final_ai_score,
-            "high_confidence_flag": high_confidence_ai,
-            
-            # Original results
-            "intents": text_result.get("intents", {}),
-            "transcript": text_result.get("transcript", ""),
-            "explanation": " · ".join(explanations),
-            "risk_level": text_result.get("risk_level", "LOW"),
+            "ai_confidence":  round(final_ai_score, 3),
+            "intents":        intents,
+            "transcript":     text_result.get("transcript", ""),
+            "explanation":    explanation,
+            "risk_level":     risk_level,
             "requires_review": final_verdict != "SAFE",
-            
-            # Additional debugging info
-            "text_verdict": text_verdict,
-            "text_confidence": text_conf,
-            "vision_frames_analyzed": vision_result.get("frames_analyzed", 0),
-            "vision_faces_detected": vision_result.get("faces_detected", 0),
-            "vision_primary_method": vision_result.get("primary_method", "unknown"),
-            
-            # Audio AI info
-            "audio_ai_detected": text_result.get("audio_ai", {}).get("is_ai_voice", False),
-            "audio_ai_features": text_result.get("audio_ai", {}).get("features", {}),
+            # debug
+            "text_verdict":             text_verdict,
+            "text_confidence":          text_conf,
+            "ai_vision_confidence":     vision_ai_conf,
+            "ai_audio_confidence":      audio_ai_conf,
+            "vision_frames_analyzed":   vision_result.get("frames_analyzed", 0),
+            "vision_faces_detected":    vision_result.get("faces_detected", 0),
+            "audio_ai_detected":        text_result.get("audio_ai", {}).get("is_ai_voice", False),
         }
+

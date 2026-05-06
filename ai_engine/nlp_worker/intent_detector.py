@@ -145,13 +145,42 @@ def detect_scam_intent(text: str) -> Dict:
 def get_intent_explanation(intent_name: str) -> str:
     """Get human-readable explanation of why an intent is dangerous."""
     explanations = {
-        "credential_harvest": "Kẻ lừa đảo đang cố lấy mật khẩu/thông tin đăng nhập của nạn nhân",
-        "money_transfer": "Kẻ lừa đảo đang yêu cầu chuyển tiền dưới vỏ bọc phí dịch vụ/đặt cọc",
-        "urgency_pressure": "Kẻ lừa đảo tạo áp lực thời gian để nạn nhân không kịp suy nghĩ",
-        "fake_reward": "Kẻ lừa đảo dụ dỗ bằng phần thưởng ảo (robux, kim cương, quà tặng)",
-        "grooming_isolation": "Kẻ lừa đảo cố tách trẻ khỏi sự bảo vệ của người lớn — CỰC KỲ NGUY HIỂM",
+        "credential_harvest": (
+            "Kẻ lừa đảo đang cố thu thập mật khẩu hoặc thông tin đăng nhập của nạn nhân. "
+            "Thường xuất hiện dưới dạng yêu cầu 'xác minh tài khoản', 'đăng nhập để nhận quà' "
+            "hoặc 'nhập OTP để mở khóa'. Tuyệt đối không cung cấp thông tin cá nhân."
+        ),
+        "money_transfer": (
+            "Kẻ lừa đảo đang yêu cầu chuyển tiền hoặc nạp thẻ, thường dưới vỏ bọc 'phí dịch vụ', "
+            "'đặt cọc nhận thưởng', 'phí xác nhận', 'nạp tiền để rút tiền'. "
+            "Đây là dấu hiệu lừa đảo phổ biến nhất — không bao giờ gửi tiền trước."
+        ),
+        "urgency_pressure": (
+            "Nội dung tạo áp lực thời gian giả tạo để người xem không kịp suy nghĩ. "
+            "Ví dụ: 'Chỉ còn 10 phút!', 'Tài khoản bị khóa ngay bây giờ!', 'Số lượng có hạn!'. "
+            "Đây là kỹ thuật thao túng tâm lý điển hình của kẻ lừa đảo."
+        ),
+        "fake_reward": (
+            "Nội dung hứa hẹn phần thưởng ảo như robux, kim cương, xu, quà tặng hoặc tiền thưởng miễn phí. "
+            "Thông thường yêu cầu 'click link', 'xác minh tài khoản' hoặc 'chia sẻ để nhận'. "
+            "Không có phần thưởng nào là miễn phí — đây là bẫy thu thập thông tin hoặc tiền."
+        ),
+        "grooming_isolation": (
+            "CỰC KỲ NGUY HIỂM: Nội dung cố ý tách trẻ em khỏi sự giám sát của người lớn. "
+            "Dấu hiệu: 'đừng nói với bố mẹ', 'chỉ mình mình biết thôi', 'nhắn tin riêng cho anh/chị'. "
+            "Đây có thể là hành vi grooming — cần báo cáo ngay lập tức."
+        ),
     }
-    return explanations.get(intent_name, "Không xác định")
+    return explanations.get(intent_name, "Dấu hiệu bất thường được phát hiện trong nội dung")
+
+
+def get_safe_explanation() -> str:
+    """Return explanation string for safe content."""
+    return (
+        "Không phát hiện từ khoá hoặc mẫu hành vi lừa đảo trong nội dung. "
+        "Giọng nói và hình ảnh không có dấu hiệu AI-generated bất thường. "
+        "Nội dung được đánh giá là an toàn theo phân tích hiện tại."
+    )
 
 
 if __name__ == "__main__":
