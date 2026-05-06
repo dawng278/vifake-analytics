@@ -10,16 +10,24 @@ Tuân thủ Privacy-by-Design:
 """
 
 import os
-import torch
 import logging
 import numpy as np
 from typing import Dict, List, Optional, Union
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 from dataclasses import dataclass
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+# Optional heavy dependencies — not available on lightweight deployments (Render free)
+try:
+    import torch
+    from transformers import AutoTokenizer, AutoModelForSequenceClassification
+    TRANSFORMERS_AVAILABLE = True
+except ImportError as _e:
+    logger.warning(f"⚠️  transformers/torch not available ({_e}). PhoBERT will run in mock mode.")
+    TRANSFORMERS_AVAILABLE = False
+    torch = None
 
 @dataclass
 class NLPConfig:
@@ -40,30 +48,38 @@ class PhoBERTInference:
     
     def __init__(self, model_path: Optional[str] = None, config: Optional[NLPConfig] = None):
         self.config = config or NLPConfig()
-        
+        self.tokenizer = None
+        self.model = None
+
+        if not TRANSFORMERS_AVAILABLE:
+            logger.warning("⚠️  PhoBERT running in mock mode (transformers not installed)")
+            self.labels = {0: "SAFE", 1: "TOXIC", 2: "MANIPULATIVE"}
+            self.onnx_model = None
+            return
+
         # Determine model path
         if model_path is None:
             model_path = self.config.MODEL_DIR if os.path.exists(self.config.MODEL_DIR) else self.config.DEFAULT_MODEL
-        
+
         logger.info(f"🤖 Loading PhoBERT from: {model_path}")
-        
+
         # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-        
+
         # Load model
         self.model = AutoModelForSequenceClassification.from_pretrained(
             model_path,
             num_labels=3,
             ignore_mismatched_sizes=True
         )
-        
+
         # Setup for inference
         self.model.eval()
         self.model.to(self.config.device)
-        
+
         # Label mapping
         self.labels = {0: "SAFE", 1: "TOXIC", 2: "MANIPULATIVE"}
-        
+
         # ONNX model placeholder (for future optimization)
         self.onnx_model = None
         
@@ -72,19 +88,30 @@ class PhoBERTInference:
     
     def predict(self, text: str) -> Dict[str, Union[str, float, Dict]]:
         """Single text prediction with comprehensive results"""
+        if not TRANSFORMERS_AVAILABLE or self.model is None:
+            return {
+                "text": text,
+                "prediction": "SAFE",
+                "confidence": 0.5,
+                "probabilities": {"SAFE": 0.5, "TOXIC": 0.25, "MANIPULATIVE": 0.25},
+                "risk_level": "LOW",
+                "is_safe": True,
+                "requires_review": True,
+                "mock": True,
+            }
         try:
             # Tokenize input
             inputs = self.tokenizer(
-                text, 
-                return_tensors="pt", 
-                truncation=True, 
+                text,
+                return_tensors="pt",
+                truncation=True,
                 max_length=self.config.max_length,
                 padding=True
             )
-            
+
             # Move to device
             inputs = {k: v.to(self.config.device) for k, v in inputs.items()}
-            
+
             # Run inference
             with torch.no_grad():
                 logits = self.model(**inputs).logits

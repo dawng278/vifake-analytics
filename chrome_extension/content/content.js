@@ -374,12 +374,12 @@
     // Insert after the post text, before the action bar
     if (PLATFORM === 'facebook') {
       // Try to find the action bar (like/comment/share) and insert before it
-      const actionBar = postEl.querySelector('[role="toolbar"]')
-        || postEl.querySelector('[aria-label*="Like" i], [aria-label*="Thích" i]')?.closest('div:not([role])');
+      const actionBar = targetEl.querySelector('[role="toolbar"]')
+        || targetEl.querySelector('[aria-label*="Like" i], [aria-label*="Thích" i]')?.closest('div:not([role])');
       if (actionBar?.parentElement) {
         actionBar.parentElement.insertBefore(container, actionBar);
       } else {
-        postEl.appendChild(container);
+        targetEl.appendChild(container);
       }
     } else if (PLATFORM === 'tiktok') {
       // For TikTok, try to insert near video controls or description
@@ -464,7 +464,100 @@
     `;
   }
 
-  // ─── Show Result Panel ───
+  // ─── Shared helpers ───
+
+  const RISK_META = {
+    SAFE:       { cls: 'vifake-risk-safe',   icon: '✅', text: 'An toàn',   badge: 'safe' },
+    SUSPICIOUS: { cls: 'vifake-risk-warn',   icon: '⚠️', text: 'Đáng ngờ', badge: 'warn' },
+    FAKE_SCAM:  { cls: 'vifake-risk-danger', icon: '🚨', text: 'Lừa đảo',  badge: 'danger' },
+    TOXIC:      { cls: 'vifake-risk-danger', icon: '🚨', text: 'Độc hại',   badge: 'danger' },
+  };
+
+  const RISK_LEVEL_META = {
+    HIGH:   { cls: 'vifake-rl-high',   text: 'Nguy cơ cao' },
+    MEDIUM: { cls: 'vifake-rl-medium', text: 'Nguy cơ vừa' },
+    LOW:    { cls: 'vifake-rl-low',    text: 'Nguy cơ thấp' },
+  };
+
+  const INTENT_NAMES = {
+    credential_harvest: 'Thu thập thông tin',
+    money_transfer:     'Chuyển tiền / nạp thẻ',
+    urgency_pressure:   'Tạo áp lực khẩn cấp',
+    fake_reward:        'Phần thưởng giả mạo',
+    grooming_isolation: 'Tiếp cận / cô lập trẻ em',
+  };
+
+  // Confidence meter bar HTML
+  function buildConfidenceBar(pct, label) {
+    const color = label === 'SAFE' ? 'var(--vf-safe)'
+                : label === 'SUSPICIOUS' ? 'var(--vf-warn)'
+                : 'var(--vf-danger)';
+    return `
+      <div class="vifake-conf-row">
+        <span class="vifake-conf-label">Độ tin cậy</span>
+        <div class="vifake-conf-track">
+          <div class="vifake-conf-fill" style="--conf-w:${pct}%;--conf-color:${color}"></div>
+        </div>
+        <span class="vifake-conf-pct">${pct}%</span>
+      </div>
+    `;
+  }
+
+  // Intent bars HTML
+  function buildIntentBars(intentScores) {
+    let html = '';
+    for (const [key, name] of Object.entries(INTENT_NAMES)) {
+      const score = intentScores[key] || 0;
+      if (score <= 0.04) continue;
+      const pct = Math.round(score * 100);
+      const danger = pct >= 70 ? 'high' : pct >= 40 ? 'mid' : 'low';
+      html += `
+        <div class="vifake-intent-row">
+          <span class="vifake-intent-name">${name}</span>
+          <div class="vifake-intent-bar-bg">
+            <div class="vifake-intent-bar vifake-intent-${danger}" style="--target-width:${pct}%"></div>
+          </div>
+          <span class="vifake-intent-pct">${pct}%</span>
+        </div>`;
+    }
+    return html;
+  }
+
+  // Advisory text
+  function buildAdvisory(label) {
+    const tips = {
+      FAKE_SCAM: 'Đây có thể là nội dung lừa đảo. Hãy nói chuyện với con về cách nhận biết lừa đảo trực tuyến và <strong>không bao giờ cung cấp thông tin cá nhân hay chuyển tiền</strong> theo yêu cầu trên mạng.',
+      SUSPICIOUS: 'Nội dung có một số dấu hiệu đáng ngờ. Hãy <strong>kiểm tra thêm</strong> trước khi cho con tương tác và thảo luận về lý do tại sao nội dung này có thể không đáng tin.',
+      TOXIC: 'Nội dung này có thể gây hại cho trẻ em. Hãy <strong>hạn chế trẻ tiếp cận</strong> và trao đổi với con về an toàn trực tuyến.',
+    };
+    const tip = tips[label];
+    if (!tip) return '';
+    return `<div class="vifake-action-hint"><span class="vifake-hint-icon">💡</span><span>${tip}</span></div>`;
+  }
+
+  // Attach close + auto-dismiss behaviour to a panel
+  function attachPanelBehaviour(panel, label) {
+    const closeBtn = panel.querySelector('.vifake-close-btn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.classList.add('vifake-dismiss');
+        setTimeout(() => panel.remove(), 280);
+      });
+    }
+    // Auto-dismiss SAFE results after 10 s
+    if (label === 'SAFE') {
+      const bar = panel.querySelector('.vifake-autodismiss-bar');
+      if (bar) bar.style.animationDuration = '10s';
+      setTimeout(() => {
+        if (!panel.isConnected) return;
+        panel.classList.add('vifake-dismiss');
+        setTimeout(() => panel.remove(), 280);
+      }, 10000);
+    }
+  }
+
+  // ─── Show Result Panel (Facebook / YouTube text posts) ───
   function showResult(container, result) {
     container.querySelector(`.${RESULT_CLASS}`)?.remove();
 
@@ -476,107 +569,57 @@
       panel.innerHTML = `
         <div class="vifake-result-header vifake-risk-error">
           <span class="vifake-result-icon">⚠️</span>
-          <span class="vifake-result-label">Lỗi</span>
+          <span class="vifake-result-label">Lỗi phân tích</span>
+          <button class="vifake-close-btn" title="Đóng">×</button>
         </div>
         <div class="vifake-result-body">
-          <p>${escapeHtml(result.error)}</p>
+          <p class="vifake-error-msg">${escapeHtml(result.error)}</p>
+          <p class="vifake-error-hint">Kiểm tra kết nối API trong cài đặt extension.</p>
         </div>
       `;
       container.appendChild(panel);
+      attachPanelBehaviour(panel, 'ERROR');
       return;
     }
 
-    const label = result.label || result.prediction || 'UNKNOWN';
+    const label     = result.label || result.prediction || 'UNKNOWN';
     const confidence = result.confidence || 0;
-    const riskLevel = result.risk_level || 'UNKNOWN';
-    const details = result.analysis_details || {};
+    const riskLevel  = result.risk_level || '';
+    const details    = result.analysis_details || {};
     const intentLabel = details.intent_label || '';
-    const intentExpl = details.intent_explanation || '';
+    const intentExpl  = details.intent_explanation || '';
+    const meta       = RISK_META[label] || RISK_META.SUSPICIOUS;
+    const confPct    = Math.round(confidence * 100);
+    const rlMeta     = RISK_LEVEL_META[riskLevel] || null;
 
-    const riskClass = {
-      'SAFE': 'vifake-risk-safe',
-      'SUSPICIOUS': 'vifake-risk-warn',
-      'FAKE_SCAM': 'vifake-risk-danger',
-      'TOXIC': 'vifake-risk-danger',
-    }[label] || 'vifake-risk-warn';
-
-    const riskIcon = {
-      'SAFE': '✅',
-      'SUSPICIOUS': '⚠️',
-      'FAKE_SCAM': '🚨',
-      'TOXIC': '🚨',
-    }[label] || '❓';
-
-    const riskText = {
-      'SAFE': 'An toàn',
-      'SUSPICIOUS': 'Đáng ngờ',
-      'FAKE_SCAM': 'Lừa đảo',
-      'TOXIC': 'Độc hại',
-    }[label] || label;
-
-    const confPct = Math.round(confidence * 100);
-
-    // Build intent bars HTML
-    let intentHtml = '';
     const intentScores = details.intent || {};
-    const intentNames = {
-      'credential_harvest': 'Thu thập thông tin',
-      'money_transfer': 'Chuyển tiền',
-      'urgency_pressure': 'Tạo áp lực',
-      'fake_reward': 'Phần thưởng giả',
-      'grooming_isolation': 'Tiếp cận trẻ em',
-    };
-
-    for (const [key, name] of Object.entries(intentNames)) {
-      const score = intentScores[key] || 0;
-      if (score > 0.05) {
-        const pct = Math.round(score * 100);
-        intentHtml += `
-          <div class="vifake-intent-row">
-            <span class="vifake-intent-name">${name}</span>
-            <div class="vifake-intent-bar-bg">
-              <div class="vifake-intent-bar" style="--target-width: ${pct}%"></div>
-            </div>
-            <span class="vifake-intent-pct">${pct}%</span>
-          </div>
-        `;
-      }
-    }
-
-    // Build flags HTML
-    let flagsHtml = '';
-    const flags = details.nlp_flags || [];
-    if (flags.length > 0) {
-      flagsHtml = `
-        <div class="vifake-flags">
-          ${flags.map(f => `<span class="vifake-flag-tag">${escapeHtml(f)}</span>`).join('')}
-        </div>
-      `;
-    }
+    const intentHtml   = buildIntentBars(intentScores);
+    const flags        = details.nlp_flags || [];
+    const flagsHtml    = flags.length
+      ? `<div class="vifake-flags">${flags.map(f => `<span class="vifake-flag-tag">${escapeHtml(f)}</span>`).join('')}</div>`
+      : '';
 
     panel.innerHTML = `
-      <div class="vifake-result-header ${riskClass}">
-        <span class="vifake-result-icon">${riskIcon}</span>
-        <span class="vifake-result-label">${riskText}</span>
-        <span class="vifake-result-confidence">${confPct}%</span>
+      <div class="vifake-result-header ${meta.cls}">
+        <span class="vifake-result-icon">${meta.icon}</span>
+        <span class="vifake-result-label">${meta.text}</span>
+        ${rlMeta ? `<span class="vifake-risk-level-badge ${rlMeta.cls}">${rlMeta.text}</span>` : ''}
+        <button class="vifake-close-btn" title="Đóng">×</button>
       </div>
+      ${label === 'SAFE' ? '<div class="vifake-autodismiss-bar"></div>' : ''}
       <div class="vifake-result-body">
-        ${intentLabel ? `<p class="vifake-intent-primary"><strong>Ý định:</strong> ${escapeHtml(intentLabel)}</p>` : ''}
-        ${intentExpl ? `<p class="vifake-intent-expl">${escapeHtml(intentExpl)}</p>` : ''}
-        ${intentHtml ? `<div class="vifake-intent-section">${intentHtml}</div>` : ''}
+        ${buildConfidenceBar(confPct, label)}
+        ${intentLabel ? `<p class="vifake-intent-primary">🎯 <strong>Ý định phát hiện:</strong> ${escapeHtml(intentLabel)}</p>` : ''}
+        ${intentExpl  ? `<p class="vifake-intent-expl">${escapeHtml(intentExpl)}</p>` : ''}
+        ${intentHtml  ? `<div class="vifake-intent-section"><p class="vifake-section-title">Phân tích ý định</p>${intentHtml}</div>` : ''}
         ${flagsHtml}
-        ${label !== 'SAFE' ? `
-          <div class="vifake-action-hint">
-            <strong>💡 Gợi ý cho phụ huynh:</strong>
-            ${label === 'FAKE_SCAM' ? 'Đây có thể là nội dung lừa đảo. Hãy nói chuyện với con về cách nhận biết lừa đảo trực tuyến.' : ''}
-            ${label === 'SUSPICIOUS' ? 'Nội dung đáng ngờ. Hãy kiểm tra thêm trước khi cho con tương tác.' : ''}
-            ${label === 'TOXIC' ? 'Nội dung có thể độc hại. Cân nhắc hạn chế trẻ tiếp cận.' : ''}
-          </div>
-        ` : ''}
+        ${label === 'SAFE' ? `<p class="vifake-safe-msg">✓ Không phát hiện dấu hiệu nguy hiểm. Kết quả này sẽ tự đóng sau 10 giây.</p>` : ''}
+        ${buildAdvisory(label)}
       </div>
     `;
 
     container.appendChild(panel);
+    attachPanelBehaviour(panel, label);
   }
 
   // ─── Show Video Result Panel (TikTok) ───
@@ -586,67 +629,73 @@
     const panel = document.createElement('div');
     panel.className = RESULT_CLASS;
 
-    const verdict = result.verdict || 'UNKNOWN';
-    const confidence = result.confidence || 0;
-    const isAi = result.is_ai_generated || false;
+    const verdict      = result.verdict || 'UNKNOWN';
+    const confidence   = result.confidence || 0;
+    const isAi         = result.is_ai_generated || false;
     const aiConfidence = result.ai_confidence || 0;
-    const transcript = result.transcript || '';
-    const explanation = result.explanation || '';
+    const transcript   = result.transcript || '';
+    const explanation  = result.explanation || '';
+    const intents      = result.intents || {};
+    const meta         = RISK_META[verdict] || RISK_META.SUSPICIOUS;
+    const confPct      = Math.round(confidence * 100);
+    const aiPct        = Math.round(aiConfidence * 100);
 
-    const riskClass = {
-      'SAFE': 'vifake-risk-safe',
-      'SUSPICIOUS': 'vifake-risk-warn',
-      'FAKE_SCAM': 'vifake-risk-danger',
-    }[verdict] || 'vifake-risk-warn';
-
-    const riskIcon = {
-      'SAFE': '✅',
-      'SUSPICIOUS': '⚠️',
-      'FAKE_SCAM': '🚨',
-    }[verdict] || '❓';
-
-    const riskText = {
-      'SAFE': 'An toàn',
-      'SUSPICIOUS': 'Đáng ngờ',
-      'FAKE_SCAM': 'Lừa đảo',
-    }[verdict] || verdict;
-
-    const confPct = Math.round(confidence * 100);
-    const aiPct = Math.round(aiConfidence * 100);
+    const intentHtml = buildIntentBars(intents);
+    const transcriptId = `vf-tr-${Date.now()}`;
 
     panel.innerHTML = `
-      <div class="vifake-result-header ${riskClass}">
-        <span class="vifake-result-icon">${riskIcon}</span>
-        <span class="vifake-result-label">${riskText}</span>
-        <span class="vifake-result-confidence">${confPct}%</span>
+      <div class="vifake-result-header ${meta.cls}">
+        <span class="vifake-result-icon">${meta.icon}</span>
+        <span class="vifake-result-label">${meta.text}</span>
+        ${isAi ? `<span class="vifake-ai-badge" title="Video AI-generated (${aiPct}%)">🤖 AI ${aiPct}%</span>` : ''}
+        <button class="vifake-close-btn" title="Đóng">×</button>
       </div>
+      ${verdict === 'SAFE' ? '<div class="vifake-autodismiss-bar"></div>' : ''}
       <div class="vifake-result-body">
+        ${buildConfidenceBar(confPct, verdict)}
         ${explanation ? `<p class="vifake-explanation">${escapeHtml(explanation)}</p>` : ''}
-        
+
         ${isAi ? `
           <div class="vifake-ai-section">
-            <p><strong>🤖 Phát hiện AI-generated:</strong> ${aiPct}% confidence</p>
+            <div class="vifake-ai-row">
+              <span>🤖 Video có thể được tạo bằng AI</span>
+              <div class="vifake-ai-conf-track">
+                <div class="vifake-ai-conf-fill" style="width:${aiPct}%"></div>
+              </div>
+              <span class="vifake-ai-pct">${aiPct}%</span>
+            </div>
           </div>
         ` : ''}
+
+        ${intentHtml ? `<div class="vifake-intent-section"><p class="vifake-section-title">Phân tích ý định</p>${intentHtml}</div>` : ''}
 
         ${transcript ? `
           <div class="vifake-transcript-section">
-            <p><strong>📝 Transcript:</strong></p>
-            <div class="vifake-transcript">${escapeHtml(transcript)}</div>
+            <button class="vifake-transcript-toggle" data-target="${transcriptId}">
+              📝 Transcript <span class="vifake-toggle-arrow">▶</span>
+            </button>
+            <div class="vifake-transcript vifake-transcript-collapsed" id="${transcriptId}">${escapeHtml(transcript)}</div>
           </div>
         ` : ''}
 
-        ${verdict !== 'SAFE' ? `
-          <div class="vifake-action-hint">
-            <strong>💡 Gợi ý cho phụ huynh:</strong>
-            ${verdict === 'FAKE_SCAM' ? 'Đây có thể là nội dung lừa đảo. Hãy nói chuyện với con về cách nhận biết lừa đảo trực tuyến.' : ''}
-            ${verdict === 'SUSPICIOUS' ? 'Nội dung đáng ngờ. Hãy kiểm tra thêm trước khi cho con tương tác.' : ''}
-          </div>
-        ` : ''}
+        ${buildAdvisory(verdict)}
       </div>
     `;
 
+    // Wire transcript toggle
+    const toggleBtn = panel.querySelector('.vifake-transcript-toggle');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        const target = panel.querySelector(`#${transcriptId}`);
+        const arrow  = toggleBtn.querySelector('.vifake-toggle-arrow');
+        const isOpen = !target.classList.contains('vifake-transcript-collapsed');
+        target.classList.toggle('vifake-transcript-collapsed', isOpen);
+        arrow.textContent = isOpen ? '▶' : '▼';
+      });
+    }
+
     container.appendChild(panel);
+    attachPanelBehaviour(panel, verdict);
   }
 
   // ─── MutationObserver: Watch for new posts (SPA navigation) ───
