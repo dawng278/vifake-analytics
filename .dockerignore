@@ -1,0 +1,48 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+
+# Models (large — not needed at runtime in MOCK_MODE)
+models/checkpoints/
+models/outputs/
+
+# Dev / notebooks
+notebooks/
+
+# Data (not needed in container)
+data/
+
+# Logs
+logs/
+
+# Tests
+test_output/
+*.test.py
+
+# Git
+.git/
+.gitignore
+
+# Env
+.env
+.env.local
+.env.*.local
+.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Infrastructure stack (dev only)
+infrastructure/

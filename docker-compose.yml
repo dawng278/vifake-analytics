@@ -1,0 +1,44 @@
+version: '3.9'
+
+# ViFake Analytics — Demo stack
+# Usage: make demo   (or: docker compose up --build -d)
+# Web UI : http://localhost:8080
+# API    : http://localhost:8000
+# API docs: http://localhost:8000/docs
+
+services:
+
+  # ── FastAPI backend ──────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vifake-api
+    restart: unless-stopped
+    environment:
+      PYTHONUNBUFFERED: "1"
+      PYTHONPATH: /app
+      PORT: "8000"
+      MOCK_MODE: "true"
+      AUTH_TOKEN: "vifake-demo-2024"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── Static web UI (nginx) ────────────────────────────────────
+  web:
+    image: nginx:1.27-alpine
+    container_name: vifake-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./web_interface:/usr/share/nginx/html:ro
+    depends_on:
+      api:
+        condition: service_healthy
