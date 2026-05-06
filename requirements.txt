@@ -47,6 +47,7 @@ scikit-learn>=1.3.0        # ML classifiers for voice spoofing detection
 # === AI Vision Detection ===
 # efficientnet-pytorch     # Optional: requires torch/CUDA — use requirements-ml.txt instead
 # face-recognition         # Optional: requires dlib — code uses opencv as fallback
+Pillow>=10.1.0             # PIL — image loading/processing (required by vision pipeline)
 opencv-python>=4.8.1      # Image processing for face crops (used by face_ai_detector.py)
 
 # === Lightweight ML (no torch/CUDA) ===
