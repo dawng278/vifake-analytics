@@ -50,12 +50,18 @@
       '[data-pagelet*="FeedUnit"]',
     ],
     tiktok: [
-      // TikTok video containers - use data-e2e for stability
-      '[data-e2e="browse-video-desc"]',
+      // TikTok video containers - more comprehensive selectors
       '[data-e2e="video-player"]',
-      // Fallback: video elements with TikTok CDN
+      '[data-e2e="browse-video-desc"]',
+      '[data-e2e="video-desc"]',
+      '[data-e2e="recommend-list-item-container"]',
+      'div[class*="DivVideoContainer"]',
+      // Video elements with TikTok CDN
       'video[src*="tiktokcdn"]',
       'video[src*="muscdn"]',
+      'video[src*="tiktok.com"]',
+      // General video elements as fallback
+      'video',
     ],
     youtube: [
       'ytd-rich-item-renderer',
@@ -261,12 +267,87 @@
   function injectCheckButton(postEl) {
     if (postEl.querySelector(`.${BTN_CLASS}`)) return;
 
+    // For TikTok: Check if this is the main video container
+    if (PLATFORM === 'tiktok') {
+      const mainContainer = findMainVideoContainer(postEl);
+      const targetContainer = mainContainer || postEl;
+      
+      // Get unique video ID
+      const videoId = getVideoId(targetContainer);
+      
+      // Check if we already processed this video
+      if (window.vifakeProcessedVideos && window.vifakeProcessedVideos.has(videoId)) {
+        console.log('[ViFake] Video already processed:', videoId);
+        return;
+      }
+      
+      // Check if main container already has button
+      if (targetContainer.querySelector(`.${BTN_CLASS}`)) {
+        console.log('[ViFake] Container already has button');
+        return;
+      }
+      
+      // Mark this video as processed
+      if (!window.vifakeProcessedVideos) {
+        window.vifakeProcessedVideos = new Set();
+      }
+      window.vifakeProcessedVideos.add(videoId);
+      
+      console.log('[ViFake] Injecting button for TikTok video:', videoId);
+      injectButtonToElement(targetContainer);
+      return;
+    }
+
+    // For other platforms: Check text length
     const text = extractPostText(postEl);
     if (text.length < MIN_TEXT_LENGTH) {
       console.log('[ViFake] Skipping post (text too short):', text.length, 'chars');
       return;
     }
     console.log('[ViFake] Injecting button for post with', text.length, 'chars');
+    injectButtonToElement(postEl);
+  }
+
+  function findMainVideoContainer(element) {
+    // Find the highest parent that contains a video element
+    let current = element;
+    let mainContainer = null;
+    
+    while (current && current !== document.body) {
+      // Check if this container has a video element
+      if (current.querySelector('video')) {
+        mainContainer = current;
+      }
+      
+      // Stop at known container boundaries
+      if (current.classList.contains('css-6wvhtq-7937d88b--ArticleItemContainer') ||
+          current.classList.contains('DivVideoContainer') ||
+          current.tagName === 'ARTICLE') {
+        break;
+      }
+      
+      current = current.parentElement;
+    }
+    
+    return mainContainer;
+  }
+
+  function getVideoId(container) {
+    // Generate unique ID for video container to prevent duplicates
+    const video = container.querySelector('video');
+    if (video && video.src) {
+      // Use video URL as unique identifier
+      return video.src.split('?')[0]; // Remove query params
+    }
+    
+    // Fallback: use container's position or class
+    const position = container.getBoundingClientRect();
+    return `${container.tagName}_${position.top}_${position.left}`;
+  }
+
+  function injectButtonToElement(targetEl) {
+    // Mark as scanned to prevent duplicates
+    targetEl.setAttribute(SCAN_ATTR, 'true');
 
     // Create button container
     const container = document.createElement('div');
@@ -289,7 +370,6 @@
     });
 
     container.appendChild(btn);
-    postEl.setAttribute(SCAN_ATTR, 'injected');
 
     // Insert after the post text, before the action bar
     if (PLATFORM === 'facebook') {
@@ -301,9 +381,25 @@
       } else {
         postEl.appendChild(container);
       }
+    } else if (PLATFORM === 'tiktok') {
+      // For TikTok, try to insert near video controls or description
+      const descContainer = targetEl.querySelector('[data-e2e="browse-video-desc"]')
+        || targetEl.querySelector('[data-e2e="video-desc"]')
+        || targetEl.querySelector('div[class*="DivDescription"]');
+      
+      if (descContainer) {
+        descContainer.parentElement?.insertBefore(container, descContainer.nextSibling);
+      } else {
+        // Fallback: append to target element
+        targetEl.appendChild(container);
+      }
     } else {
-      postEl.appendChild(container);
+      targetEl.appendChild(container);
     }
+    
+    // Debug: log where button was injected
+    console.log(`[ViFake] Button injected into:`, targetEl.tagName, targetEl.className, 
+                `Container position:`, container.parentElement?.tagName);
   }
 
   // ─── Handle Check Button Click ───
@@ -586,20 +682,48 @@
     const selectors = POST_SELECTORS[PLATFORM] || [];
     const seen = new Set();
     let totalFound = 0, passedFilter = 0;
+    
+    console.log(`[ViFake] Scanning ${PLATFORM} with ${selectors.length} selectors:`, selectors);
+    
     for (const sel of selectors) {
       const posts = document.querySelectorAll(sel);
+      console.log(`[ViFake] Selector "${sel}" found ${posts.length} elements`);
+      
       posts.forEach(post => {
         if (seen.has(post)) return;
         seen.add(post);
         totalFound++;
+        
+        // For TikTok, be more permissive with filtering
+        if (PLATFORM === 'tiktok') {
+          console.log(`[ViFake] TikTok element found:`, post.tagName, post.className);
+          if (post.hasAttribute(SCAN_ATTR)) {
+            console.log(`[ViFake] Already scanned, but checking if button exists...`);
+            const existingBtn = post.querySelector(`.${BTN_CLASS}`);
+            if (!existingBtn) {
+              console.log(`[ViFake] Button missing, re-injecting...`);
+              post.removeAttribute(SCAN_ATTR); // Remove marker to force re-inject
+            } else {
+              console.log(`[ViFake] Button exists, skipping`);
+              return;
+            }
+          }
+          passedFilter++;
+          injectCheckButton(post);
+          return;
+        }
+        
         if (post.hasAttribute(SCAN_ATTR)) return;
         if (!isLikelyFeedPost(post)) return;
         passedFilter++;
         injectCheckButton(post);
       });
     }
+    
     if (totalFound > 0) {
       console.log(`[ViFake] Scan: ${totalFound} candidates, ${passedFilter} passed filter`);
+    } else {
+      console.log(`[ViFake] No elements found with current selectors`);
     }
   }
 
@@ -617,6 +741,15 @@
 
   // Initial scan
   scanForPosts();
+
+  // For TikTok, also scan every 2 seconds since content loads dynamically
+  if (PLATFORM === 'tiktok') {
+    setInterval(scanForPosts, 2000);
+    
+    // Debug: Add command to clear all scan markers
+    console.log('[ViFake] TikTok mode enabled. Run this in console to reset all buttons:');
+    console.log('[ViFake] document.querySelectorAll("[data-vifake-scanned]").forEach(el => el.removeAttribute("data-vifake-scanned"))');
+  }
 
   // ─── Right-click Context Menu Support ───
   let lastRightClickedEl = null;

@@ -19,6 +19,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 from .media_extractor import MediaExtractor
 from .transcriber import Transcriber
 from .frame_analyzer import FrameAnalyzer
+from .audio_ai_detector import AudioAIDetector
+from .face_ai_detector import FaceAIDetector
 from .cleanup import cleanup_session
 
 logger = logging.getLogger(__name__)
@@ -29,7 +31,9 @@ class VideoAnalysisPipeline:
     def __init__(self):
         self.transcriber = Transcriber()
         self.frame_analyzer = FrameAnalyzer()
-        logger.info("🎬 VideoAnalysisPipeline initialized")
+        self.audio_ai_detector = AudioAIDetector()
+        self.face_ai_detector = FaceAIDetector()
+        logger.info("🎬 VideoAnalysisPipeline initialized with enhanced AI detection")
 
     async def run(self, video_url: str, description: str = "", author: str = "") -> Dict:
         """
@@ -63,7 +67,7 @@ class VideoAnalysisPipeline:
             # ── Bước 2: Transcribe + Frame Analysis SONG SONG ───
             logger.info("🔍 Phase 2: Running parallel analysis...")
             
-            # Branch A: audio → text → PhoBERT
+            # Branch A: audio → transcription + AI voice detection
             async def branch_a():
                 if isinstance(audio_path, Exception):
                     logger.warning(f"⚠️ Audio extraction failed: {audio_path}")
@@ -72,12 +76,16 @@ class VideoAnalysisPipeline:
                         "confidence": 0.0, 
                         "intents": {},
                         "transcript": "",
+                        "audio_ai": {"is_ai_voice": False, "ai_confidence": 0.0},
                         "error": str(audio_path)
                     }
                 
                 try:
                     # Transcribe audio
                     transcript_result = await self.transcriber.transcribe(audio_path)
+                    
+                    # AI Voice Detection (NEW)
+                    audio_ai_result = await self.audio_ai_detector.analyze_audio(audio_path)
                     
                     # Build analysis text from all sources
                     full_text = self.transcriber.build_analysis_text(
@@ -87,12 +95,14 @@ class VideoAnalysisPipeline:
                     # Run text analysis using existing pipeline
                     text_result = await self._run_text_analysis(full_text)
                     text_result["transcript"] = transcript_result["text"]
+                    text_result["audio_ai"] = audio_ai_result  # Add AI voice detection
                     
-                    logger.info(f"📝 Text analysis completed: {text_result.get('verdict', 'UNKNOWN')}")
+                    logger.info(f"📝 Text + Audio AI analysis completed: {text_result.get('verdict', 'UNKNOWN')}")
+                    logger.info(f"🎤 AI Voice Detection: {audio_ai_result.get('is_ai_voice', False)} ({audio_ai_result.get('ai_confidence', 0.0):.3f})")
                     return text_result
                     
                 except Exception as e:
-                    logger.error(f"❌ Text analysis failed: {e}")
+                    logger.error(f"❌ Text + Audio AI analysis failed: {e}")
                     return {
                         "verdict": "UNKNOWN", 
                         "confidence": 0.0, 
@@ -101,27 +111,50 @@ class VideoAnalysisPipeline:
                         "error": str(e)
                     }
 
-            # Branch B: frames → AI detection
+            # Branch B: frames → AI face detection (NEW)
             async def branch_b():
                 if isinstance(frame_paths, Exception) or not frame_paths:
                     logger.warning(f"⚠️ Frame extraction failed: {frame_paths}")
                     return {
                         "is_ai_generated": False, 
                         "confidence": 0.0,
-                        "frames_analyzed": 0,
+                        "faces_detected": 0,
                         "error": str(frame_paths) if isinstance(frame_paths, Exception) else "No frames extracted"
                     }
                 
                 try:
-                    vision_result = await self.frame_analyzer.analyze_frames(frame_paths)
-                    logger.info(f"🤖 AI detection completed: {vision_result.get('is_ai_generated', False)}")
-                    return vision_result
+                    # Run both CLIP and Face AI detection
+                    clip_result = await self.frame_analyzer.analyze_frames(frame_paths)
+                    face_ai_result = await self.face_ai_detector.analyze_frames(frame_paths)
+                    
+                    # Combine results - prioritize Face AI detection
+                    combined_result = {
+                        "is_ai_generated": face_ai_result.get('is_ai_face', clip_result.get('is_ai_generated', False)),
+                        "confidence": max(
+                            face_ai_result.get('ai_confidence', 0.0),
+                            clip_result.get('confidence', 0.0)
+                        ),
+                        "faces_detected": face_ai_result.get('faces_detected', 0),
+                        "frames_analyzed": len(frame_paths),
+                        
+                        # Include both analysis results
+                        "clip_analysis": clip_result,
+                        "face_ai_analysis": face_ai_result,
+                        
+                        # Use Face AI as primary if available
+                        "primary_method": "face_ai" if face_ai_result.get('faces_detected', 0) > 0 else "clip"
+                    }
+                    
+                    logger.info(f"🤖 Face AI detection completed: {face_ai_result.get('is_ai_face', False)} ({face_ai_result.get('ai_confidence', 0.0):.3f})")
+                    logger.info(f"👥 Faces detected: {face_ai_result.get('faces_detected', 0)}")
+                    return combined_result
                     
                 except Exception as e:
-                    logger.error(f"❌ Frame analysis failed: {e}")
+                    logger.error(f"❌ Face AI analysis failed: {e}")
                     return {
                         "is_ai_generated": False, 
                         "confidence": 0.0,
+                        "faces_detected": 0,
                         "frames_analyzed": len(frame_paths) if frame_paths else 0,
                         "error": str(e)
                     }
@@ -196,43 +229,88 @@ class VideoAnalysisPipeline:
 
     def _merge_results(self, text_result: Dict, vision_result: Dict) -> Dict:
         """
-        Kết hợp kết quả từ text pipeline và vision pipeline.
+        Enhanced fusion with 60/40 weighting and high-confidence rules.
         
-        Logic:
-        - Nếu text verdict = FAKE_SCAM → final = FAKE_SCAM (bất kể AI hay không)
-        - Nếu text = SAFE nhưng AI-generated với confidence cao → SUSPICIOUS
-        - Nếu cả 2 đều SAFE → SAFE
+        NEW Logic:
+        - final_ai_score = 0.6 * vision_score + 0.4 * audio_score
+        - If either score > 0.85 → flag immediately (high-confidence)
+        - Text verdict still primary for FAKE_SCAM
+        - AI detection upgrades SAFE → SUSPICIOUS
         """
         text_verdict = text_result.get("verdict", "UNKNOWN")
         text_conf = text_result.get("confidence", 0.0)
-        is_ai = vision_result.get("is_ai_generated", False)
-        ai_conf = vision_result.get("confidence", 0.0)
         
-        # Nâng cấp verdict nếu phát hiện AI-generated
+        # Get AI detection scores
+        vision_ai_conf = vision_result.get("confidence", 0.0)
+        audio_ai_conf = text_result.get("audio_ai", {}).get("ai_confidence", 0.0)
+        
+        # Apply 60/40 weighting (vision 60%, audio 40%)
+        final_ai_score = 0.6 * vision_ai_conf + 0.4 * audio_ai_conf
+        is_ai_generated = vision_result.get("is_ai_generated", False)
+        
+        # High-confidence rule: if either score > 0.85, flag immediately
+        high_confidence_ai = (vision_ai_conf > 0.85) or (audio_ai_conf > 0.85)
+        if high_confidence_ai:
+            is_ai_generated = True
+            logger.info(f"🚨 High-confidence AI detection: Vision={vision_ai_conf:.3f}, Audio={audio_ai_conf:.3f}")
+        
+        # Determine final verdict
         final_verdict = text_verdict
-        if text_verdict == "SAFE" and is_ai and ai_conf > 0.7:
-            final_verdict = "SUSPICIOUS"
-            logger.info(f"🔍 Upgraded SAFE to SUSPICIOUS due to AI detection (confidence: {ai_conf:.3f})")
         
-        # Tạo explanation tổng hợp
+        # Text verdict is primary for scams
+        if text_verdict == "FAKE_SCAM":
+            final_verdict = "FAKE_SCAM"
+        # Upgrade SAFE to SUSPICIOUS if AI detected
+        elif text_verdict == "SAFE" and is_ai_generated and final_ai_score > 0.5:
+            final_verdict = "SUSPICIOUS"
+            logger.info(f"🔍 Upgraded SAFE to SUSPICIOUS (AI score: {final_ai_score:.3f})")
+        # Upgrade to SUSPICIOUS for high AI confidence
+        elif text_verdict in ["SAFE", "SUSPICIOUS"] and high_confidence_ai:
+            final_verdict = "SUSPICIOUS"
+            logger.info(f"🔍 Upgraded to SUSPICIOUS due to high AI confidence")
+        
+        # Create comprehensive explanation
         explanations = []
+        
+        # Text-based explanations
         if text_verdict == "FAKE_SCAM":
             explanations.append("Nội dung có dấu hiệu lừa đảo rõ ràng")
         elif text_verdict == "SUSPICIOUS":
             explanations.append("Nội dung có khả năng lừa đảo")
         
-        if is_ai and ai_conf > 0.6:
-            explanations.append(f"Video có thể được tạo bằng AI ({round(ai_conf*100)}% confidence)")
+        # AI-based explanations
+        if is_ai_generated:
+            if high_confidence_ai:
+                explanations.append(f"Video có dấu hiệu AI-generated rõ ràng ({round(final_ai_score*100)}% confidence)")
+            else:
+                explanations.append(f"Video có thể được tạo bằng AI ({round(final_ai_score*100)}% confidence)")
+        
+        # Specific AI indicators
+        if audio_ai_conf > 0.7:
+            explanations.append("Giọng nói có đặc điểm bất thường (có thể là AI voice clone)")
+        
+        if vision_ai_conf > 0.7:
+            faces_detected = vision_result.get("faces_detected", 0)
+            if faces_detected > 0:
+                explanations.append(f"Phát hiện {faces_detected} khuôn mặt có dấu hiệu AI-generated")
         
         if not explanations:
             explanations.append("Không phát hiện dấu hiệu nguy hiểm")
         
-        # Build final result
+        # Build final result with enhanced AI information
         return {
             "verdict": final_verdict,
-            "confidence": text_conf,
-            "is_ai_generated": is_ai,
-            "ai_confidence": ai_conf,
+            "confidence": max(text_conf, final_ai_score),  # Use higher of text or AI
+            "is_ai_generated": is_ai_generated,
+            "ai_confidence": final_ai_score,  # Weighted AI confidence
+            
+            # Individual AI scores for debugging
+            "ai_vision_confidence": vision_ai_conf,
+            "ai_audio_confidence": audio_ai_conf,
+            "ai_weighted_score": final_ai_score,
+            "high_confidence_flag": high_confidence_ai,
+            
+            # Original results
             "intents": text_result.get("intents", {}),
             "transcript": text_result.get("transcript", ""),
             "explanation": " · ".join(explanations),
@@ -243,5 +321,10 @@ class VideoAnalysisPipeline:
             "text_verdict": text_verdict,
             "text_confidence": text_conf,
             "vision_frames_analyzed": vision_result.get("frames_analyzed", 0),
-            "vision_frames_flagged": vision_result.get("frames_flagged", 0),
+            "vision_faces_detected": vision_result.get("faces_detected", 0),
+            "vision_primary_method": vision_result.get("primary_method", "unknown"),
+            
+            # Audio AI info
+            "audio_ai_detected": text_result.get("audio_ai", {}).get("is_ai_voice", False),
+            "audio_ai_features": text_result.get("audio_ai", {}).get("features", {}),
         }

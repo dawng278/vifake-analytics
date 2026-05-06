@@ -39,5 +39,15 @@ openai-whisper>=20231117  # Transcribe audio → text
 ffmpeg-python>=0.2.0      # Wrapper Python cho ffmpeg
 aiofiles>=23.0            # Async file I/O
 
+# === AI Audio Detection ===
+librosa>=0.10.1           # Audio analysis: MFCC, spectrograms
+scikit-learn>=1.3.0        # ML classifiers for voice spoofing detection
+resemblyzer>=0.2.6         # Voice embedding analysis (fallback)
+
+# === AI Vision Detection ===
+efficientnet-pytorch>=0.7.1  # EfficientNet-B4 for face analysis
+face-recognition>=1.3.0        # Face detection and cropping
+opencv-python>=4.8.1           # Image processing for face crops
+
 # === Lightweight ML (no torch/CUDA) ===
 numpy>=1.26.0
