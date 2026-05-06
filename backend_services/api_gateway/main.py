@@ -196,6 +196,24 @@ class AnalysisResult(BaseModel):
     processing_time: float
     created_at: datetime
 
+class VideoAnalyzeRequest(BaseModel):
+    """Request model for video analysis"""
+    video_url: str = Field(..., description="TikTok video URL to analyze")
+    description: str = Field(default="", description="Video caption/description from DOM")
+    author: str = Field(default="", description="Video author/creator")
+    page_url: str = Field(default="", description="Full TikTok page URL")
+
+class VideoAnalyzeResponse(BaseModel):
+    """Response model for video analysis"""
+    verdict: str = Field(..., description="SAFE | SUSPICIOUS | FAKE_SCAM")
+    confidence: float = Field(..., description="Confidence score (0.0-1.0)")
+    is_ai_generated: bool = Field(..., description="Whether video appears AI-generated")
+    ai_confidence: float = Field(..., description="AI detection confidence")
+    intents: Dict = Field(..., description="Scam intent analysis results")
+    transcript: str = Field(..., description="Full audio transcript")
+    explanation: str = Field(..., description="Human-readable explanation")
+    processing_ms: int = Field(..., description="Total processing time in milliseconds")
+
 # Authentication
 async def verify_token(credentials: HTTPAuthorizationCredentials = Security(security)):
     """Verify JWT token or API key"""
@@ -759,6 +777,7 @@ async def root():
         "health": "/api/v1/health",
         "endpoints": {
             "analyze": "POST /api/v1/analyze",
+            "analyze_video": "POST /api/v1/analyze/video",
             "job_status": "GET /api/v1/job/{job_id}",
             "result": "GET /api/v1/result/{job_id}",
             "stream": "GET /api/v1/stream/{job_id}",
@@ -938,6 +957,43 @@ async def health_check():
         "active_jobs": len(active_jobs),
         "completed_jobs": len(job_results)
     }
+
+@app.post("/api/v1/analyze/video", response_model=VideoAnalyzeResponse)
+async def analyze_video(
+    request: VideoAnalyzeRequest,
+    auth_user: Dict = Depends(verify_token)
+):
+    """
+    Pipeline phân tích video TikTok.
+    Server tự tải audio/frames từ video_url — client không cần tải gì.
+    """
+    import time
+    start_time = time.time()
+    
+    logger.info(f"🎬 Video analysis request from {auth_user['user']}: {request.video_url}")
+    
+    try:
+        # Import pipeline coordinator (will be implemented in Phase 4)
+        from video_pipeline.pipeline_coordinator import VideoAnalysisPipeline
+        
+        pipeline = VideoAnalysisPipeline()
+        result = await pipeline.run(
+            video_url=request.video_url,
+            description=request.description,
+            author=request.author,
+        )
+        
+        result["processing_ms"] = int((time.time() - start_time) * 1000)
+        
+        logger.info(f"✅ Video analysis completed in {result['processing_ms']}ms: {result['verdict']}")
+        return VideoAnalyzeResponse(**result)
+        
+    except Exception as e:
+        logger.error(f"❌ Video analysis failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Video analysis failed: {str(e)}"
+        )
 
 @app.get("/api/v1/stats")
 async def get_stats(auth_user: Dict = Depends(verify_token)):

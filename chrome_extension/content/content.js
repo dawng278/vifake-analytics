@@ -48,18 +48,20 @@
       '[role="article"]',
       // Fallback: posts with FB-specific data-pagelet attributes
       '[data-pagelet*="FeedUnit"]',
-      '[data-pagelet*="ProfileTimeline"]',
-      '[data-pagelet*="GroupFeed"]',
+    ],
+    tiktok: [
+      // TikTok video containers - use data-e2e for stability
+      '[data-e2e="browse-video-desc"]',
+      '[data-e2e="video-player"]',
+      // Fallback: video elements with TikTok CDN
+      'video[src*="tiktokcdn"]',
+      'video[src*="muscdn"]',
     ],
     youtube: [
       'ytd-rich-item-renderer',
       'ytd-video-renderer',
       'ytd-compact-video-renderer',
       '#comments ytd-comment-thread-renderer',
-    ],
-    tiktok: [
-      '[data-e2e="recommend-list-item-container"]',
-      '[class*="DivItemContainer"]',
     ],
   };
 
@@ -127,8 +129,119 @@
   }
 
   function extractTikTokText(postEl) {
-    const desc = postEl.querySelector('[data-e2e="video-desc"], [class*="DivDescription"]')?.innerText?.trim() || '';
+    const desc = postEl.querySelector('[data-e2e="browse-video-desc"], [data-e2e="video-desc"], [class*="DivDescription"]')?.innerText?.trim() || '';
     return desc;
+  }
+
+  // ─── TikTok Video URL Extractor ───
+  function extractTikTokVideoInfo(postEl) {
+    // Get video URL from video element
+    const videoEl = postEl.querySelector('video[src*="tiktok"]')
+      || postEl.querySelector('video[src*="tiktokcdn"]')
+      || postEl.querySelector('video[src*="muscdn"]');
+
+    if (!videoEl || !videoEl.src) return null;
+
+    // Get additional metadata from DOM
+    const descEl = postEl.querySelector('[data-e2e="browse-video-desc"]')
+      || postEl.querySelector('[data-e2e="video-desc"]')
+      || postEl.querySelector('[class*="DivDescription"]');
+
+    const authorEl = postEl.querySelector('[data-e2e="browse-username"]')
+      || postEl.querySelector('[class*="DivUsername"]');
+
+    return {
+      video_url: videoEl.src,
+      description: descEl?.textContent?.trim() || '',
+      author: authorEl?.textContent?.trim() || '',
+      page_url: window.location.href,
+    };
+  }
+
+  // ─── Handle TikTok Video Analysis ───
+  async function handleTikTokVideoCheck(postEl, btn, container) {
+    const videoInfo = extractTikTokVideoInfo(postEl);
+    
+    if (!videoInfo) {
+      showResult(container, { error: 'Không lấy được URL video. Thử reload trang.' });
+      return;
+    }
+
+    // Show scanning state with stages
+    btn.disabled = true;
+    btn.classList.add('vifake-scanning');
+    btn.innerHTML = `
+      <div class="vifake-spinner"></div>
+      <span>Đang phân tích video...</span>
+    `;
+
+    // Remove old result
+    container.querySelector(`.${RESULT_CLASS}`)?.remove();
+
+    // Show multi-stage progress
+    const stages = [
+      { id: 'extract', label: 'Đang trích xuất audio & hình ảnh...', duration: 4000 },
+      { id: 'transcribe', label: 'Đang nhận dạng giọng nói...', duration: 6000 },
+      { id: 'analyze', label: 'AI đang phân tích nội dung...', duration: 5000 },
+      { id: 'vision', label: 'Kiểm tra video AI-generated...', duration: 4000 },
+    ];
+
+    const progressContainer = document.createElement('div');
+    progressContainer.className = 'vifake-tiktok-progress';
+    progressContainer.innerHTML = `
+      <div class="vifake-stage-list">
+        ${stages.map(s => `
+          <div class="vifake-stage" id="vf-stage-${s.id}">
+            <div class="vifake-stage-dot"></div>
+            <span>${s.label}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="vifake-eta">Khoảng 10–20 giây...</div>
+    `;
+    container.appendChild(progressContainer);
+
+    // Animate stages
+    let cumulative = 0;
+    stages.forEach(stage => {
+      setTimeout(() => {
+        document.querySelectorAll('.vifake-stage').forEach(el => {
+          el.classList.remove('active');
+        });
+        document.getElementById(`vf-stage-${stage.id}`)
+          ?.classList.add('active');
+      }, cumulative);
+      cumulative += stage.duration;
+    });
+
+    try {
+      const result = await chrome.runtime.sendMessage({
+        action: 'analyze_video',
+        payload: videoInfo,
+      });
+
+      progressContainer.remove();
+
+      if (result.error) {
+        showResult(container, { error: result.error });
+      } else {
+        showVideoResult(container, result);
+        postEl.setAttribute(SCAN_ATTR, 'checked');
+      }
+    } catch (err) {
+      progressContainer.remove();
+      showResult(container, { error: err.message || 'Lỗi kết nối' });
+    }
+
+    // Reset button
+    btn.disabled = false;
+    btn.classList.remove('vifake-scanning');
+    btn.innerHTML = `
+      <svg class="vifake-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <span>Kiểm tra lại</span>
+    `;
   }
 
   // ─── Post URL Extractor ───
@@ -195,6 +308,11 @@
 
   // ─── Handle Check Button Click ───
   async function handleCheckClick(postEl, btn, container) {
+    if (PLATFORM === 'tiktok') {
+      return handleTikTokVideoCheck(postEl, btn, container);
+    }
+
+    // Facebook/YouTube text analysis
     const text = extractPostText(postEl);
     const url = extractPostUrl(postEl);
 
@@ -357,6 +475,76 @@
             ${label === 'FAKE_SCAM' ? 'Đây có thể là nội dung lừa đảo. Hãy nói chuyện với con về cách nhận biết lừa đảo trực tuyến.' : ''}
             ${label === 'SUSPICIOUS' ? 'Nội dung đáng ngờ. Hãy kiểm tra thêm trước khi cho con tương tác.' : ''}
             ${label === 'TOXIC' ? 'Nội dung có thể độc hại. Cân nhắc hạn chế trẻ tiếp cận.' : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+
+    container.appendChild(panel);
+  }
+
+  // ─── Show Video Result Panel (TikTok) ───
+  function showVideoResult(container, result) {
+    container.querySelector(`.${RESULT_CLASS}`)?.remove();
+
+    const panel = document.createElement('div');
+    panel.className = RESULT_CLASS;
+
+    const verdict = result.verdict || 'UNKNOWN';
+    const confidence = result.confidence || 0;
+    const isAi = result.is_ai_generated || false;
+    const aiConfidence = result.ai_confidence || 0;
+    const transcript = result.transcript || '';
+    const explanation = result.explanation || '';
+
+    const riskClass = {
+      'SAFE': 'vifake-risk-safe',
+      'SUSPICIOUS': 'vifake-risk-warn',
+      'FAKE_SCAM': 'vifake-risk-danger',
+    }[verdict] || 'vifake-risk-warn';
+
+    const riskIcon = {
+      'SAFE': '✅',
+      'SUSPICIOUS': '⚠️',
+      'FAKE_SCAM': '🚨',
+    }[verdict] || '❓';
+
+    const riskText = {
+      'SAFE': 'An toàn',
+      'SUSPICIOUS': 'Đáng ngờ',
+      'FAKE_SCAM': 'Lừa đảo',
+    }[verdict] || verdict;
+
+    const confPct = Math.round(confidence * 100);
+    const aiPct = Math.round(aiConfidence * 100);
+
+    panel.innerHTML = `
+      <div class="vifake-result-header ${riskClass}">
+        <span class="vifake-result-icon">${riskIcon}</span>
+        <span class="vifake-result-label">${riskText}</span>
+        <span class="vifake-result-confidence">${confPct}%</span>
+      </div>
+      <div class="vifake-result-body">
+        ${explanation ? `<p class="vifake-explanation">${escapeHtml(explanation)}</p>` : ''}
+        
+        ${isAi ? `
+          <div class="vifake-ai-section">
+            <p><strong>🤖 Phát hiện AI-generated:</strong> ${aiPct}% confidence</p>
+          </div>
+        ` : ''}
+
+        ${transcript ? `
+          <div class="vifake-transcript-section">
+            <p><strong>📝 Transcript:</strong></p>
+            <div class="vifake-transcript">${escapeHtml(transcript)}</div>
+          </div>
+        ` : ''}
+
+        ${verdict !== 'SAFE' ? `
+          <div class="vifake-action-hint">
+            <strong>💡 Gợi ý cho phụ huynh:</strong>
+            ${verdict === 'FAKE_SCAM' ? 'Đây có thể là nội dung lừa đảo. Hãy nói chuyện với con về cách nhận biết lừa đảo trực tuyến.' : ''}
+            ${verdict === 'SUSPICIOUS' ? 'Nội dung đáng ngờ. Hãy kiểm tra thêm trước khi cho con tương tác.' : ''}
           </div>
         ` : ''}
       </div>

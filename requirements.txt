@@ -33,5 +33,11 @@ tqdm==4.66.1
 python-dateutil==2.8.2
 pytz==2023.3
 
+# === Video Processing ===
+yt-dlp>=2024.1.0          # Extract audio/frame từ TikTok URL
+openai-whisper>=20231117  # Transcribe audio → text
+ffmpeg-python>=0.2.0      # Wrapper Python cho ffmpeg
+aiofiles>=23.0            # Async file I/O
+
 # === Lightweight ML (no torch/CUDA) ===
 numpy>=1.26.0

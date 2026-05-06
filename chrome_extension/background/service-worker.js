@@ -67,6 +67,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // async response
   }
 
+  if (msg.action === 'analyze_video') {
+    handleAnalyzeVideo(msg.payload, sender.tab?.id)
+      .then(sendResponse)
+      .catch(err => sendResponse({ error: err.message }));
+    return true; // async response
+  }
+
   if (msg.action === 'getStatus') {
     chrome.storage.local.get(['apiUrl', 'authToken', 'totalScans', 'scamDetected', 'recentScans'], sendResponse);
     return true;
@@ -226,6 +233,97 @@ async function addRecentScan(record) {
     totalScans: total,
     scamDetected: scamCount,
   });
+}
+
+// ─── Core: Analyze Video (TikTok) ───
+async function handleAnalyzeVideo(payload, tabId) {
+  const { video_url, description, author, page_url } = payload;
+
+  if (!video_url) {
+    return { error: 'Không lấy được URL video. Thử reload trang.' };
+  }
+
+  // Update badge to scanning
+  if (tabId) {
+    chrome.action.setBadgeText({ text: '...', tabId });
+    chrome.action.setBadgeBackgroundColor({ color: '#3b82f6', tabId });
+  }
+
+  try {
+    // Step 1: Start video analysis job
+    const response = await fetch(`${apiUrl}/api/v1/analyze/video`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`,
+      },
+      body: JSON.stringify({
+        video_url,
+        description,
+        author,
+        page_url,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`API error: ${response.status} - ${error}`);
+    }
+
+    const result = await response.json();
+
+    // Step 2: Record scan
+    const scanRecord = {
+      url: page_url,
+      platform: 'tiktok',
+      result: {
+        label: result.verdict,
+        prediction: result.verdict,
+        confidence: result.confidence,
+        risk_level: result.risk_level || 'MEDIUM',
+        analysis_details: {
+          is_ai_generated: result.is_ai_generated,
+          ai_confidence: result.ai_confidence,
+          transcript: result.transcript,
+          explanation: result.explanation,
+          intents: result.intents,
+        }
+      },
+      timestamp: Date.now(),
+      platform: 'tiktok',
+    };
+
+    await addRecentScan(scanRecord);
+
+    // Step 3: Update badge
+    if (tabId) {
+      updateVideoBadge(tabId, result);
+    }
+
+    return result;
+  } catch (err) {
+    console.error('[ViFake] Video analysis failed:', err);
+    if (tabId) {
+      chrome.action.setBadgeText({ text: '!', tabId });
+      chrome.action.setBadgeBackgroundColor({ color: '#ef4444', tabId });
+    }
+    return { error: err.message };
+  }
+}
+
+// ─── Video Badge Updates ───
+function updateVideoBadge(tabId, result) {
+  const verdict = result.verdict || 'UNKNOWN';
+
+  const badgeMap = {
+    'SAFE':       { text: '✓', color: '#22c55e' },
+    'SUSPICIOUS': { text: '?', color: '#f59e0b' },
+    'FAKE_SCAM':  { text: '✗', color: '#ef4444' },
+  };
+
+  const badge = badgeMap[verdict] || { text: '?', color: '#6b7280' };
+  chrome.action.setBadgeText({ text: badge.text, tabId });
+  chrome.action.setBadgeBackgroundColor({ color: badge.color, tabId });
 }
 
 function sleep(ms) {
