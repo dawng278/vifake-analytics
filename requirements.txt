@@ -62,3 +62,4 @@ onnxruntime>=1.17.1          # ONNX inference (lightweight, no CUDA)
 
 # === Lightweight ML ===
 numpy>=1.26.0
+xgboost>=2.0.0              # XGBoost fusion model (CPU-only, no CUDA needed)

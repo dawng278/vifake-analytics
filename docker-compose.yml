@@ -19,7 +19,6 @@ services:
       PYTHONUNBUFFERED: "1"
       PYTHONPATH: /app
       PORT: "8000"
-      MOCK_MODE: "true"
       AUTH_TOKEN: "vifake-demo-2024"
     ports:
       - "8000:8000"

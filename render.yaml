@@ -13,5 +13,3 @@ services:
         generateValue: true
       - key: PYTHONPATH
         value: /opt/render/project/src
-      - key: MOCK_MODE
-        value: "true"
