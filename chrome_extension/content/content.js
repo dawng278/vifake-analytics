@@ -558,6 +558,24 @@
     urgency_pressure:   'Tạo áp lực khẩn cấp',
     fake_reward:        'Phần thưởng giả mạo',
     grooming_isolation: 'Tiếp cận / cô lập trẻ em',
+    fake_job:           'Việc làm giả mạo',
+    crypto_fraud:       'Lừa đảo tiền số',
+  };
+
+  // Human-readable Vietnamese labels for API flag codes
+  const FLAG_DISPLAY = {
+    pay_first_scheme:   '💸 Bắt thanh toán trước',
+    robux_phishing:     '🎮 Lừa đảo Robux/game',
+    gift_card_scam:     '🎁 Lừa đảo thẻ nạp',
+    crypto_fraud:       '🪙 Lừa đảo tiền số',
+    credential_harvest: '🔑 Thu thập mật khẩu',
+    fake_reward:        '🏆 Phần thưởng giả',
+    urgency_pressure:   '⏰ Áp lực khẩn cấp',
+    grooming:           '⚠️ Tiếp cận trẻ em',
+    money_transfer:     '💰 Yêu cầu chuyển tiền',
+    fake_job:           '💼 Việc làm giả mạo',
+    financial_scam:     '💳 Lừa đảo tài chính',
+    phishing:           '🎣 Giả mạo trang web',
   };
 
   // Confidence meter bar HTML
@@ -594,6 +612,45 @@
         </div>`;
     }
     return html;
+  }
+
+  // Score breakdown (NLP + fusion) — shows exact numbers per analysis engine
+  function buildScoreBreakdown(details) {
+    const nlpPct    = Math.round((details.nlp_confidence || 0) * 100);
+    const fusionPct = Math.round((details.fusion_score   || 0) * 100);
+    if (!nlpPct && !fusionPct) return '';
+    const method = details.nlp_method === 'vietnamese_scam_engine' ? 'Quy tắc + NLP' : 'PhoBERT AI';
+    function barColor(p) {
+      return p >= 70 ? 'var(--vf-danger)' : p >= 40 ? 'var(--vf-warn)' : 'var(--vf-safe)';
+    }
+    let rows = '';
+    if (nlpPct) rows += `
+      <div class="vifake-score-row">
+        <span class="vifake-score-name">Văn bản (${escapeHtml(method)})</span>
+        <div class="vifake-conf-track"><div class="vifake-conf-fill" style="--conf-w:${nlpPct}%;--conf-color:${barColor(nlpPct)}"></div></div>
+        <span class="vifake-conf-pct">${nlpPct}%</span>
+      </div>`;
+    if (fusionPct) rows += `
+      <div class="vifake-score-row">
+        <span class="vifake-score-name">Tổng hợp (AI)</span>
+        <div class="vifake-conf-track"><div class="vifake-conf-fill" style="--conf-w:${fusionPct}%;--conf-color:${barColor(fusionPct)}"></div></div>
+        <span class="vifake-conf-pct">${fusionPct}%</span>
+      </div>`;
+    return `<div class="vifake-score-breakdown"><p class="vifake-section-title">Điểm chi tiết</p>${rows}</div>`;
+  }
+
+  // Flags with Vietnamese human-readable labels
+  function buildFlagsHtml(flags) {
+    if (!flags.length) return '';
+    const tags = flags.map(f => {
+      const rawKey = f.includes(':') ? f.split(':')[1] : f;
+      const key = rawKey.toLowerCase();
+      // Match against FLAG_DISPLAY by checking if any key is a substring
+      const matchKey = Object.keys(FLAG_DISPLAY).find(k => key.includes(k) || k.includes(key));
+      const label = matchKey ? FLAG_DISPLAY[matchKey] : rawKey.replace(/_/g, ' ');
+      return `<span class="vifake-flag-tag">${escapeHtml(label)}</span>`;
+    }).join('');
+    return `<div class="vifake-flags-section"><p class="vifake-section-title">⚡ Dấu hiệu phát hiện</p><div class="vifake-flags">${tags}</div></div>`;
   }
 
   // Advisory text
@@ -757,12 +814,10 @@
     const confPct    = Math.round(confidence * 100);
     const rlMeta     = RISK_LEVEL_META[riskLevel] || null;
 
-    const intentScores = details.intent || {};
+    // FIX: intent scores are nested under .intents, not at top level
+    const intentScores = details.intent?.intents || {};
     const intentHtml   = buildIntentBars(intentScores);
     const flags        = details.nlp_flags || [];
-    const flagsHtml    = flags.length
-      ? `<div class="vifake-flags">${flags.map(f => `<span class="vifake-flag-tag">${escapeHtml(f)}</span>`).join('')}</div>`
-      : '';
 
     panel.innerHTML = `
       <div class="vifake-result-header ${meta.cls}">
@@ -774,10 +829,11 @@
       ${label === 'SAFE' ? '<div class="vifake-autodismiss-bar"></div>' : ''}
       <div class="vifake-result-body">
         ${buildConfidenceBar(confPct, label)}
+        ${buildScoreBreakdown(details)}
         ${intentLabel ? `<p class="vifake-intent-primary">🎯 <strong>Ý định phát hiện:</strong> ${escapeHtml(intentLabel)}</p>` : ''}
         ${intentExpl  ? `<p class="vifake-intent-expl">${escapeHtml(intentExpl)}</p>` : ''}
         ${intentHtml  ? `<div class="vifake-intent-section"><p class="vifake-section-title">Phân tích ý định</p>${intentHtml}</div>` : ''}
-        ${flagsHtml}
+        ${buildFlagsHtml(flags)}
         ${label === 'SAFE' ? `<p class="vifake-safe-msg">✓ Không phát hiện dấu hiệu nguy hiểm. Kết quả này sẽ tự đóng sau 10 giây.</p>` : ''}
         ${buildAdvisory(label)}
       </div>

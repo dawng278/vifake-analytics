@@ -130,7 +130,7 @@
   to {
     opacity: 1;
     transform: translateY(0);
-    max-height: 600px;
+    max-height: 900px;
   }
 }
 
@@ -205,11 +205,46 @@
 
 .vifake-intent-primary {
   font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px !important;
 }
 
 .vifake-intent-expl {
   color: var(--vf-text-muted);
   font-size: 11px;
+  line-height: 1.6;
+  margin-bottom: 8px !important;
+}
+
+/* ─── Score Breakdown ─── */
+.vifake-score-breakdown {
+  margin: 0 0 10px 0;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vifake-score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+}
+
+.vifake-score-row:last-child {
+  margin-bottom: 0;
+}
+
+.vifake-score-name {
+  flex: 0 0 140px;
+  font-size: 11px;
+  color: var(--vf-text-muted);
+}
+
+/* ─── Flags section ─── */
+.vifake-flags-section {
+  margin: 8px 0 4px 0;
 }
 
 /* ─── Intent Bars: animate from 0% to target ─── */
@@ -310,7 +345,7 @@
   animation: vifake-fade-out 0.28s ease-in forwards;
 }
 @keyframes vifake-fade-out {
-  from { opacity: 1; transform: translateY(0); max-height: 600px; }
+  from { opacity: 1; transform: translateY(0); max-height: 900px; }
   to   { opacity: 0; transform: translateY(-8px); max-height: 0; }
 }
 
