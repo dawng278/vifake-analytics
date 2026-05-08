@@ -79,42 +79,67 @@
     return '';
   }
 
+  // ─── P1-A: Noise filter — removes like counts, timestamps, emoji-only strings ───
+  const NOISE_RE = /^(\d[\d,. ]*[KkMmTỷB]?|\d+\s*(giây|phút|giờ|ngày|tuần|tháng|năm)\s*(trước)?|just now|vừa xong|yesterday|\p{Emoji_Presentation}+)$/u;
+  function isNoise(text) {
+    if (!text || text.length === 0) return true;
+    if (NOISE_RE.test(text)) return true;
+    // Pure punctuation / single word reaction labels (Like, Love, Haha ≤8 chars, no Vietnamese tone)
+    if (text.length <= 8 && /^[a-zA-Z ]+$/.test(text)) return true;
+    return false;
+  }
+
+  // ─── P3-B: Fuzzy dedup — removes substrings of already-collected parts ───
+  function fuzzyDedup(parts) {
+    const norm = s => s.toLowerCase().replace(/\s+/g, ' ');
+    const result = [];
+    for (const p of parts) {
+      const pn = norm(p);
+      // Skip if this is a substring of something we already have
+      if (result.some(r => norm(r).includes(pn))) continue;
+      // Remove existing entries that are substrings of the new one
+      const filtered = result.filter(r => !pn.includes(norm(r)));
+      filtered.push(p);
+      result.length = 0;
+      result.push(...filtered);
+    }
+    return result;
+  }
+
   function extractFacebookText(postEl) {
     const textParts = [];
 
-    // Strategy 1: [dir="auto"] spans inside the post (older FB UI)
+    // Strategy 1: [dir="auto"] spans (older FB UI) — P1-B: prefix [POST]
+    const s1Parts = [];
     postEl.querySelectorAll('[dir="auto"]').forEach(el => {
       const role = el.closest('[role="navigation"], [role="toolbar"], [role="banner"]');
       if (role) return;
       const text = el.innerText?.trim();
-      if (text && text.length > 5) {
-        textParts.push(text);
-      }
+      if (text && text.length > 5 && !isNoise(text)) s1Parts.push(text);
     });
+    if (s1Parts.length > 0) textParts.push('[POST] ' + s1Parts.join(' '));
 
-    // Strategy 2: data-ad-preview attribute (FB sponsored / regular posts)
+    // Strategy 2: data-ad-preview (FB sponsored / regular posts)
     if (textParts.length === 0) {
       postEl.querySelectorAll('[data-ad-preview="message"], [data-ad-comet-preview="message"]').forEach(el => {
         const text = el.innerText?.trim();
-        if (text) textParts.push(text);
+        if (text && !isNoise(text)) textParts.push('[POST] ' + text);
       });
     }
 
-    // Strategy 3: ALL spans with substantive text (modern FB UI)
+    // Strategy 3: ALL leaf spans (modern FB UI) — P1-A noise filter applied
     if (textParts.length === 0) {
       postEl.querySelectorAll('span').forEach(el => {
-        // Skip if inside action bar / nav
         if (el.closest('[role="toolbar"], [role="navigation"], [role="banner"]')) return;
-        // Skip if it has child spans (we want leaf text nodes)
         if (el.querySelector('span')) return;
         const text = el.innerText?.trim();
-        if (text && text.length > 10 && text.length < 5000) {
+        if (text && text.length > 10 && text.length < 5000 && !isNoise(text)) {
           textParts.push(text);
         }
       });
     }
 
-    // Strategy 4: Last resort - whole post innerText minus action bar
+    // Strategy 4: Last resort — clone, strip chrome, use innerText
     if (textParts.length === 0) {
       const clone = postEl.cloneNode(true);
       clone.querySelectorAll('[role="toolbar"], [role="navigation"], [role="banner"], form, button').forEach(el => el.remove());
@@ -122,21 +147,41 @@
       if (text) textParts.push(text);
     }
 
-    // Deduplicate and join
-    const unique = [...new Set(textParts)];
-    return unique.join('\n').trim();
+    // P3-B: fuzzy dedup then join
+    return fuzzyDedup([...new Set(textParts)]).join('\n').trim();
   }
 
   function extractYouTubeText(postEl) {
+    // P1-B: structured prefixes so NLP knows context
     const title = postEl.querySelector('#video-title, #title-wrapper, .title')?.innerText?.trim() || '';
     const desc = postEl.querySelector('#description, .description')?.innerText?.trim() || '';
-    const comment = postEl.querySelector('#content-text')?.innerText?.trim() || '';
-    return [title, desc, comment].filter(Boolean).join('\n');
+    // P1-C: fix — #content-text lives inside ytd-comment-renderer, not at root
+    const commentEl = postEl.querySelector('ytd-comment-renderer #content-text, #content-text');
+    const comment = commentEl?.innerText?.trim() || '';
+    const parts = [];
+    if (title) parts.push('[TITLE] ' + title);
+    if (desc)  parts.push('[DESC] '  + desc);
+    if (comment) parts.push('[COMMENT] ' + comment);
+    return parts.join('\n');
   }
 
   function extractTikTokText(postEl) {
+    // P1-D: extract caption + pinned/first comments for scam link detection
     const desc = postEl.querySelector('[data-e2e="browse-video-desc"], [data-e2e="video-desc"], [class*="DivDescription"]')?.innerText?.trim() || '';
-    return desc;
+    const parts = [];
+    if (desc) parts.push('[DESC] ' + desc);
+    // Pinned comment & first visible comment often carry scam links
+    const commentEls = postEl.querySelectorAll('[data-e2e="comment-level-1"], [data-e2e="browse-comment-item"], [data-e2e="comment-item"]');
+    let commentCount = 0;
+    commentEls.forEach(el => {
+      if (commentCount >= 2) return;
+      const text = el.innerText?.trim();
+      if (text && text.length > 5 && !isNoise(text)) {
+        parts.push('[COMMENT] ' + text);
+        commentCount++;
+      }
+    });
+    return parts.join('\n');
   }
 
   // ─── TikTok Video URL Extractor ───
@@ -402,6 +447,17 @@
                 `Container position:`, container.parentElement?.tagName);
   }
 
+  // ─── P2-B: Client-side quick scam score — only skips trivially clean text ───
+  const SCAM_TIER1_KW = ['robux','nạp thẻ','verify acc','seed phrase','metamask','airdrop','giveaway','usdt','private key','kim cương free','free robux','xác nhận acc','xác minh acc','hack acc','connect ví','trúng thưởng'];
+  function quickScamScore(text) {
+    const t = text.toLowerCase();
+    // Never skip if any tier-1 keyword present
+    if (SCAM_TIER1_KW.some(kw => t.includes(kw))) return { skip: false };
+    // Skip only if text is very short AND completely clean
+    if (text.length < 20) return { skip: true };
+    return { skip: false };
+  }
+
   // ─── Handle Check Button Click ───
   async function handleCheckClick(postEl, btn, container) {
     if (PLATFORM === 'tiktok') {
@@ -416,6 +472,17 @@
       showResult(container, { error: 'Nội dung quá ngắn để phân tích' });
       return;
     }
+
+    // P2-B: skip trivially clean short text
+    const preCheck = quickScamScore(text);
+    if (preCheck.skip) {
+      showResult(container, { label: 'SAFE', prediction: 'SAFE', confidence: 0.95,
+        analysis_details: { nlp_flags: [], intent_label: '' } });
+      return;
+    }
+
+    // P2-A: collect images from the post for richer analysis
+    const media = extractMediaUrls(postEl);
 
     // Show scanning state
     btn.disabled = true;
@@ -437,7 +504,7 @@
     try {
       const result = await chrome.runtime.sendMessage({
         action: 'analyze',
-        payload: { text, url, platform: PLATFORM },
+        payload: { text, url, platform: PLATFORM, images: media.images },  // P2-A: include images
       });
 
       progress.remove();
@@ -575,24 +642,28 @@
       const details = result.analysis_details || {};
       const flags   = details.nlp_flags || [];
 
-      // Build keyword set from flags + universal scam signals
-      const UNIVERSAL = [
-        'free robux', 'free robux', 'bit.ly', 'cutt.ly', 'tinyurl', 'shorturl',
-        'link xác nhận', 'verify acc', 'xác minh', 'mật khẩu', 'password',
-        'click vào link', 'nạp thẻ', 'nạp tiền', 'chuyển khoản',
-        'giveaway', 'airdrop', 'usdt', 'eth', 'metamask', 'seed phrase',
-        'private key', 'connect ví', 'số lượng có hạn', 'nhanh tay',
-        'khẩn cấp', 'khẩn', 'miễn phí', 'free', 'trúng thưởng', 'trúng giải',
-        'nhận quà', 'nhận thưởng', 'hack acc', 'tool hack', 'kim cương free',
-        'robux', 'skin free', 'tài khoản bị khóa',
+      // P3-A: Tiered keyword list \u2014 prevents false highlights on legitimate content
+      // Tier-1: always highlight when verdict is FAKE_SCAM / SUSPICIOUS
+      const TIER1 = [
+        'free robux', 'verify acc', 'seed phrase', 'private key', 'connect v\u00ed',
+        'x\u00e1c nh\u1eadn acc', 'x\u00e1c minh acc', 'hack acc', 'tool hack', 'kim c\u01b0\u01a1ng free',
+        'skin free', 't\u00e0i kho\u1ea3n b\u1ecb kh\u00f3a', 'n\u1ea1p th\u1ebb', 'n\u1ea1p ti\u1ec1n', 'chuy\u1ec3n kho\u1ea3n',
+        'giveaway', 'airdrop', 'usdt', 'metamask', 'robux', 'click v\u00e0o link',
+        'bit.ly', 'cutt.ly', 'tinyurl', 'shorturl', 'link x\u00e1c nh\u1eadn',
       ];
+      // Tier-2: only highlight when confidence \u226570%
+      const confPctHL = Math.round((result.confidence || 0) * 100);
+      const TIER2 = confPctHL >= 70 ? [
+        'mi\u1ec5n ph\u00ed', 'kh\u1ea9n c\u1ea5p', 'tr\u00fang th\u01b0\u1edfng', 'tr\u00fang gi\u1ea3i', 'nh\u1eadn qu\u00e0', 'nh\u1eadn th\u01b0\u1edfng',
+        'nhanh tay', 's\u1ed1 l\u01b0\u1ee3ng c\u00f3 h\u1ea1n', 'eth', 'free',
+      ] : [];
 
-      // Extract keyword strings from flags (e.g. "FINANCIAL_SCAM:robux_phishing" → "robux_phishing")
+      // Extract keyword strings from flags (e.g. "FINANCIAL_SCAM:robux_phishing" \u2192 "robux_phishing")
       const flagKeywords = flags
         .map(f => f.includes(':') ? f.split(':')[1].replace(/_/g, ' ') : null)
         .filter(Boolean);
 
-      const allKeywords = [...new Set([...UNIVERSAL, ...flagKeywords])]
+      const allKeywords = [...new Set([...TIER1, ...TIER2, ...flagKeywords])]
         .sort((a, b) => b.length - a.length); // longest first to avoid partial matches
 
       if (allKeywords.length === 0) return;

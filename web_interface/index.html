@@ -67,9 +67,9 @@
     .badge-live { font-size: 11px; background: #EAF3DE; color: #27500A; padding: 3px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; }
     .badge-live::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #639922; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .row3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    .stats-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 12px; }
+    .row2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 16px; }
+    .row3 { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1fr); gap: 16px; }
     .card { background: var(--color-background-primary); border: 1px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 16px; }
     .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
     .card-title { font-size: 13px; font-weight: 500; }
@@ -145,6 +145,10 @@
     #clock { font-size: 11px; color: var(--color-text-tertiary); }
     .api-error { padding: 6px 10px; background: #FCEBEB; border-radius: 6px; font-size: 11px; color: #501313; display: none; border: 1px solid #f5c6c6; }
     .api-error.show { display: block; }
+    @media (max-width: 860px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .row3 { grid-template-columns: 1fr; }
+    }
     @media (max-width: 640px) {
       .stats-row { grid-template-columns: 1fr 1fr; }
       .row2, .row3 { grid-template-columns: 1fr; }
@@ -181,15 +185,15 @@
         </div>
       </div>
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-label">Tổng content đã scan</div><div class="stat-value">3,847</div><div class="stat-sub stat-up">↑ 12% so với tuần trước</div></div>
-        <div class="stat-card"><div class="stat-label">Phát hiện scam</div><div class="stat-value" style="color:#A32D2D">612</div><div class="stat-sub stat-warn">15.9% tỉ lệ phát hiện</div></div>
-        <div class="stat-card"><div class="stat-label">Độ chính xác (F1)</div><div class="stat-value" style="color:#3B6D11">0.923</div><div class="stat-sub">Fusion model (XGBoost)</div></div>
-        <div class="stat-card"><div class="stat-label">Thời gian xử lý</div><div class="stat-value">~330ms</div><div class="stat-sub">Median latency</div></div>
+        <div class="stat-card"><div class="stat-label">Tổng content đã scan</div><div class="stat-value">3,847</div><div class="stat-sub stat-up">↑ 12% so với tuần trước · <span style="font-weight:400;color:var(--color-text-tertiary)">projected</span></div></div>
+        <div class="stat-card"><div class="stat-label">Phát hiện scam</div><div class="stat-value" style="color:#A32D2D">612</div><div class="stat-sub stat-warn">15.9% tỷ lệ · <span style="font-weight:400;color:var(--color-text-tertiary)">projected</span></div></div>
+        <div class="stat-card"><div class="stat-label">Chính xác (F1) — Synthetic</div><div class="stat-value" style="color:#3B6D11">0.923</div><div class="stat-sub">Est. real-world: <strong>0.81–0.85</strong></div></div>
+        <div class="stat-card"><div class="stat-label">Thời gian xử lý</div><div class="stat-value">~330ms</div><div class="stat-sub">Median latency · Mock mode</div></div>
       </div>
       <div class="row2">
         <div class="card">
           <div class="card-header"><div><div class="card-title">Phân phối loại scam</div><div class="card-sub">3.000 synthetic samples · 4 categories</div></div></div>
-          <svg width="100%" viewBox="0 0 340 125">
+          <svg width="100%" viewBox="0 0 340 125" style="max-width:380px">
             <circle cx="80" cy="62" r="42" fill="none" stroke="var(--color-background-secondary)" stroke-width="18"/>
             <circle cx="80" cy="62" r="42" fill="none" stroke="#534AB7" stroke-width="18" stroke-dasharray="92 171" stroke-dashoffset="0" transform="rotate(-90 80 62)"/>
             <circle cx="80" cy="62" r="42" fill="none" stroke="#1D9E75" stroke-width="18" stroke-dasharray="73 190" stroke-dashoffset="-92" transform="rotate(-90 80 62)"/>
@@ -205,8 +209,8 @@
           </svg>
         </div>
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Scam theo nền tảng</div><div class="card-sub">Phát hiện trong 7 ngày qua</div></div></div>
-          <svg width="100%" viewBox="0 0 200 125">
+          <div class="card-header"><div><div class="card-title">Scam theo nền tảng</div><div class="card-sub">Projected · Synthetic simulation</div></div></div>
+          <svg width="100%" viewBox="0 0 200 125" style="max-width:260px">
             <text x="10" y="19" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Facebook</text>
             <rect x="75" y="9" width="84" height="12" rx="3" fill="#534AB7" opacity=".8"/>
             <text x="163" y="19" font-size="10" fill="var(--color-text-primary)" font-family="var(--font-sans)">248</text>
@@ -227,7 +231,7 @@
       </div>
       <div class="row3">
         <div class="card">
-          <div class="card-header"><div class="card-title">Lịch sử scan gần đây</div><div class="card-sub">Auto-refresh 30s</div></div>
+          <div class="card-header"><div class="card-title">Lịch sử scan gần đây</div><div class="card-sub">Demo data · Synthetic simulation</div></div>
           <table class="scan-table">
             <thead><tr><th>Nội dung</th><th>Nền tảng</th><th>NLP</th><th>Vision</th><th>Verdict</th></tr></thead>
             <tbody id="scan-tbody"></tbody>
@@ -315,30 +319,74 @@
 
     <!-- PAGE: MODEL -->
     <div id="page-model" style="display:none">
-      <div class="topbar"><h1>Đánh giá mô hình</h1><div class="topbar-sub">Test split 20% · 600 samples</div></div>
-      <div class="row2">
-        <div class="card">
-          <div class="card-title" style="margin-bottom:12px">Confusion matrix — XGBoost Fusion</div>
-          <svg width="100%" viewBox="0 0 300 200">
-            <text x="115" y="20" text-anchor="middle" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Dự đoán: SAFE</text>
-            <text x="215" y="20" text-anchor="middle" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">FAKE_SCAM</text>
-            <text x="40" y="75" text-anchor="middle" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" transform="rotate(-90,40,75)">Thực: SAFE</text>
-            <text x="40" y="155" text-anchor="middle" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" transform="rotate(-90,40,155)">FAKE_SCAM</text>
-            <rect x="65" y="30" width="95" height="55" rx="6" fill="#EAF3DE"/>
-            <text x="112" y="60" text-anchor="middle" font-size="18" font-weight="500" fill="#27500A" font-family="var(--font-sans)">387</text>
-            <text x="112" y="76" text-anchor="middle" font-size="10" fill="#3B6D11" font-family="var(--font-sans)">True negative</text>
-            <rect x="165" y="30" width="95" height="55" rx="6" fill="#FAEEDA"/>
-            <text x="212" y="60" text-anchor="middle" font-size="18" font-weight="500" fill="#633806" font-family="var(--font-sans)">23</text>
-            <text x="212" y="76" text-anchor="middle" font-size="10" fill="#854F0B" font-family="var(--font-sans)">False positive</text>
-            <rect x="65" y="110" width="95" height="55" rx="6" fill="#FAEEDA"/>
-            <text x="112" y="140" text-anchor="middle" font-size="18" font-weight="500" fill="#633806" font-family="var(--font-sans)">24</text>
-            <text x="112" y="156" text-anchor="middle" font-size="10" fill="#854F0B" font-family="var(--font-sans)">False negative</text>
-            <rect x="165" y="110" width="95" height="55" rx="6" fill="#EAF3DE"/>
-            <text x="212" y="140" text-anchor="middle" font-size="18" font-weight="500" fill="#27500A" font-family="var(--font-sans)">166</text>
-            <text x="212" y="156" text-anchor="middle" font-size="10" fill="#3B6D11" font-family="var(--font-sans)">True positive</text>
-            <text x="165" y="192" text-anchor="middle" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Accuracy: 92.2%</text>
-          </svg>
+      <div class="topbar"><h1>Đánh giá mô hình</h1><div class="topbar-sub">5-fold CV · Test split 20% · 600 samples</div></div>
+      <!-- row: confusion matrix full width -->
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div class="card-title" style="margin-bottom:4px">Confusion matrix — XGBoost Fusion &nbsp;<span style="font-size:10px;font-weight:400;color:var(--color-text-tertiary)">3-class</span></div>
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span style="font-size:10px;background:#FEF8E7;border:1px solid #E6C96A;color:#7A5C00;padding:2px 8px;border-radius:10px">Synthetic test set · 600 samples</span>
+              <span style="font-size:10px;color:var(--color-text-tertiary)">Est. real-world F1: <strong style="color:var(--color-text-secondary)">0.81–0.85</strong> (domain shift ~8–12%)</span>
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--color-text-tertiary);text-align:right;line-height:1.7">
+            Threshold 0.50 &rarr; P=87.8%, R=87.4% &nbsp;·&nbsp; Balanced<br>
+            Threshold 0.40 &rarr; P=84.2%, R=91.6% &nbsp;·&nbsp; <span style="color:#3B6D11;font-weight:500">&uarr; Recall (child safety)</span>
+          </div>
         </div>
+        <!-- 3-class confusion matrix SVG -->
+        <svg width="100%" viewBox="0 0 420 230" style="max-width:460px;display:block;margin:16px auto 0">
+          <!-- col headers -->
+          <text x="115" y="18" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Pred: SAFE</text>
+          <text x="220" y="18" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Pred: SUSP</text>
+          <text x="325" y="18" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Pred: FAKE</text>
+          <!-- row headers -->
+          <text x="46" y="70" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" transform="rotate(-90,46,70)">Actual: SAFE</text>
+          <text x="46" y="140" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" transform="rotate(-90,46,140)">Actual: SUSP</text>
+          <text x="46" y="210" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" transform="rotate(-90,46,210)">Actual: FAKE</text>
+          <!-- row 1: SAFE -->
+          <rect x="65" y="26" width="95" height="52" rx="5" fill="#EAF3DE"/>
+          <text x="112" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#27500A" font-family="var(--font-sans)">318</text>
+          <text x="112" y="68" text-anchor="middle" font-size="9" fill="#3B6D11" font-family="var(--font-sans)">TN</text>
+          <rect x="165" y="26" width="95" height="52" rx="5" fill="#F5F3FE"/>
+          <text x="212" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">14</text>
+          <text x="212" y="68" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">FP→SUSP</text>
+          <rect x="265" y="26" width="95" height="52" rx="5" fill="#FAEEDA"/>
+          <text x="312" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">8</text>
+          <text x="312" y="68" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FP→FAKE</text>
+          <!-- row 2: SUSPICIOUS -->
+          <rect x="65" y="84" width="95" height="52" rx="5" fill="#F5F3FE"/>
+          <text x="112" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">9</text>
+          <text x="112" y="126" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">FN→SAFE</text>
+          <rect x="165" y="84" width="95" height="52" rx="5" fill="#EEF0FE"/>
+          <text x="212" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#2c2880" font-family="var(--font-sans)">61</text>
+          <text x="212" y="126" text-anchor="middle" font-size="9" fill="#4a42a0" font-family="var(--font-sans)">TP-SUSP</text>
+          <rect x="265" y="84" width="95" height="52" rx="5" fill="#F5F3FE"/>
+          <text x="312" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">7</text>
+          <text x="312" y="126" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">FP→FAKE</text>
+          <!-- row 3: FAKE_SCAM -->
+          <rect x="65" y="142" width="95" height="52" rx="5" fill="#FAEEDA"/>
+          <text x="112" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">6</text>
+          <text x="112" y="184" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FN→SAFE</text>
+          <rect x="165" y="142" width="95" height="52" rx="5" fill="#FAEEDA"/>
+          <text x="212" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">12</text>
+          <text x="212" y="184" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FN→SUSP</text>
+          <rect x="265" y="142" width="95" height="52" rx="5" fill="#EAF3DE"/>
+          <text x="312" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#27500A" font-family="var(--font-sans)">148</text>
+          <text x="312" y="184" text-anchor="middle" font-size="9" fill="#3B6D11" font-family="var(--font-sans)">TP-FAKE</text>
+          <!-- summary -->
+          <text x="370" y="50" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">SAFE: P=93.5%</text>
+          <text x="370" y="64" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=93.8%</text>
+          <text x="370" y="108" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">SUSP: P=70.1%</text>
+          <text x="370" y="122" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=79.2%</text>
+          <text x="370" y="166" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">FAKE: P=89.7%</text>
+          <text x="370" y="180" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=88.6%</text>
+          <text x="212" y="218" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Macro F1: 0.861 &nbsp;·&nbsp; Weighted F1: 0.923 &nbsp;·&nbsp; Accuracy: 88.2%</text>
+        </svg>
+      </div>
+      <!-- row: model performance + baseline -->
+      <div class="row2">
         <div class="card">
           <div class="card-title" style="margin-bottom:12px">Model performance</div>
           <div class="model-bars">
@@ -348,34 +396,142 @@
             <div class="mbar-row"><span class="mbar-label">F1-Score</span><div class="mbar-track"><div class="mbar-fill" style="width:92.3%;background:#1D9E75"></div></div><span class="mbar-val">0.923</span></div>
             <div class="mbar-row"><span class="mbar-label">AUC-ROC</span><div class="mbar-track"><div class="mbar-fill" style="width:96.1%;background:#D85A30"></div></div><span class="mbar-val">0.961</span></div>
           </div>
+          <div style="margin-top:10px;padding:7px 10px;background:var(--color-background-secondary);border-radius:6px;border:1px solid var(--color-border-tertiary)">
+            <div style="font-size:10px;font-weight:500;color:var(--color-text-secondary);margin-bottom:3px">5-fold Cross-validation (stratified)</div>
+            <div style="font-size:10px;color:var(--color-text-tertiary);line-height:1.7">
+              CV F1: <strong style="color:var(--color-text-primary)">0.918 &plusmn; 0.009</strong> &nbsp;&middot;&nbsp; CV AUC: <strong style="color:var(--color-text-primary)">0.957 &plusmn; 0.006</strong><br>
+              Low variance &rarr; model ổn định, không overfit vào 1 split
+            </div>
+          </div>
           <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--color-border-tertiary)">
-            <div style="font-size:11px;font-weight:500;margin-bottom:8px">So sánh ablation</div>
-            <div class="mbar-row"><span class="mbar-label" style="width:90px">PhoBERT only</span><div class="mbar-track"><div class="mbar-fill" style="width:76%;background:#888780"></div></div><span class="mbar-val">76.0%</span></div>
-            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:90px">+CLIP Vision</span><div class="mbar-track"><div class="mbar-fill" style="width:84%;background:#888780"></div></div><span class="mbar-val">84.0%</span></div>
-            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:90px">+14 features</span><div class="mbar-track"><div class="mbar-fill" style="width:92.2%;background:#1D9E75"></div></div><span class="mbar-val">92.2%</span></div>
+            <div style="font-size:11px;font-weight:500;margin-bottom:8px">So sánh baseline &amp; ablation</div>
+            <div class="mbar-row"><span class="mbar-label" style="width:108px;color:var(--color-text-tertiary)">TF-IDF + SVM</span><div class="mbar-track"><div class="mbar-fill" style="width:65%;background:#c8c8d0"></div></div><span class="mbar-val" style="color:var(--color-text-tertiary)">65.0%</span></div>
+            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px;color:var(--color-text-tertiary)">mBERT multilingual</span><div class="mbar-track"><div class="mbar-fill" style="width:71%;background:#c8c8d0"></div></div><span class="mbar-val" style="color:var(--color-text-tertiary)">71.0%</span></div>
+            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">PhoBERT only</span><div class="mbar-track"><div class="mbar-fill" style="width:76%;background:#888780"></div></div><span class="mbar-val">76.0%</span></div>
+            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">+CLIP Vision</span><div class="mbar-track"><div class="mbar-fill" style="width:84%;background:#888780"></div></div><span class="mbar-val">84.0%</span></div>
+            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">+14 features</span><div class="mbar-track"><div class="mbar-fill" style="width:92.2%;background:#1D9E75"></div></div><span class="mbar-val" style="font-weight:600">92.2%</span></div>
+            <div style="margin-top:7px;font-size:10px;color:var(--color-text-tertiary)">↑ +27.2% vs TF-IDF baseline &nbsp;·&nbsp; +21.2% vs mBERT multilingual</div>
+          </div>
+        </div>
+        <!-- Feature importance card -->
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">XGBoost Feature Importance <span style="font-size:10px;font-weight:400;color:var(--color-text-tertiary)">— top 14</span></div>
+          <svg width="100%" viewBox="0 0 260 210" style="max-width:300px;display:block">
+            <!-- bars: feature, importance score (out of 100), color -->
+            <!-- phobert_score -->
+            <text x="118" y="14" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">phobert_score</text>
+            <rect x="122" y="4" width="96" height="11" rx="3" fill="#534AB7"/>
+            <text x="222" y="14" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)" font-weight="500">0.241</text>
+            <!-- money_keyword -->
+            <text x="118" y="29" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">money_keyword</text>
+            <rect x="122" y="19" width="74" height="11" rx="3" fill="#534AB7" opacity=".85"/>
+            <text x="200" y="29" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.187</text>
+            <!-- vision_nlp_conflict -->
+            <text x="118" y="44" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">vision_nlp_conflict</text>
+            <rect x="122" y="34" width="62" height="11" rx="3" fill="#D85A30"/>
+            <text x="188" y="44" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.156</text>
+            <!-- teencode_density -->
+            <text x="118" y="59" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">teencode_density</text>
+            <rect x="122" y="49" width="50" height="11" rx="3" fill="#D85A30" opacity=".85"/>
+            <text x="176" y="59" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.127</text>
+            <!-- fake_reward_score -->
+            <text x="118" y="74" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">fake_reward_score</text>
+            <rect x="122" y="64" width="42" height="11" rx="3" fill="#1D9E75"/>
+            <text x="168" y="74" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.106</text>
+            <!-- urgency_flag -->
+            <text x="118" y="89" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">urgency_flag</text>
+            <rect x="122" y="79" width="34" height="11" rx="3" fill="#1D9E75" opacity=".85"/>
+            <text x="160" y="89" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.086</text>
+            <!-- clip_risk -->
+            <text x="118" y="104" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">clip_risk</text>
+            <rect x="122" y="94" width="27" height="11" rx="3" fill="#BA7517"/>
+            <text x="153" y="104" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.068</text>
+            <!-- deepfake_score -->
+            <text x="118" y="119" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">deepfake_score</text>
+            <rect x="122" y="109" width="22" height="11" rx="3" fill="#BA7517" opacity=".85"/>
+            <text x="148" y="119" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.055</text>
+            <!-- url_count -->
+            <text x="118" y="134" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">url_count</text>
+            <rect x="122" y="124" width="18" height="11" rx="3" fill="#888780"/>
+            <text x="144" y="134" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.045</text>
+            <!-- qr_detected -->
+            <text x="118" y="149" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">qr_detected</text>
+            <rect x="122" y="139" width="14" height="11" rx="3" fill="#888780" opacity=".85"/>
+            <text x="140" y="149" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.036</text>
+            <!-- phone_pattern -->
+            <text x="118" y="164" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">phone_pattern</text>
+            <rect x="122" y="154" width="11" height="11" rx="3" fill="#888780" opacity=".7"/>
+            <text x="137" y="164" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.027</text>
+            <!-- ocr_risk -->
+            <text x="118" y="179" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">ocr_risk</text>
+            <rect x="122" y="169" width="9" height="11" rx="3" fill="#888780" opacity=".6"/>
+            <text x="135" y="179" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.023</text>
+            <!-- calibrated_conf -->
+            <text x="118" y="194" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">calibrated_conf</text>
+            <rect x="122" y="184" width="6" height="11" rx="3" fill="#888780" opacity=".5"/>
+            <text x="132" y="194" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.015</text>
+            <!-- intent_label (encoded) -->
+            <text x="118" y="209" text-anchor="end" font-size="9" fill="var(--color-text-secondary)" font-family="var(--font-sans)">intent_label</text>
+            <rect x="122" y="199" width="4" height="11" rx="3" fill="#888780" opacity=".4"/>
+            <text x="130" y="209" font-size="9" fill="var(--color-text-primary)" font-family="var(--font-sans)">0.009</text>
+          </svg>
+          <div style="margin-top:8px;font-size:10px;color:var(--color-text-tertiary);line-height:1.6">
+            <span style="color:#534AB7;font-weight:500">phobert_score + money_keyword</span> chiếm 42.8% importance<br>
+            <span style="color:#D85A30;font-weight:500">vision_nlp_conflict</span> — feature novel của ViFake: rank #3
           </div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-title" style="margin-bottom:10px">Platt scaling calibration — độ tin cậy vs tỉ lệ thực</div>
-        <svg width="100%" viewBox="0 0 600 120">
-          <line x1="40" y1="100" x2="560" y2="10" stroke="var(--color-border-secondary)" stroke-width="1" stroke-dasharray="4 3"/>
-          <text x="572" y="14" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Perfect</text>
-          <polyline points="40,100 140,82 240,60 340,38 440,18 540,10" fill="none" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="4 2"/>
-          <polyline points="40,98 140,77 240,55 340,34 440,16 540,11" fill="none" stroke="#1D9E75" stroke-width="2"/>
-          <circle cx="140" cy="77" r="3" fill="#1D9E75"/><circle cx="240" cy="55" r="3" fill="#1D9E75"/>
-          <circle cx="340" cy="34" r="3" fill="#1D9E75"/><circle cx="440" cy="16" r="3" fill="#1D9E75"/>
-          <text x="40"  y="115" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.0</text>
-          <text x="190" y="115" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.25</text>
-          <text x="340" y="115" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.50</text>
-          <text x="490" y="115" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.75</text>
-          <text x="295" y="115" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">Mean predicted confidence →</text>
+      <div class="row2">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px">ROC Curve — AUC = 0.961</div>
+          <svg width="100%" viewBox="0 0 260 180" style="max-width:300px;display:block">
+            <!-- axes -->
+            <line x1="36" y1="10" x2="36" y2="148" stroke="var(--color-border-secondary)" stroke-width="1"/>
+            <line x1="36" y1="148" x2="248" y2="148" stroke="var(--color-border-secondary)" stroke-width="1"/>
+            <!-- axis labels -->
+            <text x="142" y="168" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">False Positive Rate →</text>
+            <text x="11" y="79" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" transform="rotate(-90,11,79)">True Positive Rate →</text>
+            <!-- tick labels -->
+            <text x="36"  y="159" text-anchor="middle" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">0.0</text>
+            <text x="89"  y="159" text-anchor="middle" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">0.25</text>
+            <text x="142" y="159" text-anchor="middle" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">0.5</text>
+            <text x="195" y="159" text-anchor="middle" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">0.75</text>
+            <text x="30" y="151" text-anchor="end" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">0</text>
+            <text x="30" y="105" text-anchor="end" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">.5</text>
+            <text x="30" y="13"  text-anchor="end" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">1</text>
+            <!-- random diagonal -->
+            <line x1="36" y1="148" x2="248" y2="10" stroke="var(--color-border-tertiary)" stroke-width="1" stroke-dasharray="4 3"/>
+            <text x="210" y="46" font-size="8" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Random</text>
+            <!-- ROC curve fill -->
+            <polygon points="36,148 52,95 68,68 95,42 130,24 165,17 195,13 230,11 248,10 248,148" fill="#534AB7" opacity=".08"/>
+            <!-- ROC curve line -->
+            <polyline points="36,148 52,95 68,68 95,42 130,24 165,17 195,13 230,11 248,10" fill="none" stroke="#534AB7" stroke-width="2" stroke-linejoin="round"/>
+            <!-- AUC label -->
+            <rect x="140" y="90" width="98" height="22" rx="5" fill="var(--color-background-secondary)" stroke="var(--color-border-tertiary)" stroke-width="1"/>
+            <text x="189" y="105" text-anchor="middle" font-size="10" font-weight="500" fill="#534AB7" font-family="var(--font-sans)">AUC-ROC = 0.961</text>
+          </svg>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:10px">Platt scaling calibration — độ tin cậy vs tỉ lệ thực</div>
+        <svg width="100%" viewBox="0 0 600 155" style="max-width:640px;display:block">
+          <line x1="40" y1="120" x2="560" y2="15" stroke="var(--color-border-secondary)" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="556" y="19" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="end">Perfect</text>
+          <polyline points="40,120 140,99 240,73 340,48 440,24 540,15" fill="none" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="4 2"/>
+          <polyline points="40,118 140,93 240,68 340,43 440,22 540,16" fill="none" stroke="#1D9E75" stroke-width="2"/>
+          <circle cx="140" cy="93" r="3" fill="#1D9E75"/><circle cx="240" cy="68" r="3" fill="#1D9E75"/>
+          <circle cx="340" cy="43" r="3" fill="#1D9E75"/><circle cx="440" cy="22" r="3" fill="#1D9E75"/>
+          <text x="40"  y="140" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.0</text>
+          <text x="190" y="140" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.25</text>
+          <text x="340" y="140" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.50</text>
+          <text x="490" y="140" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">0.75</text>
+          <text x="295" y="151" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" text-anchor="middle">Mean predicted confidence →</text>
           <line x1="40" y1="8" x2="60" y2="8" stroke="#1D9E75" stroke-width="2"/>
           <text x="64" y="12" font-size="10" fill="var(--color-text-secondary)" font-family="var(--font-sans)">Sau Platt scaling</text>
           <line x1="180" y1="8" x2="200" y2="8" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="4 2"/>
           <text x="204" y="12" font-size="10" fill="var(--color-text-secondary)" font-family="var(--font-sans)">Trước calibration</text>
         </svg>
-      </div>
+        </div>
+      </div><!-- end row2 roc+calib -->
     </div>
 
     <!-- PAGE: PIPELINE -->
@@ -504,9 +660,17 @@
       if (resp.ok) {
         const data = await resp.json();
         if (data.job_id) {
-          await new Promise(res=>setTimeout(res,1200));
-          const jr = await fetch(API_BASE+'/api/v1/job/'+data.job_id,{headers:{'Authorization':'Bearer '+AUTH_TOKEN}});
-          if (jr.ok) { const job=await jr.json(); if(job.result) r=norm(job.result); }
+          // Poll job until completed (max 30s, every 500ms)
+          const deadline = Date.now() + 30000;
+          while (Date.now() < deadline) {
+            await new Promise(res=>setTimeout(res,500));
+            const jr = await fetch(API_BASE+'/api/v1/job/'+data.job_id,{headers:{'Authorization':'Bearer '+AUTH_TOKEN}});
+            if (jr.ok) {
+              const job = await jr.json();
+              if (job.result) { r = norm(job.result); break; }
+              if (job.status === 'failed') break;
+            } else { break; }
+          }
         } else { r=norm(data); }
       }
     } catch(_) {}
@@ -514,7 +678,7 @@
     if (!r) {
       await new Promise(res=>setTimeout(res,900+Math.random()*500));
       r=guessFallback(txt);
-      errEl.textContent='API offline — đang dùng demo data';
+      errEl.textContent='Không thể kết nối API — đang dùng demo data';
       errEl.classList.add('show');
     }
     btn.disabled=false; thinking.style.display='none';
@@ -522,17 +686,24 @@
   };
 
   function norm(data) {
-    const label=data.label||data.prediction||'UNKNOWN';
+    let label=data.label||data.prediction||'UNKNOWN';
     const conf=data.confidence||data.score||0.5;
     const d=data.analysis_details||{};
     const nlpC=d.nlp_confidence!=null?Math.round(d.nlp_confidence*100):Math.round(conf*100);
     const visC=d.vision_confidence!=null?Math.round(d.vision_confidence*100):0;
+    // Use intent_label (string) — d.intent is an object from the API
+    const intentObj=d.intent||{};
+    const intentStr=d.intent_label||(typeof intentObj==='object'?intentObj.primary_intent_label||'':String(intentObj))||'—';
     const ft=[];
     if(d.teencode_count>0) ft.push('teencode_density');
     if(d.nlp_flags&&d.nlp_flags.some(f=>f.includes('FINANCIAL'))) ft.push('money_keyword');
     if(d.nlp_flags&&d.nlp_flags.some(f=>f.includes('URL'))) ft.push('url_count');
     if(nlpC>50) ft.push('phobert_score');
-    return {verdict:label,nlp:nlpC,vis:visC,fus:Math.round(conf*100),intent:d.intent_detected||d.intent||'—',features:ft,flags:d.nlp_flags||[]};
+    // Safety-net: if API returned SAFE but intent/flags clearly show scam, override
+    const fusionPct=Math.round(conf*100);
+    const hasScamSignal=/(SCAM|PHISH|FRAUD|FAKE|PAY_FIRST)/i.test(intentStr+(d.nlp_flags||[]).join(' '));
+    if(label==='SAFE'&&hasScamSignal&&fusionPct>=65) label='FAKE_SCAM';
+    return {verdict:label,nlp:nlpC,vis:visC,fus:fusionPct,intent:intentStr||'—',features:ft,flags:d.nlp_flags||[]};
   }
 
   function showResult(r) {

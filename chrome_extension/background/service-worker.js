@@ -140,7 +140,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 // ─── Core: Analyze ───
 async function handleAnalyze(payload, tabId) {
-  const { text, url, platform } = payload;
+  const { text, url, platform, images } = payload;  // P2-A: destructure images
 
   if (!text || text.trim().length < 10) {
     return { error: 'Nội dung quá ngắn để phân tích' };
@@ -170,6 +170,7 @@ async function handleAnalyze(payload, tabId) {
         platform: platform || 'facebook',
         priority: 'high',
         content: text,
+        ...(images && images.length > 0 ? { images } : {}),  // P2-A: include images when present
       }),
     });
 
@@ -213,9 +214,12 @@ async function handleAnalyze(payload, tabId) {
 }
 
 // ─── Poll for Job Result ───
-async function pollForResult(baseUrl, token, jobId, maxAttempts = 30) {
+// P2-C: adaptive delay — fast first polls (backend ~330ms), slower backoff after
+async function pollForResult(baseUrl, token, jobId, maxAttempts = 25) {
   for (let i = 0; i < maxAttempts; i++) {
-    await sleep(1000);
+    // Adaptive delay: 200ms → 500ms → 800ms
+    const delay = i === 0 ? 200 : i <= 3 ? 500 : 800;
+    await sleep(delay);
 
     try {
       const res = await fetch(`${baseUrl}/api/v1/job/${jobId}`, {

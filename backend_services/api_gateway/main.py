@@ -456,12 +456,53 @@ def _run_nlp_analysis(text: str) -> Dict:
 
 def _vietnamese_scam_detector(text: str) -> Dict:
     """Multi-dimensional Vietnamese scam/fake news detection"""
+    import re
     text_lower = text.lower()
     text_upper = text.upper()
     score = 0.0
     flags = []
     details = {}
-    
+
+    # === 0a. Pay-first scheme detection (very high signal) ===
+    pay_first_patterns = [
+        r'nạp.*thẻ.*trước', r'trả.*trước.*để.*nhận', r'nạp.*trước.*để.*nhận',
+        r'gửi.*tiền.*trước', r'chuyển.*khoản.*trước',
+        r'nạp.*thẻ.*xác.*nhận', r'nạp.*thẻ.*xác.*minh',
+        r'nạp.*\d+k.*để.*nhận', r'nạp.*\d+k.*xác.*nhận',
+    ]
+    pay_first_hits = [pat for pat in pay_first_patterns if re.search(pat, text_lower)]
+    if pay_first_hits:
+        score += 0.40
+        flags.append('FINANCIAL_SCAM:pay_first_scheme')
+        details['pay_first_risk'] = 0.40
+
+    # === 0. Fast keyword pre-scan (catches cases where regex may miss) ===
+    # Crypto / financial scam keywords (case-insensitive via text_lower)
+    crypto_keywords = [
+        'airdrop', 'metamask', 'usdt', ' eth ', '.eth', 'eth.', 'bitcoin', 'btc', 'crypto',
+        'wallet', 'ví điện tử', 'ví metamask', 'connect wallet', 'connect ví',
+        'nhận lại', 'gửi đi nhận lại', 'giveaway', 'double your', 'x2 eth', 'x2 usdt',
+        'free token', 'free crypto', 'token free', 'claim token', 'claim reward',
+    ]
+    crypto_hits = [kw for kw in crypto_keywords if kw in text_lower]
+    if crypto_hits:
+        hit_score = min(len(crypto_hits) * 0.18, 0.55)
+        score += hit_score
+        flags.append(f"FINANCIAL_SCAM:crypto_keywords ({', '.join(crypto_hits[:3])})")
+        details['crypto_keyword_hits'] = crypto_hits
+
+    # "send small get large" pattern: e.g. "gửi 0.01 ETH... nhận lại 0.05 ETH"
+    send_get_pattern = r'(gửi|send|nạp)\s+[\d.,]+\s*\w+.*?(nhận|receive|get)\s+[\d.,]+'
+    if re.search(send_get_pattern, text_lower, re.DOTALL):
+        score += 0.35
+        flags.append("FINANCIAL_SCAM:send_receive_doubling")
+
+    # Generic money-doubling numbers (e.g. "100k nhận về 500k")
+    money_double = r'(nạp|gửi|bỏ ra).*?\d+.*?(nhận|được|lấy về).*?\d+'
+    if re.search(money_double, text_lower, re.DOTALL):
+        score += 0.25
+        flags.append("FINANCIAL_SCAM:money_doubling")
+
     # === 1. URL & Shortlink Detection ===
     url_patterns = [
         r'bit\.ly', r'bitly', r'shorturl', r'tinyurl', r'cutt\.ly',
@@ -471,7 +512,6 @@ def _vietnamese_scam_detector(text: str) -> Dict:
     ]
     url_count = 0
     for pat in url_patterns:
-        import re
         if re.search(pat, text_lower):
             url_count += 1
     if url_count > 0:
@@ -484,10 +524,10 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         'robux_phishing': [
             r'robux.*free', r'free.*robux', r'robux.*miễn.*phí',
             r'admin.*roblox', r'roblox.*admin', r'event.*robux',
-            r'verify.*acc', r'xác.*minh.*acc', r'verify.*tài.*khoản',
+            r'verify.*acc', r'xác.*minh.*acc', r'xác.*nhận.*acc', r'verify.*tài.*khoản',
         ],
         'gift_card_scam': [
-            r'nạp.*thẻ.*được', r'thẻ.*gate', r'thẻ.*garena',
+            r'nạp.*thẻ.*được', r'nạp.*thẻ', r'thẻ.*gate', r'thẻ.*garena',
             r'nạp.*50k.*được.*500k', r'nạp.*100k.*được.*1tr',
             r'ưu.*đãi.*đặc.*biệt', r'khuyến.*mãi.*đặc.*biệt',
         ],
@@ -507,7 +547,6 @@ def _vietnamese_scam_detector(text: str) -> Dict:
     financial_score = 0
     for scam_type, patterns in financial_patterns.items():
         for pat in patterns:
-            import re
             if re.search(pat, text_lower):
                 financial_score += 0.12
                 flags.append(f"FINANCIAL_SCAM:{scam_type}")
