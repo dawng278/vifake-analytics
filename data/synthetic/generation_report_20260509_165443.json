@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-05-09T16:54:43.735636",
+  "total_samples": 2800,
+  "label_distribution": {
+    "FAKE_SCAM": 2000,
+    "SAFE": 800
+  },
+  "scenario_distribution": {
+    "romance_grooming_scam": 180,
+    "gaming_normal": 135,
+    "school_daily": 161,
+    "mlbb_diamond_scam": 136,
+    "robux_phishing": 184,
+    "question_normal": 101,
+    "crypto_airdrop_scam": 165,
+    "fake_job_ctv": 198,
+    "fake_streaming_account": 159,
+    "social_normal": 141,
+    "discord_steam_scam": 158,
+    "tiktok_coin_scam": 151,
+    "advice_genuine": 102,
+    "fake_giveaway_prize": 215,
+    "fake_scholarship": 105,
+    "freefire_garena_scam": 219,
+    "entertainment": 160,
+    "otp_phishing": 130
+  },
+  "age_focus_distribution": {
+    "14-17": 1553,
+    "11-13": 803,
+    "8-10": 444
+  },
+  "note": "100% synthetic data — Privacy-by-Design. No real user data collected."
+}

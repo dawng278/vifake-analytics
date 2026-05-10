@@ -44,10 +44,15 @@
 
     <!-- Recent Scans Tab -->
     <section class="tab-content active" id="tab-recent">
+      <div class="recent-header">
+        <span class="recent-count" id="recentCount"></span>
+        <button id="clearHistory" class="btn-clear" title="Xóa toàn bộ lịch sử">🗑 Xóa</button>
+      </div>
       <div id="recentList" class="recent-list">
         <div class="empty-state">
+          <div class="empty-icon">🛡️</div>
           <p>Chưa có kết quả quét nào.</p>
-          <p class="hint">Mở Facebook và nhấn nút "Kiểm tra ViFake" dưới bài đăng.</p>
+          <p class="hint">Mở Facebook, YouTube hoặc TikTok và nhấn nút <strong>Kiểm tra ViFake</strong> dưới bài đăng.</p>
         </div>
       </div>
     </section>
@@ -76,8 +81,8 @@
 
     <!-- Footer -->
     <footer class="popup-footer">
-      <span>ViFake v1.0.0</span>
-      <a href="#" id="privacyLink">Chính sách</a>
+      <span>ViFake v1.1.0</span>
+      <a href="#" id="privacyLink">Chính sách bảo mật</a>
     </footer>
   </div>
 

@@ -21,7 +21,12 @@ import xgboost as xgb
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support, classification_report, confusion_matrix
 from sklearn.preprocessing import StandardScaler
-import shap
+
+try:
+    import shap
+    SHAP_AVAILABLE = True
+except ImportError:
+    SHAP_AVAILABLE = False
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -435,6 +440,8 @@ class XGBoostFusionModel:
             return {'error': 'Model not trained for explanation'}
         
         try:
+            if not SHAP_AVAILABLE:
+                return {'error': 'shap package not installed'}
             import shap
             
             # Extract features

@@ -66,11 +66,12 @@ class PhoBERTInference:
         # Load tokenizer
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
 
-        # Load model
+        # Load model — use_safetensors=True avoids torch.load CVE-2025-32434 check
         self.model = AutoModelForSequenceClassification.from_pretrained(
             model_path,
             num_labels=3,
-            ignore_mismatched_sizes=True
+            ignore_mismatched_sizes=True,
+            use_safetensors=True,
         )
 
         # Setup for inference

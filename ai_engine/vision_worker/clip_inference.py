@@ -99,11 +99,12 @@ class CLIPVisionWorker:
             # Load processor
             self.processor = CLIPProcessor.from_pretrained(self.config.model_name)
             
-            # Load model with FP16
+            # Load model with FP16 — use_safetensors=True avoids torch.load CVE-2025-32434 check
             self.model = CLIPModel.from_pretrained(
                 self.config.model_name,
                 torch_dtype=self.config.dtype,
-                device_map="auto"
+                device_map="auto",
+                use_safetensors=True,
             )
             
             # Set to evaluation mode

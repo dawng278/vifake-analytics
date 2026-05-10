@@ -58,8 +58,9 @@ easyocr>=1.7.1             # OCR on-screen text from video frames (vi+en)
 torch==2.2.0+cpu
 torchvision==0.17.0+cpu
 transformers>=4.40.0        # PhoBERT tokenizer + model
+accelerate>=0.27.0           # Required by transformers device_map (CLIP)
 onnxruntime>=1.17.1          # ONNX inference (lightweight, no CUDA)
 
 # === Lightweight ML ===
-numpy>=1.26.0
+numpy>=1.26.0,<2.0.0        # Pin numpy<2: torch==2.2 compiled against NumPy 1.x
 xgboost>=2.0.0              # XGBoost fusion model (CPU-only, no CUDA needed)
