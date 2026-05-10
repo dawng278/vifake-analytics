@@ -416,11 +416,42 @@
 
     container.appendChild(btn);
 
-    // Insert after the post text, before the action bar
+    // Insert into the post HEADER (next to author name / "..." button)
     if (PLATFORM === 'facebook') {
-      // Try to find the action bar (like/comment/share) and insert before it
-      const actionBar = targetEl.querySelector('[role="toolbar"]')
-        || targetEl.querySelector('[aria-label*="Like" i], [aria-label*="Thích" i]')?.closest('div:not([role])');
+      container.classList.add('vifake-container--header');
+
+      // Strategy 1: find the "..." more-options button and insert the badge before it
+      const moreBtn =
+        targetEl.querySelector('[aria-label*="More options" i]') ||
+        targetEl.querySelector('[aria-label*="Tùy chọn khác" i]') ||
+        targetEl.querySelector('[aria-label*="Thêm" i][role="button"]') ||
+        targetEl.querySelector('[aria-label*="options" i][role="button"]');
+
+      if (moreBtn) {
+        const headerRow = moreBtn.parentElement;
+        headerRow.insertBefore(container, moreBtn);
+        return;
+      }
+
+      // Strategy 2: find the header row via the author link (timestamp <a> or author <a>)
+      const authorLink =
+        targetEl.querySelector('a[href*="/groups/"] strong, a[role="link"] strong, h4 a, h3 a') ||
+        targetEl.querySelector('a[role="link"][tabindex="0"]');
+      if (authorLink) {
+        // Walk up until we find a row-like div that also contains an action button or the "..." button
+        let row = authorLink.parentElement;
+        for (let i = 0; i < 5 && row && row !== targetEl; i++) {
+          const style = window.getComputedStyle(row);
+          if (style.display === 'flex' || style.display === 'inline-flex') {
+            row.appendChild(container);
+            return;
+          }
+          row = row.parentElement;
+        }
+      }
+
+      // Fallback: insert before the action bar (like/comment/share)
+      const actionBar = targetEl.querySelector('[role="toolbar"]');
       if (actionBar?.parentElement) {
         actionBar.parentElement.insertBefore(container, actionBar);
       } else {

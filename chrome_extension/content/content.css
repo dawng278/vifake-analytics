@@ -30,6 +30,25 @@
   z-index: 100;
 }
 
+/* Header-mode: sits inline inside the post header row */
+.vifake-container--header {
+  margin: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Result panel anchors below the article when button is in header */
+.vifake-container--header .vifake-result-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: auto;
+  width: 320px;
+  z-index: 9999;
+}
+
 /* ─── Check Button ─── */
 .vifake-check-btn {
   display: inline-flex;
