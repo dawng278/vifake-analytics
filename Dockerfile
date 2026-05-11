@@ -22,5 +22,5 @@ ENV PORT=8000
 
 EXPOSE 8000
 
-# Run FastAPI with uvicorn
-CMD ["python", "-m", "uvicorn", "backend_services.api_gateway.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run FastAPI — use $PORT from Render/Railway, fallback to 8000 for local Docker
+CMD ["sh", "-c", "python -m uvicorn backend_services.api_gateway.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
