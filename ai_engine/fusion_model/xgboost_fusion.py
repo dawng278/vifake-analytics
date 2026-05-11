@@ -60,7 +60,7 @@ class XGBoostFusionModel:
     """XGBoost-based multi-modal fusion classifier"""
     
     # Classification labels
-    LABELS = ["SAFE", "FAKE_TOXIC", "FAKE_SCAM", "FAKE_MISINFO"]
+    LABELS = ["SAFE", "SUSPICIOUS", "FAKE_SCAM"]
     LABEL_MAP = {label: i for i, label in enumerate(LABELS)}
     
     def __init__(self, config: FusionConfig):

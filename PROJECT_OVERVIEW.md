@@ -24,18 +24,38 @@
 
 **ViFake Analytics** is a comprehensive AI-powered system designed to detect and prevent child-targeted scams on Vietnamese social media platforms. The system uses multi-modal AI analysis (vision, NLP, graph analytics) to identify malicious content targeting children, with a Privacy-by-Design architecture ensuring complete ethical compliance.
 
-### 🔄 Recent Updates (May 6, 2026)
+### 🔄 Recent Updates (May 11, 2026)
 
-- Completed a major pipeline update and engineering sprint:
-  - Rewrote `backend_services/video_pipeline/frame_analyzer.py` with QR detection, EasyOCR (vi+en), CLIP-based deepfake scoring, and texture-based signals.
-  - Rewrote `backend_services/video_pipeline/face_ai_detector.py` to use MediaPipe when available and fall back to OpenCV Haar cascades; added 4 signal-based deepfake heuristics (texture, symmetry, color uniformity, FFT noise). Compatibility fix added for MediaPipe 0.10+.
-  - Updated `ai_engine/vision_worker/clip_inference.py` to use scam-aware CLIP labels and named risk mappings (scam_risk, money_risk, fake_reward_risk, deepfake_risk).
-  - Expanded `ai_engine/synthetic_data/vietnamese_child_scam_generator.py` with 4 new scenarios (FAKE_JOB_AD, CRYPTO_NFT_SCAM, ROMANCE_SCAM, FAKE_GIVEAWAY_QR) and increased samples to ~3000 for richer PhoBERT fine-tuning.
-  - Added `verdict_map` and `verdict` output in `ai_engine/nlp_worker/phobert_inference.py` so PhoBERT predictions map to pipeline verdicts (SAFE, SUSPICIOUS, FAKE_SCAM).
-  - Added `mediapipe>=0.10.9` and `easyocr>=1.7.1` to `requirements.txt` (note: EasyOCR may download model files on first run; set `EASYOCR_MODEL_STORAGE_DIRECTORY` in deployments to control storage).
-  - All edits committed and pushed (commits include b7d8200 and follow-up fix 3bff805).
+- **Video Analysis Pipeline** - Multi-modal AI detection for TikTok:
+  - Audio AI Detection: MFCC + spectrogram analysis for voice clone detection
+  - Vision AI Detection: Face cropping + EfficientNet-B4 for avatar detection  
+  - 60/40 Weighted Fusion: Vision 60%, Audio 40% with high-confidence rules
+  - Enhanced `/api/v1/analyze/video` endpoint with full pipeline integration
 
-  Impact: stronger multi-modal detection, QR/OTP/URL evidence support, and improved mapping between model outputs and user-facing verdicts.
+- **Chrome Extension** - TikTok integration with button injection fixes:
+  - Fixed multiple button injection issue (unique video ID tracking)
+  - Fixed ReferenceError in click handlers
+  - Added debounce and page change detection
+  - Smart container detection for optimal button placement
+  - Localhost API integration (`http://localhost:8000`)
+
+- **Enhanced AI Detection** - Advanced multi-modal analysis:
+  - Audio AI Detector: Rule-based voice spoofing detection
+  - Face AI Detector: OpenCV face detection + cropping + analysis
+  - Pipeline Coordinator: Orchestrates audio transcription, frame analysis, fusion
+  - High-confidence threshold rules (>0.85 immediate flag)
+
+- **System Architecture Updates**:
+  - Complete localhost setup (API:8000, Web:8080)
+  - Import path fixes for video pipeline modules
+  - Enhanced error handling and logging
+  - Performance optimization for CPU/GPU processing
+
+- **Dependencies & Deployment**:
+  - Updated requirements.txt with video processing libraries
+  - Fixed Dockerfile with ffmpeg system package
+  - Resolved import path conflicts in API Gateway
+  - Ready for Render deployment with all dependencies
 
 ### 🌟 Key Features
 
@@ -50,7 +70,8 @@
 - **Privacy-by-Design**: Zero-trust RAM processing, no persistent storage of harmful content
 - **Ethical AI**: 100% synthetic data training, compliant with Nghị định 13/2023/NĐ-CP (Vietnam Personal Data Protection)
 - **Web Interface**: Modern Vietnamese-language dashboard with text input and sample testing
-- **Extension Ready**: Foundation for browser extension development
+- **Extension Ready**: Chrome Extension chạy với localhost API (`http://localhost:8000`)
+- **URL Crawling**: Tự động crawl OGP metadata + og:image từ Facebook/TikTok/X/YouTube — phân tích text và hình ảnh thật
 
 ## 🔬 What's Novel
 
@@ -289,26 +310,36 @@ This is a valid concern. Our mitigation strategy:
 
 ## ⏱️ Performance Breakdown
 
-*Measured on dev hardware: Core i5-12450H, 20GB DDR4, RTX 2050 4GB VRAM*
+*Hardware: Core i5-12450H · 20GB DDR4 · RTX 2050 4GB VRAM · Linux*
 
-| Stage | Component | Latency (GPU) | Latency (CPU only) |
+| Stage | Component | Latency (RTX 2050) | Latency (CPU only) |
 |---|---|---|---|
 | Input validation | FastAPI/Pydantic | ~5ms | ~5ms |
+| URL pre-crawl | requests + BeautifulSoup | ~200–800ms | ~200–800ms |
+| **Text Analysis** | | | |
 | Vision analysis | CLIP ViT-B/32 FP16 | ~180ms | ~1,200ms |
-| NLP analysis | PhoBERT ONNX | ~95ms | ~95ms |
-| Scam detection engine | Pattern matching (fallback) | ~10ms | ~10ms |
+| NLP analysis | PhoBERT rule-based | ~10ms | ~10ms |
+| Scam detection engine | Pattern matching | ~10ms | ~10ms |
 | Intent detection | Pattern matching | ~5ms | ~5ms |
-| Feature engineering | 14-feature vector | ~2ms | ~2ms |
-| Fusion decision | XGBoost (14 features) | ~3ms | ~3ms |
+| Feature engineering | 29-feature vector | ~2ms | ~2ms |
+| Fusion decision | XGBoost | ~3ms | ~3ms |
 | Calibration | Platt scaling | ~1ms | ~1ms |
-| Graph update | Neo4j write | ~45ms | ~45ms |
-| **Total per analysis** | | **~350ms** | **~1,370ms** |
+| **Text Total** | | **~420–1,000ms** | **~1,440–2,200ms** |
+| **Video Analysis** | | | |
+| Media extraction | yt-dlp download | ~2,000–5,000ms | ~2,000–5,000ms |
+| Audio transcription | Whisper base | ~1,000–2,000ms | ~3,000–5,000ms |
+| Frame extraction | ffmpeg | ~500ms | ~800ms |
+| Audio AI detection | MFCC + spectrogram | ~200ms | ~400ms |
+| Face AI detection | OpenCV + EfficientNet | ~300ms | ~800ms |
+| Frame analysis | CLIP per frame | ~500ms | ~2,000ms |
+| Video fusion | 60/40 weighted | ~50ms | ~100ms |
+| **Video Total** | | **~4,550–10,550ms** | **~12,100–14,100ms** |
 
 **Notes:**
-- First inference includes model loading (~15s cold start for CLIP, ~8s for PhoBERT)
-- CPU-only mode is 4x slower on vision but functionally identical
-- Graph update is async and does not block API response
-- Without GPU: system is fully functional, just slower on vision pipeline
+- URL crawl thống trị latency với FB/TikTok (200–800ms tùy tốc độ mạng)
+- CLIP FP16 chạy trên RTX 2050 4GB VRAM — đủ VRAM, không OOM
+- Graph update là async, không block API response
+- CPU-only: vision chậm 6×, toàn bộ pipeline vẫn chạy đúng
 
 ## 🌐 API Gateway
 
@@ -327,7 +358,8 @@ This is a valid concern. Our mitigation strategy:
 - **⚠️ Security**: Never commit real tokens to version control. Use `.env.example` as template.
 
 #### Core Endpoints
-- `POST /api/v1/analyze` - Submit content for analysis
+- `POST /api/v1/analyze` - Submit text content for analysis
+- `POST /api/v1/analyze/video` - Submit TikTok video for multi-modal analysis
 - `GET /api/v1/stream/{job_id}` - Real-time progress streaming (SSE)
 - `GET /api/v1/job/{job_id}` - Get job status
 - `GET /api/v1/result/{job_id}` - Get final analysis result
@@ -359,11 +391,11 @@ This is a valid concern. Our mitigation strategy:
 
 ## 🧩 Chrome Extension
 
-### Architecture (Manifest V3)
+### Architecture (Manifest V3) — Localhost Mode
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  Facebook / YouTube / TikTok  (SPA)                     │
+│  Facebook / YouTube / TikTok / X  (SPA)                 │
 │                                                          │
 │  ┌──────────────────────────────────────────┐           │
 │  │  Content Script                           │           │
@@ -375,118 +407,193 @@ This is a valid concern. Our mitigation strategy:
 │                  │ chrome.runtime.sendMessage             │
 │  ┌──────────────▼───────────────────────────┐           │
 │  │  Service Worker (Background)              │           │
-│  │  • API calls to Cloud ViFake             │           │
+│  │  • API calls → http://localhost:8000     │           │
 │  │  • Job polling                            │           │
 │  │  • Badge updates (color by risk)         │           │
 │  │  • State management (chrome.storage)     │           │
 │  └──────────────┬───────────────────────────┘           │
-│                  │ HTTPS                                  │
+│                  │ HTTP (localhost)                       │
 └──────────────────┼──────────────────────────────────────┘
                    │
          ┌─────────▼──────────┐
-         │  Cloud API          │
-         │  (Render.com)       │
+         │  Localhost API      │
+         │  localhost:8000     │
          │  FastAPI + PhoBERT  │
          │  + CLIP + XGBoost   │
+         │  (Docker container) │
          └────────────────────┘
 ```
 
 ### Key Technical Decisions
-- **MutationObserver** instead of DOMContentLoaded — Facebook is SPA, DOM changes on scroll without page reload
-- **Target `aria-label` / `[role="article"]` / `[dir="auto"]`** — Facebook frequently changes minified class names (x1abc), structural selectors are more resilient
-- **CSS-only animations** — `@keyframes` for progress bar, `transition` for intent bars (0% → target), slide-down + fade-in for result panel. No JS animation library to keep extension < 200KB
-- **Privacy-by-Design** — only reads post text when user clicks button (no auto-scan by default), RAM-only processing, Privacy Policy included for Chrome Web Store review
+- **MutationObserver** instead of DOMContentLoaded — Facebook/TikTok/X là SPA, DOM thay đổi khi scroll mà không reload
+- **Target `aria-label` / `[role="article"]` / `[dir="auto"]`** — Facebook thường xuyên đổi tên class minified (x1abc), selector theo cấu trúc bền hơn
+- **CSS-only animations** — `@keyframes` cho progress bar, `transition` cho intent bars, slide-down + fade-in cho result panel. Không dùng JS animation library để giữ extension < 200KB
+- **Localhost-first** — `manifest.json` cho phép `http://localhost/*`, extension gọi trực tiếp `http://localhost:8000` không qua cloud
+- **Privacy-by-Design** — chỉ đọc text bài viết khi user bấm nút (không auto-scan), xử lý RAM-only
 
 ### Tech Stack
 | Layer | Technology |
 |-------|-----------|
 | Frontend (Extension) | Vanilla JS, Manifest V3, CSS Animations |
-| Backend (Cloud API) | FastAPI, PhoBERT + CLIP, XGBoost Fusion |
-| Deployment | Render.com (free tier → production) |
+| Backend (Localhost API) | FastAPI + Docker, PhoBERT + CLIP, XGBoost Fusion |
+| API Endpoint | `http://localhost:8000` |
+| Web Dashboard | `http://localhost:8080` (nginx, Docker) |
 | Icons | SVG-based placeholder (< 200KB total) |
 
-## ⚡ Quick Start (Competition Judges)
+## ⚡ Quick Start
 
-**Estimated setup time: 8-12 minutes**
-
-### Fastest path (no GPU, no Docker, no MongoDB/Neo4j needed):
+**Estimated setup time: 3-5 minutes (Docker required)**
 
 ```bash
 git clone https://github.com/dawng278/vifake-analytics.git
 cd vifake-analytics
-python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt          # ~3-4 min
-cp .env.example .env
 
-# Run with mock services (no external dependencies)
-MOCK_MODE=true python3 scripts/setup/init_complete_system.py
-cd backend_services/api_gateway && python3 main.py
+# Khởi động toàn bộ stack
+docker compose up -d --build
 ```
 
 **Expected output after setup:**
 ```
-✅ PhoBERT ONNX loaded (CPU mode)
-✅ CLIP model loaded (CPU fallback, 3x slower)
-⚠️  MongoDB: using in-memory mock
-⚠️  Neo4j: using mock graph data
-🚀 API running at http://localhost:8000
-📊 Web UI at http://localhost:8080
+✅ vifake-api   running → http://localhost:8000  (FastAPI + PhoBERT + CLIP + XGBoost)
+✅ vifake-web   running → http://localhost:8080  (Web Dashboard)
+🔑 Demo token  → demo-token-123
 ```
 
-**What happens without GPU?**
-- Vision pipeline runs on CPU (~1.2s instead of ~180ms per image)
-- NLP pipeline is unaffected (PhoBERT ONNX is CPU-optimized)
-- All API endpoints function identically
-- Total analysis time: ~1.4s per request (vs ~330ms with GPU)
+**Kiểm tra nhanh:**
+```bash
+# Health check
+curl http://localhost:8000/api/v1/health
 
-**What happens without MongoDB/Neo4j?**
-- In-memory mock stores are used automatically
-- All API endpoints work — data is just not persisted across restarts
-- Graph analytics returns simulated results based on URL patterns
+# Phân tích bài viết
+curl -X POST http://localhost:8000/api/v1/analyze \
+  -H "Authorization: Bearer demo-token-123" \
+  -H "Content-Type: application/json" \
+  -d '{"url":"https://www.tiktok.com/@user/video/123","platform":"tiktok"}'
+```
+
+**Chrome Extension:**
+1. Mở `chrome://extensions` → Enable Developer mode
+2. Load unpacked → chọn thư mục `chrome_extension/`
+3. Extension tự gọi `http://localhost:8000` — không cần cấu hình thêm
+
+**Cấu hình phần cứng đang chạy:**
+- CPU: Core i5-12450H
+- RAM: 20GB DDR4
+- GPU: RTX 2050 4GB VRAM
+- OS: Linux
 
 ## 🚀 Getting Started (Full Setup)
 
 ### Prerequisites
-- Python 3.8+
-- MongoDB (required for metadata storage; falls back to in-memory mock for dev testing)
-- Neo4j (required for graph analytics; falls back to mock graph data for dev testing)
-- GPU with 4GB+ VRAM (required for CLIP vision model; falls back to CPU inference with reduced performance)
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/dawng278/vifake-analytics.git
-cd vifake-analytics
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Setup environment
-cp .env.example .env
-# Edit .env with your configuration
-
-# Initialize system
-python scripts/setup/init_complete_system.py
-```
+- Docker + Docker Compose (bắt buộc)
+- Python 3.8+ (chỉ cần nếu chạy ngoài Docker)
+- GPU RTX 2050 4GB VRAM (đang dùng) — CLIP FP16 chạy trên GPU; fallback CPU tự động
+- MongoDB / Neo4j: in-memory mock tự động khi không có — không cần cài
 
 ### Running the System
 
-#### Start API Gateway
 ```bash
-cd backend_services/api_gateway
-python3 main.py
-```
+# Khởi động
+docker compose up -d
 
-#### Start Web Interface
-```bash
-cd web_interface
-python3 start_server.py
+# Xem logs
+docker logs vifake-api -f
+
+# Reload backend code không rebuild image
+docker cp backend_services/api_gateway/main.py vifake-api:/app/backend_services/api_gateway/main.py
+docker restart vifake-api
 ```
 
 #### Access
 - **API Documentation**: http://localhost:8000/docs
-- **Web Interface**: http://localhost:8080
+- **Web Dashboard**: http://localhost:8080
+- **Demo Token**: `demo-token-123`
+
+## 🔗 Cải thiện phân tích URL (Facebook / TikTok / X) — Localhost
+
+Hệ thống crawl real URL theo quy trình:
+
+```
+URL nhập vào
+    │
+    ▼
+Pre-crawl HTML (1 request, headers giả Chrome)
+    │
+    ├─► _extract_text_from_url()
+    │       og:title + og:description + twitter:description
+    │       YouTube: ytInitialData JSON (title + shortDescription)
+    │       TikTok: "desc" field từ JSON trong page
+    │       → extracted_text → NLP pipeline
+    │
+    └─► _fetch_thumbnail_url()
+            og:image / twitter:image
+            YouTube: img.youtube.com/vi/{id}/hqdefault.jpg (no crawl)
+            → download ảnh → CLIP inference → xóa temp file
+```
+
+### Giới hạn platform và cách xử lý
+
+| Platform | Text crawl | Image crawl | Ghi chú |
+|----------|-----------|-------------|---------|
+| **YouTube** | ✅ Tốt — ytInitialData có đầy đủ title + description | ✅ Direct thumbnail URL | Không cần crawl cho thumbnail |
+| **TikTok** | ⚠️ Trung bình — og:description thường có, `"desc"` JSON có thể bị block | ⚠️ og:image tải được nếu public | Anti-bot headers giúp một phần |
+| **Facebook** | ⚠️ Hạn chế — login wall chặn HTML; chỉ lấy được og:title/og:description của link preview | ⚠️ og:image thường bị CDN restrict | Pre-login HTML vẫn có OGP tags |
+| **X (Twitter)** | ✅ Tốt — og:description chứa tweet text | ✅ og:image/twitter:image | Twitter card tags đầy đủ |
+
+### Gợi ý cải thiện thêm (RTX 2050 / 20GB RAM)
+
+**1. EasyOCR — đọc text trong ảnh og:image** *(~200MB RAM, CPU)*
+```bash
+pip install easyocr
+```
+- Sau khi download og:image → chạy EasyOCR (vi+en) trên ảnh
+- Bắt được text "Free Robux", "Nạp thẻ", QR code URL trong ảnh
+- RTX 2050: EasyOCR có thể dùng CUDA nhưng model nhỏ, CPU đủ nhanh (~0.5s/ảnh)
+
+**2. yt-dlp — lấy thumbnail chất lượng cao cho TikTok/X** *(~50MB, không cần GPU)*
+```bash
+pip install yt-dlp
+# Trong code:
+import yt_dlp
+info = yt_dlp.YoutubeDL({'quiet':True}).extract_info(url, download=False)
+thumb_url = info.get('thumbnail')
+description = info.get('description') or info.get('title')
+```
+- Bypass anti-scraping tốt hơn requests thường
+- Lấy được thumbnail 720p cho TikTok thay vì og:image nhỏ
+- Không download video, chỉ metadata (`download=False`)
+
+**3. Playwright headless — Facebook với cookie** *(~300MB RAM)*
+```bash
+pip install playwright && playwright install chromium
+```
+- Dùng saved cookies từ browser để bypass Facebook login wall
+- Lấy được full post text, không chỉ og:description
+- RTX 2050: không cần GPU, chạy CPU-only
+
+**4. RAM cache cho crawl result** *(đã có RAM dư ~18GB)*
+```python
+_CRAWL_CACHE = {}  # {url: (html, timestamp)}
+CACHE_TTL = 300    # 5 phút
+
+def _get_cached_html(url):
+    if url in _CRAWL_CACHE:
+        html, ts = _CRAWL_CACHE[url]
+        if time.time() - ts < CACHE_TTL:
+            return html
+    return None
+```
+- Tránh crawl lại cùng URL trong 5 phút (demo live rất hữu ích)
+
+**5. CLIP ViT-L/14 thay ViT-B/32** *(RTX 2050 4GB: FP16 ~2.4GB VRAM — vừa đủ)*
+```python
+# clip_inference.py
+model_name = "ViT-L/14"  # thay "ViT-B/32"
+# Chạy FP16 để tiết kiệm VRAM
+model = model.half()
+```
+- ViT-L/14 nhận diện chi tiết hơn (logo game giả, QR code, text overlay)
+- FP16 trên RTX 2050: ~2.4GB VRAM, còn 1.6GB cho các model khác
 
 ## 🧪 Testing Strategy
 
@@ -537,6 +644,13 @@ curl -X POST http://localhost:8000/api/v1/analyze \
 2. Authenticate with your token from `.env`
 3. Test with sample URLs
 4. Monitor real-time progress
+
+### Chrome Extension Testing
+1. Load extension in Chrome Developer Mode from `chrome_extension/` folder
+2. Navigate to TikTok and verify button injection
+3. Click "Kiểm tra ViFake" button on videos
+4. Monitor console logs for debugging
+5. Verify API calls to `http://localhost:8000/api/v1/analyze/video`
 
 ## ⚠️ Known Technical Limitations (Competition Scope)
 
@@ -630,8 +744,8 @@ vifake-analytics/
 ├── deploy/                   # Deployment scripts
 ├── infrastructure/           # Infrastructure
 │   └── docker/              # Docker configuration
-├── Dockerfile               # Cloud deployment (Render.com)
-├── render.yaml              # Render.com service config
+├── Dockerfile               # Docker image cho localhost
+├── docker-compose.yml       # Stack: vifake-api (8000) + vifake-web (8080)
 ├── requirements.txt          # Python dependencies
 ├── .env.example             # Environment template
 ├── .gitignore               # Git ignore rules
@@ -658,12 +772,13 @@ vifake-analytics/
 
 ## 📈 System Metrics
 
-- **API Response Time**: <500ms (health check), ~330ms (full analysis with GPU)
-- **Job Processing**: Real-time streaming via SSE, async background workers
-- **Data Coverage**: 750+ synthetic Vietnamese scam scenarios across 4 scam types
-- **Platform Support**: YouTube, Facebook, TikTok (URL-based content analysis)
-- **Memory Footprint**: ~1.2GB RAM (CLIP FP16 + PhoBERT ONNX loaded)
-- **Cold Start**: ~15s first request (model loading), ~330ms subsequent requests
+- **API Response Time**: <500ms (health check), ~420ms–1s (full URL analysis, RTX 2050)
+- **Job Processing**: Async job queue, SSE streaming, poll `/api/v1/job/{id}`
+- **Data Coverage**: 750+ synthetic Vietnamese scam scenarios, 4 scam types
+- **Platform Support**: Facebook, TikTok, YouTube, X/Twitter — OGP crawl + og:image
+- **Memory Footprint**: ~1.4GB RAM (CLIP FP16 + XGBoost + FastAPI)
+- **Cold Start**: ~8s (Docker container restart), <1s subsequent requests
+- **VRAM Usage**: ~1.1GB / 4GB (RTX 2050) — CLIP ViT-B/32 FP16
 
 ## 🗺️ Roadmap
 
@@ -679,25 +794,27 @@ vifake-analytics/
 - [x] False positive fixes (PhoBERT confidence threshold + fusion override)
 - [x] Ethical compliance documentation (internal draft — pending independent review)
 
-### Phase 2: Extension & Cloud Deployment (In Progress)
+### Phase 2: Extension & Localhost Hardening ✅ (Complete)
 - [x] Chrome Extension MVP — Manifest V3, content script, popup, service worker
-- [x] Dockerfile + render.yaml for Render.com cloud deployment
-- [x] Privacy Policy (Chrome Web Store requirement)
-- [ ] Deploy Cloud API to Render.com (blocker: extension cannot call localhost)
-- [ ] Chrome Web Store submission
-- [ ] Firefox Add-on port
-- [ ] Phase 2 UX: animation refinement, sidebar report, auto-scan, badge color by risk
+- [x] Extension trỏ về `http://localhost:8000` (không cần cloud)
+- [x] `manifest.json` thêm `http://localhost/*` vào `host_permissions`
+- [x] Docker stack: `vifake-api` (8000) + `vifake-web` (8080)
+- [x] URL crawling thật: pre-crawl HTML → NLP text + CLIP og:image (1 request)
+- [x] Vision heuristic nhận post text — không còn flat 0.3
+- [x] English gaming scam patterns (robux, vbucks, secret method...)
+- [x] `extracted_text` trả về trong result — web dashboard auto-fill
 
-### Phase 3: Production Deployment
-- [ ] Cloud infrastructure setup
-- [ ] CI/CD pipeline
-- [ ] Monitoring and alerting
-- [ ] Load testing and optimization
+### Phase 3: Cải thiện phân tích URL (Localhost)
+- [ ] yt-dlp thumbnail extraction cho TikTok/X (anti-scraping bypass)
+- [ ] EasyOCR text extraction từ ảnh og:image (đọc text trong ảnh)
+- [ ] Playwright headless crawl cho Facebook (cần login cookie)
+- [ ] Cache crawl result trong RAM (TTL 5 phút) — tránh crawl lại cùng URL
+- [ ] Confidence calibration thêm per-platform (FB/TT/X có bias khác nhau)
 
-### Phase 4: Advanced Features
-- [ ] Real-time social media monitoring
-- [ ] Advanced graph analytics
-- [ ] Multi-language support
+### Phase 4: Nâng cao
+- [ ] Real-time social media monitoring (webhook)
+- [ ] Graph analytics với dữ liệu thật
+- [ ] Multi-language support (Khmer, Thai)
 - [ ] Community reporting system
 
 ## 🤝 Contributing

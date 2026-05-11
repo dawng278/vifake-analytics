@@ -7,7 +7,7 @@
 const fs   = require('fs');
 const path = require('path');
 
-const API_URL    = process.env.VIFAKE_API_URL    || 'https://vifake-analytics-api.onrender.com';
+const API_URL    = process.env.VIFAKE_API_URL    || 'https://vifake-analytics-api.onrender.com' || 'http://localhost:8000';
 const AUTH_TOKEN = process.env.VIFAKE_AUTH_TOKEN || 'demo-token-123';
 
 const src  = path.join(__dirname, 'index.html');

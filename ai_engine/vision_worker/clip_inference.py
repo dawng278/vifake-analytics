@@ -11,6 +11,8 @@ Tuân thủ Privacy-by-Design:
 
 import logging
 import gc
+import os
+import yaml
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
 import numpy as np
@@ -18,6 +20,26 @@ import numpy as np
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+_PROMPTS_YAML = os.path.join(
+    os.path.dirname(__file__), "..", "..", "config", "clip_prompts.yaml"
+)
+
+def _load_clip_prompts() -> dict:
+    """Load domain-specific CLIP prompts from YAML config."""
+    try:
+        with open(_PROMPTS_YAML, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        labels = (
+            cfg.get("safe", []) +
+            cfg.get("suspicious", []) +
+            cfg.get("high_risk", [])
+        )
+        risk_map = cfg.get("risk_map", {})
+        return {"labels": labels, "risk_map": risk_map}
+    except Exception as e:
+        logger.warning(f"Could not load clip_prompts.yaml ({e}), using built-in prompts")
+        return {}
 
 # Optional heavy dependencies
 try:
@@ -65,28 +87,36 @@ class CLIPVisionWorker:
         self.processor = None
         self.inference_count = 0
         
-        # Risk classification labels — ordered, index matters for _calculate_risk_scores
-        self.CANDIDATE_LABELS = [
-            # Index 0-1: safe content
-            "safe cooking recipe food video",
-            "educational tutorial content",
-            # Index 2-5: risk content
-            "online scam phishing fraud warning message",
-            "bank transfer payment QR code on screen",
-            "fake prize giveaway lottery winner announcement",
-            "deepfake AI-generated face synthetic video",
-            # Index 6-7: neutral
-            "normal social media entertainment content",
-            "celebrity advertisement promotion",
-        ]
-        
-        # Map label index → risk category
+        # Load domain-specific prompts from YAML; fall back to built-ins
+        _prompt_cfg = _load_clip_prompts()
+        if _prompt_cfg.get("labels"):
+            self.CANDIDATE_LABELS = _prompt_cfg["labels"]
+            _risk_map = _prompt_cfg.get("risk_map", {})
+            self._safe_indices      = set(_risk_map.get("safe_indices", []))
+            self._suspicious_indices = set(_risk_map.get("suspicious_indices", []))
+            self._high_risk_indices  = set(_risk_map.get("high_risk_indices", []))
+            logger.info(f"✅ Loaded {len(self.CANDIDATE_LABELS)} CLIP prompts from config/clip_prompts.yaml")
+        else:
+            # Built-in fallback prompts
+            self.CANDIDATE_LABELS = [
+                "safe cooking recipe food video",
+                "educational tutorial content",
+                "online scam phishing fraud warning message",
+                "bank transfer payment QR code on screen",
+                "fake prize giveaway lottery winner announcement",
+                "deepfake AI-generated face synthetic video",
+                "normal social media entertainment content",
+                "celebrity advertisement promotion",
+            ]
+            self._safe_indices       = {0, 1, 6, 7}
+            self._suspicious_indices = set()
+            self._high_risk_indices  = {2, 3, 4, 5}
+
+        # Map label index → risk category (legacy, kept for _calculate_risk_scores)
         self.LABEL_RISK_MAP = {
-            2: "scam_risk",          # phishing/fraud
-            3: "money_risk",         # payment QR
-            4: "fake_reward_risk",   # fake prize
-            5: "deepfake_risk",      # AI-generated face
+            i: "high_risk" for i in self._high_risk_indices
         }
+        self.LABEL_RISK_MAP.update({i: "suspicious" for i in self._suspicious_indices})
         
         # Initialize model
         self._load_model()

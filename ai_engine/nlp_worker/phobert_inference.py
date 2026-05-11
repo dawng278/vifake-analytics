@@ -15,6 +15,18 @@ import numpy as np
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 
+try:
+    from ai_engine.nlp_worker.teencode_normalizer import normalize as _normalize_teencode, contains_high_risk_teencode
+    _TEENCODE_AVAILABLE = True
+except ImportError:
+    try:
+        from teencode_normalizer import normalize as _normalize_teencode, contains_high_risk_teencode
+        _TEENCODE_AVAILABLE = True
+    except ImportError:
+        _TEENCODE_AVAILABLE = False
+        def _normalize_teencode(t): return t
+        def contains_high_risk_teencode(t): return False
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -168,6 +180,9 @@ class PhoBERTInference:
     def _rule_based_predict(self, text: str) -> Dict[str, Union[str, float, Dict]]:
         """Keyword-based fallback khi không có torch/transformers (Render free tier).
         Detect scam patterns đặc thù thị trường Việt Nam."""
+        # Normalize teen-code before pattern matching
+        has_high_risk_teencode = contains_high_risk_teencode(text)
+        text = _normalize_teencode(text)
         t = text.lower()
 
         # ── FAKE_SCAM signals ─────────────────────────────────────────────
@@ -178,10 +193,44 @@ class PhoBERTInference:
             # Payment pressure
             "nạp thẻ trước", "nạp trước", "chuyển khoản trước", "thanh toán trước",
             "cọc trước", "phí kích hoạt", "phí xác minh",
-            # Gaming scams
+            # Gaming scams — Roblox / Robux (English + Vietnamese + mixed)
             "robux miễn phí", "robux free", "free robux", "robux hack",
-            "vbucks", "v-bucks", "skin miễn phí", "acc game giá rẻ",
+            "unlock robux", "get robux", "earn robux", "robux generator",
+            "robux secret", "secret robux", "robux method", "robux cheat",
+            "how to get robux", "how to unlock robux",
+            "roblox hack", "roblox cheat", "roblox glitch",
+            "vbucks", "v-bucks", "free vbucks", "vbucks generator",
+            "skin miễn phí", "free skin", "skin hack",
             "nâng cấp acc", "boost acc",
+            # Gaming scams — Free Fire (kim cương, elite pass)
+            "kim cương miễn phí", "free kim cương", "kim cương free",
+            "hack kim cương", "kim cương hack", "kim cương generator",
+            "free fire hack", "free fire cheat", "free fire mod",
+            "hack ff", "mod ff", "hack free fire",
+            "elite pass miễn phí", "free elite pass", "elite pass free",
+            "hack elite pass", "bundle miễn phí", "free bundle",
+            "tool hack free fire", "apk mod free fire",
+            "nhận kim cương", "tặng kim cương",
+            # Gaming scams — Liên Quân Mobile (quân huy, tướng, ngọc)
+            "hack liên quân", "liên quân hack", "mod liên quân",
+            "hack quân huy", "quân huy miễn phí", "free quân huy",
+            "quân huy hack", "quân huy generator",
+            "hack tướng", "tướng miễn phí", "free tướng", "unlock tướng",
+            "hack ngọc", "ngọc miễn phí", "free ngọc",
+            "tool hack liên quân", "mod lq", "hack lq",
+            "tặng quân huy", "nhận quân huy",
+            # Gaming scams — PUBG Mobile (UC, RP, BP)
+            "hack uc", "uc miễn phí", "free uc", "uc free",
+            "uc hack", "uc generator", "uc pubg hack",
+            "hack pubg", "pubg hack", "pubg cheat", "pubg mod",
+            "hack royale pass", "royale pass miễn phí", "free royale pass",
+            "tool hack pubg", "mod pubg", "apk mod pubg",
+            "tặng uc", "nhận uc",
+            # Generic "secret method" / "new method" in gaming context
+            "secret method", "new secret", "new method hack",
+            "free coins", "free gems", "unlimited coins", "unlimited gems",
+            "coin generator", "gem generator", "diamond hack",
+            "tool hack", "apk mod", "mod apk",
             # Crypto scams
             "airdrop", "connect ví", "metamask", "ví tiền điện tử",
             "nhân x10", "x100 lợi nhuận", "đầu tư sinh lời",
@@ -191,12 +240,49 @@ class PhoBERTInference:
             # Info gathering
             "ib mình", "inbox mình", "nhắn tin để nhận", "điền form",
             "đưa tài khoản", "cho mình tài khoản",
+            # Gaming doubling / trade scam (trẻ em bị lừa #1)
+            "đưa robux", "gửi robux", "chuyển robux", "trade robux",
+            "đổi robux", "mượn robux", "cho robux",
+            "đưa skin", "gửi skin", "trade skin", "đổi skin",
+            "đưa gem", "gửi gem", "đưa coin", "gửi coin",
+            "đưa diamond", "đưa kim cương", "gửi kim cương",
+            "nhân đôi robux", "x2 robux", "doubling robux",
+            "nhân đôi skin", "nhân đôi gem", "nhân đôi coin",
+            "nhân đôi kim cương", "x2 kim cương", "x2 uc",
+            "nhân đôi uc", "nhân đôi quân huy", "x2 quân huy",
+            "đưa uc", "gửi uc", "trade uc", "đổi uc",
+            "đưa quân huy", "gửi quân huy", "trade quân huy",
+            "đưa tướng", "cho tướng", "trade tướng",
+            # Account takeover / lending scam
+            "cho mình acc", "cho mượn acc", "đưa acc",
+            "cho mình nick", "cho mượn nick", "đưa nick",
+            "đăng nhập acc để", "login acc để",
+            "cho mình tài khoản để", "cho mượn tài khoản",
+            "đưa tài khoản để",
+            # Cookie logger / code injection
+            "nhập code vào", "nhập code này",
+            "paste code", "dán code vào",
+            "nhập vào trình duyệt", "nhập vào browser",
+            "nhập vào console", "paste vào console",
+            "editthiscookie", "roblox cookie",
+            "cookie logger",
+            # Fake middleman / trust manipulation
+            "trung gian trade", "mình sẽ trung gian",
+            "test acc cho", "fix acc cho", "nâng cấp acc cho",
+            "sửa acc", "boost acc cho",
+            "đảm bảo không scam", "không lừa đâu",
+            "mình thề", "trust me", "no scam", "100% legit",
+            # Item lending scam
+            "cho mượn skin", "cho mượn item",
+            "mượn thử", "cho mượn thử",
+            "trả lại sau", "sẽ trả lại",
+            "đưa để test", "cho để kiểm tra",
         ]
 
         # ── SUSPICIOUS signals ────────────────────────────────────────────
         SUSPICIOUS_PATTERNS = [
             "miễn phí", "free", "tặng", "giveaway",
-            "bán acc", "mua acc", "acc game",
+            "bán acc", "mua acc", "acc game", "acc game giá rẻ",
             "kiếm tiền online", "kiếm tiền tại nhà",
             "hoa hồng", "commission", "affiliate",
             "link tải", "click vào đây", "bấm vào link",
@@ -207,8 +293,98 @@ class PhoBERTInference:
         scam_hits  = [p for p in SCAM_PATTERNS     if p in t]
         susp_hits  = [p for p in SUSPICIOUS_PATTERNS if p in t]
 
+        # === Semantic gaming context detection (catches patterns keyword matching misses) ===
+        # E.g. "đưa tôi 1000 robux để nhận 1000000 robux" — words in between break exact match
+        import re as _re
+        GAME_ITEMS_RB = ['robux', 'roblox', 'skin', 'gem', 'coin', 'diamond', 'kim cương',
+                         'vbucks', 'v-bucks', 'gamepass', 'item', 'pet',
+                         # Free Fire
+                         'free fire', 'freefire', 'garena', 'elite pass', 'bundle',
+                         # Liên Quân
+                         'liên quân', 'lien quan', 'quân huy', 'tướng', 'ngọc',
+                         # PUBG
+                         'pubg', 'royale pass',
+                         # In-game currencies
+                         ' uc', 'uc ', ' bp', ' rp', ' kc']
+        ACTION_WORDS_RB = ['đưa', 'gửi', 'cho', 'trade', 'chuyển', 'nhập', 'đổi',
+                           'trao', 'bỏ', 'nạp', 'mượn', 'transfer', 'swap', 'drop']
+        RECEIVE_WORDS_RB = ['nhận', 'lấy', 'được', 'trả', 'unlock', 'hoàn']
+        SCAM_TRIGGERS_RB = ['hack', 'cheat', 'generator', 'mod ', 'tool ', 'vô hạn', 'bẻ khóa']
+
+        has_game_item = any(g in t for g in GAME_ITEMS_RB)
+        has_action_word = any(a in t for a in ACTION_WORDS_RB)
+        has_receive_word = any(r in t for r in RECEIVE_WORDS_RB)
+        has_scam_trigger = any(s in t for s in SCAM_TRIGGERS_RB)
+
+        # Educational/review context suppresses gaming scam signals
+        SAFE_GAMING_CONTEXT = ['hướng dẫn', 'review', 'đánh giá', 'cách chơi',
+                               'mẹo chơi', 'thủ thuật chơi', 'update', 'cập nhật',
+                               'thi đấu', 'giải đấu', 'livestream', 'cho người mới',
+                               'tutorial', 'beginner', 'tips', 'guide',
+                               'highlight', 'gameplay', 'montage', 'rank',
+                               'leo rank', 'bảng xếp hạng', 'chiến thuật',
+                               'meta', 'tier list', 'top tướng', 'combo']
+        is_educational = any(s in t for s in SAFE_GAMING_CONTEXT)
+
+        if has_game_item and has_scam_trigger and not scam_hits:
+            # Major fix: Game item + hacking keyword = SCAM automatically
+            scam_hits.append('SEMANTIC:gaming_hack_tool')
+        elif has_game_item and has_action_word and has_receive_word and not scam_hits and not is_educational:
+            # Semantic doubling pattern: game item + give + receive = scam
+            scam_hits.append('SEMANTIC:gaming_give_receive')
+        elif has_game_item and has_action_word and not scam_hits and not is_educational:
+            # Game item + action = at least suspicious (but NOT if educational)
+            susp_hits.append('SEMANTIC:gaming_action')
+
+        # Number ratio detection: "1000 robux ... 1000000 robux" → ratio 1000:1
+        if has_game_item:
+            numbers = [int(n) for n in _re.findall(r'\d+', text) if 2 <= len(n) <= 10]
+            if len(numbers) >= 2:
+                numbers.sort()
+                ratio = numbers[-1] / max(numbers[0], 1)
+                if ratio >= 30 and not scam_hits:  # 30x+ raw number ratio with gaming = fallback scam trigger
+                    scam_hits.append(f'SEMANTIC:number_ratio_x{ratio:.0f}')
+
+        # --- NEW: Specific Market Price Anomaly check ---
+        # E.g. 10k VND = 10,000 Robux (1000x real rate)
+        price_pattern = r'(\d+[\.,]?\d*)\s*(k|vnd|đ|đồng)'
+        item_pattern = r'(\d+[\.,]?\d*)\s*(robux|rbx|kim cương|kc|quân huy|qh|uc)'
+        
+        found_prices = list(_re.finditer(price_pattern, t))
+        found_items = list(_re.finditer(item_pattern, t))
+        
+        if found_prices and found_items:
+            price_limits = {'robux': 40, 'rbx': 40, 'kc': 100, 'kim cương': 100, 'qh': 50, 'quân huy': 50, 'uc': 50}
+            for mp in found_prices:
+                for mi in found_items:
+                    # If they are within 60 characters of each other in the text
+                    if abs(mp.start() - mi.start()) < 60:
+                        try:
+                            # Extract price
+                            p_val = float(mp.group(1).replace('.','').replace(',',''))
+                            if mp.group(2) == 'k': p_val *= 1000
+                            
+                            # Extract item quantity
+                            i_val = float(mi.group(1).replace('.','').replace(',',''))
+                            i_type = mi.group(2).strip()
+                            
+                            if p_val > 0 and i_val > 0:
+                                money_units = p_val / 1000 # Per 1k VND
+                                market_ratio = i_val / money_units
+                                
+                                # Determine limit based on item type
+                                current_limit = price_limits.get(i_type, 50)
+                                if market_ratio > current_limit:
+                                    scam_hits.append(f'SEMANTIC:price_anomaly_{i_type}_ratio{market_ratio:.0f}')
+                                    break # Found one, good enough
+                        except: pass
+
+
+        # Boost score when raw teen-code password/account keywords were found
+        teencode_boost = 0.10 if has_high_risk_teencode else 0.0
+
         # Score: mỗi scam keyword +0.18, mỗi suspicious +0.08, cap at 0.97
-        scam_score = min(0.97, 0.35 + len(scam_hits) * 0.18)
+        scam_score = min(0.97, 0.35 + len(scam_hits) * 0.18 + teencode_boost)
         susp_score = min(0.85, 0.30 + len(susp_hits) * 0.10)
 
         if scam_hits:
@@ -219,7 +395,7 @@ class PhoBERTInference:
             confidence = prob_fake
             risk_level = "HIGH" if confidence >= 0.7 else "MEDIUM"
             is_safe    = False
-        elif susp_hits:
+        elif susp_hits and not is_educational:
             prob_susp  = round(susp_score, 3)
             prob_fake  = round(min(0.25, susp_score * 0.3), 3)
             prob_safe  = round(max(0.1, 1 - prob_susp - prob_fake), 3)
@@ -241,13 +417,13 @@ class PhoBERTInference:
             "prediction":   prediction,
             "confidence":   confidence,
             "probabilities": {
-                "SAFE":         prob_safe,
-                "TOXIC":        prob_susp,
-                "MANIPULATIVE": prob_fake,
+                "SAFE":       prob_safe,
+                "SUSPICIOUS": prob_susp,
+                "FAKE_SCAM":  prob_fake,
             },
             "risk_level":      risk_level,
             "is_safe":         is_safe,
-            "requires_review": prediction == "SUSPICIOUS",
+            "requires_review": prediction != "SAFE",
             "mock":            True,
             "mock_reason":     "rule_based_fallback",
             "matched_patterns": scam_hits or susp_hits,

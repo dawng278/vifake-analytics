@@ -141,6 +141,25 @@ SCAM_INTENTS = {
             r'💼\s*tuyển\s*dụng', r'📢\s*tuyển\s*cộng\s*tác\s*viên',
         ],
     },
+    "fake_account_trade": {
+        "label": "Buôn bán tài khoản / vật phẩm game giả",
+        "risk_weight": 0.75,
+        "patterns": [
+            r'bán\s*acc\s*game', r'mua\s*acc\s*game', r'acc\s*giá\s*rẻ',
+            r'acc\s*uy\s*tín', r'trade\s*acc', r'bán\s*nick\s*game',
+            r'mua\s*nick\s*game', r'nick\s*giá\s*rẻ', r'nick\s*uy\s*tín',
+            r'bán\s*vật\s*phẩm\s*game', r'mua\s*item\s*game',
+            r'bán\s*skin\s*game', r'mua\s*skin\s*rẻ',
+            r'bán\s*tài\s*khoản', r'mua\s*tài\s*khoản\s*giá\s*rẻ',
+            r'acc\s*free\s*fire', r'acc\s*liên\s*quân', r'acc\s*roblox\s*bán',
+            r'acc\s*minecraft', r'acc\s*pubg\s*bán', r'acc\s*valorant\s*bán',
+            r'inbox\s*mình.*giá', r'ib\s*mình.*giá', r'nhắn\s*tin.*giá',
+            r'giá\s*tốt.*uy\s*tín', r'uy\s*tín.*giá\s*tốt',
+            r'có\s*video\s*demo.*acc', r'acc.*có\s*video\s*demo',
+            r'bán\s*gấp\s*acc', r'cần\s*tiền\s*bán\s*acc',
+            r'acc\s*full\s*đồ', r'acc\s*vip\s*bán',
+        ],
+    },
     "crypto_fraud": {
         "label": "Lừa đảo tiền điện tử / đầu tư giả",
         "risk_weight": 0.9,
@@ -159,6 +178,66 @@ SCAM_INTENTS = {
             r'private\s*key', r'metamask\s*verify',
             r'💰\s*crypto', r'🪙\s*bitcoin', r'₿\s*btc',
             r'defi\s*farming', r'yield\s*farming\s*\d+%',
+        ],
+    },
+    "game_item_doubling": {
+        "label": "Lừa đảo nhân đôi/trao đổi vật phẩm game",
+        "risk_weight": 0.9,
+        "patterns": [
+            # Doubling scam — "đưa X currency nhận Y currency"
+            r'(đưa|gửi|cho|chuyển)\s*.*\d+\s*(robux|skin|gem|coin|diamond|kim\s*cương|quân\s*huy|tướng|ngọc|uc)',
+            r'(nhận|lấy|được|trả)\s*.*\d+\s*(robux|skin|gem|coin|diamond|kim\s*cương|quân\s*huy|uc)',
+            r'đưa\s*.*robux.*để.*nhận', r'gửi\s*.*robux.*để.*nhận',
+            r'trade\s*.*robux', r'đổi\s*.*robux',
+            r'doubling', r'nhân\s*đôi\s*(robux|skin|gem|coin|diamond|kim\s*cương|quân\s*huy|uc)',
+            r'x2\s*(robux|skin|gem|coin|kim\s*cương|quân\s*huy|uc)',
+            r'x10\s*(robux|skin|gem|kim\s*cương|quân\s*huy|uc)',
+            r'gửi\s*.*robux.*trả\s*lại', r'mượn\s*(robux|skin|gem|kim\s*cương|quân\s*huy|uc)',
+            r'cho\s*mình\s*.*robux', r'transfer\s*robux',
+            r'đổi\s*skin', r'trade\s*skin', r'swap\s*skin',
+            r'trade\s*acc', r'đổi\s*acc', r'swap\s*acc',
+            # Free Fire specific
+            r'đưa\s*.*kim\s*cương.*nhận', r'gửi\s*.*kim\s*cương',
+            r'hack\s*(free\s*fire|ff)', r'mod\s*(free\s*fire|ff)',
+            r'hack\s*kim\s*cương', r'kim\s*cương\s*(hack|generator|miễn\s*phí)',
+            r'elite\s*pass\s*(miễn\s*phí|free|hack)', r'free\s*elite\s*pass',
+            r'tool\s*hack\s*free\s*fire', r'apk\s*mod\s*free\s*fire',
+            # Liên Quân specific
+            r'hack\s*(liên\s*quân|lq)', r'mod\s*(liên\s*quân|lq)',
+            r'hack\s*quân\s*huy', r'quân\s*huy\s*(hack|generator|miễn\s*phí)',
+            r'hack\s*tướng', r'tướng\s*(miễn\s*phí|free|hack)',
+            r'hack\s*ngọc', r'ngọc\s*(miễn\s*phí|free|hack)',
+            r'tool\s*hack\s*liên\s*quân',
+            # PUBG specific
+            r'hack\s*(pubg|uc)', r'mod\s*pubg',
+            r'uc\s*(hack|generator|miễn\s*phí|free)',
+            r'royale\s*pass\s*(miễn\s*phí|free|hack)',
+            r'tool\s*hack\s*pubg', r'apk\s*mod\s*pubg',
+            # Drop/dup scam
+            r'drop\s*trade', r'drop\s*item', r'dup\s*glitch',
+            r'dupe\s*glitch', r'nhân\s*bản\s*item',
+            # Item lending scam
+            r'cho\s*mượn\s*(skin|item|đồ)', r'mượn\s*thử',
+            r'đưa\s*để\s*test', r'cho\s*để\s*kiểm\s*tra',
+            r'trả\s*lại\s*sau', r'sẽ\s*trả\s*lại',
+        ],
+    },
+    "account_takeover": {
+        "label": "Chiếm đoạt tài khoản game/mạng xã hội",
+        "risk_weight": 0.95,
+        "patterns": [
+            r'cho\s*mình\s*(acc|tài\s*khoản|nick)',
+            r'cho\s*mượn\s*(acc|tài\s*khoản|nick)',
+            r'đưa\s*(acc|tài\s*khoản|nick).*để',
+            r'đăng\s*nhập\s*(acc|tài\s*khoản).*để',
+            r'nhập\s*code.*vào\s*(acc|tài\s*khoản|trình\s*duyệt|browser)',
+            r'(test|kiểm\s*tra|fix|nâng\s*cấp|sửa)\s*(acc|tài\s*khoản)\s*cho',
+            r'mình\s*sẽ\s*(fix|nâng\s*cấp|boost)\s*(acc|tài\s*khoản)',
+            r'login\s*acc.*để.*check', r'login.*tài\s*khoản.*để.*xem',
+            r'cookie\s*logger', r'editthiscookie', r'roblox\s*cookie',
+            r'đăng\s*nhập\s*hộ', r'login\s*hộ',
+            r'paste.*console', r'nhập.*console',
+            r'dán\s*code.*trình\s*duyệt', r'paste\s*code.*browser',
         ],
     },
 }
@@ -196,10 +275,10 @@ def detect_scam_intent(text: str) -> Dict:
         score = min(hits / max_possible, 1.0)
         intent_scores[intent_name] = round(score, 3)
     
-    # Find primary intent
-    if intent_scores:
+    # Find primary intent — only if at least one intent actually matched
+    max_score = max(intent_scores.values()) if intent_scores else 0.0
+    if max_score > 0.0:
         primary_intent = max(intent_scores, key=intent_scores.get)
-        max_score = intent_scores[primary_intent]
     else:
         primary_intent = "none"
         max_score = 0.0
@@ -219,7 +298,7 @@ def detect_scam_intent(text: str) -> Dict:
         "max_intent_score": max_score,
         "intent_count": intent_count,
         "primary_intent": primary_intent,
-        "primary_intent_label": SCAM_INTENTS.get(primary_intent, {}).get("label", "Không xác định"),
+        "primary_intent_label": SCAM_INTENTS.get(primary_intent, {}).get("label", "") if primary_intent != "none" else "",
         "risk_weighted_score": round(risk_weighted, 3),
     }
 
@@ -261,6 +340,23 @@ def get_intent_explanation(intent_name: str) -> str:
             "Lừa đảo liên quan đến tiền điện tử: hứa 'lợi nhuận X% mỗi ngày', 'airdrop USDT miễn phí', "
             "'connect ví MetaMask để nhận thưởng'. Thực chất là chiếm đoạt ví hoặc tài sản crypto. "
             "Không bao giờ kết nối ví hoặc cung cấp seed phrase cho bất kỳ ai."
+        ),
+        "fake_account_trade": (
+            "Mua bán tài khoản / vật phẩm game là hình thức lừa đảo phổ biến với trẻ em. "
+            "Người bán nhận tiền rồi biến mất, hoặc chiếm lại tài khoản sau khi đã bán. "
+            "Không bao giờ giao dịch tài khoản game với người lạ trên mạng."
+        ),
+        "game_item_doubling": (
+            "CẢNH BÁO: Đây là hình thức lừa đảo phổ biến nhất nhắm vào trẻ em chơi game. "
+            "Kẻ lừa đảo hứa 'nhân đôi robux/skin/gem' nếu bạn đưa vật phẩm trước. "
+            "Ví dụ: 'Đưa tôi 1000 robux, tôi sẽ trả lại 10000 robux'. "
+            "KHÔNG BAO GIỜ có ai nhân đôi robux/gem cho bạn — đây 100% là lừa đảo."
+        ),
+        "account_takeover": (
+            "CỰC KỲ NGUY HIỂM: Kẻ lừa đảo đang cố chiếm đoạt tài khoản game/mạng xã hội. "
+            "Dấu hiệu: yêu cầu 'cho mượn acc để test', 'nhập code vào trình duyệt', "
+            "'đăng nhập hộ', 'dán code vào console'. Đây là kỹ thuật cookie logger "
+            "hoặc phishing — kẻ gian sẽ chiếm toàn bộ tài khoản của bạn ngay lập tức."
         ),
     }
     return explanations.get(intent_name, "Dấu hiệu bất thường được phát hiện trong nội dung")

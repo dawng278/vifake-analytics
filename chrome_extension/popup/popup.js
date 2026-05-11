@@ -341,7 +341,7 @@ function setupTabs() {
 }
 
 // ─── Settings ───
-const DEFAULT_API_URL = 'https://vifake-analytics-api.onrender.com';
+const DEFAULT_API_URL = 'http://localhost:8000';
 const DEFAULT_AUTH_TOKEN = 'demo-token-123';
 
 function setupSettings() {

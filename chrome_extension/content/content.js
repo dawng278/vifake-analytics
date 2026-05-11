@@ -1059,6 +1059,7 @@
     debounceTimer = setTimeout(scanForPosts, DEBOUNCE_MS);
   });
 
+  /*
   // Start observing
   observer.observe(document.body, {
     childList: true,
@@ -1067,6 +1068,7 @@
 
   // Initial scan
   scanForPosts();
+  */
   
   // Clear processed videos when page changes significantly
   if (PLATFORM === 'tiktok') {
@@ -1097,7 +1099,9 @@
       }
     }
     
+    /*
     setInterval(debouncedScan, SCAN_INTERVAL);
+    */
     
     // Debug: Add command to clear all scan markers
     console.log('[ViFake] TikTok mode enabled. Run this in console to reset all buttons:');

@@ -23,13 +23,13 @@ logger = logging.getLogger(__name__)
 
 
 # ── Label mapping ────────────────────────────────────────────────────────────
-LABELS = ["SAFE", "FAKE_TOXIC", "FAKE_SCAM", "FAKE_MISINFO"]
+LABELS = ["SAFE", "SUSPICIOUS", "FAKE_SCAM"]
 LABEL_MAP = {l: i for i, l in enumerate(LABELS)}
 
 SCENARIO_LABEL = {
     # legacy
     "legitimate_conversation": "SAFE",
-    "malicious_link":          "FAKE_TOXIC",
+    "malicious_link":          "SUSPICIOUS",
     "robux_phishing":          "FAKE_SCAM",
     "gift_card_scam":          "FAKE_SCAM",
     "account_theft":           "FAKE_SCAM",
@@ -105,13 +105,13 @@ def _build_features(sample: dict, rng: random.Random) -> list:
     # ── NLP features (10 = 4 probs + 6 extras) ──────────────────────────────
     # Simulate probabilities across LABELS ["SAFE", "FAKE_TOXIC", "FAKE_SCAM", "FAKE_MISINFO"]
     if label_str == "SAFE":
-        probs = [noise(0.80), noise(0.08), noise(0.07), noise(0.05)]
-    elif label_str == "FAKE_TOXIC":
-        probs = [noise(0.10), noise(0.75), noise(0.10), noise(0.05)]
+        probs = [noise(0.80), noise(0.10), noise(0.10)]
+    elif label_str == "SUSPICIOUS":
+        probs = [noise(0.15), noise(0.70), noise(0.15)]
     elif label_str == "FAKE_SCAM":
-        probs = [noise(0.05), noise(0.10), noise(0.80), noise(0.05)]
+        probs = [noise(0.05), noise(0.10), noise(0.85)]
     else:
-        probs = [noise(0.10), noise(0.10), noise(0.10), noise(0.70)]
+        probs = [noise(0.05), noise(0.10), noise(0.85)]
     # Normalise probs
     total = sum(probs)
     probs = [p / total for p in probs]
@@ -233,7 +233,7 @@ def main():
         "vision_violent_risk", "vision_scam_risk", "vision_sexual_risk", "vision_inappropriate_risk",
         "vision_is_safe", "vision_requires_review", "vision_risk_level_encoded",
         "vision_vram_usage_normalized",
-        "nlp_prob_safe", "nlp_prob_fake_toxic", "nlp_prob_fake_scam", "nlp_prob_fake_misinfo",
+        "nlp_prob_safe", "nlp_prob_suspicious", "nlp_prob_fake_scam",
         "nlp_confidence", "nlp_is_safe", "nlp_requires_review", "nlp_risk_level_encoded",
         "nlp_text_length_normalized", "nlp_url_count_normalized", "nlp_exclamation_count_normalized",
         "metadata_age_group_encoded",

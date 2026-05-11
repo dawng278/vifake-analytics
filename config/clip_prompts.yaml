@@ -1,0 +1,41 @@
+# ViFake Analytics — Domain-specific CLIP prompts for Vietnamese scam detection
+# Optimized for RTX 2050 (4GB VRAM) with ViT-B/32
+# Usage: loaded by clip_inference.py at startup
+
+# ── SAFE prompts (index 0-3) ────────────────────────────────────────────────
+safe:
+  - "normal school student studying homework textbook"
+  - "cooking recipe food tutorial safe educational content"
+  - "friends chatting having fun social media post"
+  - "sports gaming entertainment video safe content"
+
+# ── SUSPICIOUS prompts (index 4-7) ──────────────────────────────────────────
+suspicious:
+  - "product advertisement promotion discount offer banner"
+  - "online game account selling buying marketplace"
+  - "earning money online work from home job advertisement"
+  - "affiliate marketing referral link click here button"
+
+# ── HIGH RISK prompts (index 8-15) ──────────────────────────────────────────
+high_risk:
+  - "online scam phishing fraud warning popup message"
+  - "fake prize winner announcement giveaway lottery"
+  - "Roblox Robux free generator hack method cheat"
+  - "gaming account password steal hack cheat tool"
+  - "cryptocurrency airdrop free token claim connect wallet MetaMask"
+  - "QR code bank transfer payment request screen"
+  - "deepfake AI-generated celebrity face video"
+  - "Vietnamese teen chat message nap the truoc nhan tien scam"
+
+# ── Risk category mapping ────────────────────────────────────────────────────
+# Maps prompt index ranges to internal risk category names
+risk_map:
+  safe_indices: [0, 1, 2, 3]
+  suspicious_indices: [4, 5, 6, 7]
+  high_risk_indices: [8, 9, 10, 11, 12, 13, 14, 15]
+
+# ── Score weights per category ───────────────────────────────────────────────
+score_weights:
+  safe: 0.0
+  suspicious: 0.3
+  high_risk: 1.0

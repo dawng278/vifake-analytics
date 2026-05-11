@@ -13,7 +13,8 @@
   "host_permissions": [
     "https://*.facebook.com/*",
     "https://*.youtube.com/*",
-    "https://*.tiktok.com/*"
+    "https://*.tiktok.com/*",
+    "http://localhost/*"
   ],
   "background": {
     "service_worker": "background/service-worker.js"

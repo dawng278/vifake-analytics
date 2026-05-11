@@ -6,6 +6,10 @@ version: '3.9'
 # API    : http://localhost:8000
 # API docs: http://localhost:8000/docs
 
+x-bake:
+  default:
+    DOCKER_BUILDKIT: "1"
+
 services:
 
   # ── FastAPI backend ──────────────────────────────────────────
@@ -19,7 +23,7 @@ services:
       PYTHONUNBUFFERED: "1"
       PYTHONPATH: /app
       PORT: "8000"
-      AUTH_TOKEN: "vifake-demo-2024"
+      AUTH_TOKEN: "demo-token-123"
     ports:
       - "8000:8000"
     healthcheck:

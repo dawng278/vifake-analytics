@@ -10,7 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Lightweight requirements only — no torch / transformers / mediapipe / whisper / easyocr
 # Rule-based NLP fallback + XGBoost fusion handle inference without heavy ML deps
 COPY requirements-deploy.txt .
-RUN pip install --no-cache-dir --timeout 300 -r requirements-deploy.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --timeout 120 -r requirements-deploy.txt
 
 # Copy application code
 COPY . .
