@@ -584,11 +584,11 @@
 <script>
 (function () {
   'use strict';
-  const RENDER_API = 'https://vifake-analytics-api.onrender.com';
+  const RENDER_API = '__VIFAKE_API_URL__';
   const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:8002'
     : RENDER_API;
-  const AUTH_TOKEN = 'demo-token-123';
+  const AUTH_TOKEN = '__VIFAKE_AUTH_TOKEN__';
   const PAGES = ['dashboard','analyze','model','pipeline'];
 
   window.setPage = function(p) {
