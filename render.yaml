@@ -10,6 +10,6 @@ services:
     healthCheckPath: /api/v1/health
     envVars:
       - key: AUTH_TOKEN
-        value: "vifake-demo-2024"
+        value: "demo-token-123"
       - key: PYTHONPATH
         value: /opt/render/project/src
