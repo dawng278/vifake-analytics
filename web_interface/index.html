@@ -584,10 +584,11 @@
 <script>
 (function () {
   'use strict';
-  const API_BASE = window.location.hostname.includes('onrender.com')
-    ? 'https://' + window.location.hostname
-    : 'http://localhost:8000';
-  const AUTH_TOKEN = 'vifake-demo-2024';
+  const RENDER_API = 'https://vifake-analytics-api.onrender.com';
+  const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:8002'
+    : RENDER_API;
+  const AUTH_TOKEN = 'demo-token-123';
   const PAGES = ['dashboard','analyze','model','pipeline'];
 
   window.setPage = function(p) {
@@ -612,10 +613,11 @@
       const scam  = d.scam_detected;
       const rate  = total > 0 ? ((scam / total) * 100).toFixed(1) : '0.0';
       document.getElementById('stat-total').textContent = total.toLocaleString('vi-VN');
-      document.getElementById('stat-total-sub').textContent = 'Phiên hiện tại · live';
+      const src = d.data_source === 'pipeline' ? 'Mẫu đã xử lý · pipeline' : 'Phiên hiện tại · live';
+      document.getElementById('stat-total-sub').textContent = src;
       document.getElementById('stat-total-sub').className = 'stat-sub stat-up';
       document.getElementById('stat-scam').textContent = scam.toLocaleString('vi-VN');
-      document.getElementById('stat-scam-sub').textContent = rate + '% tỷ lệ · live';
+      document.getElementById('stat-scam-sub').textContent = rate + '% tỷ lệ phát hiện';
     } catch (_) {
       document.getElementById('stat-total').textContent = '—';
       document.getElementById('stat-total-sub').textContent = 'API chưa khởi động';

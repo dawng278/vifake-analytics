@@ -14,6 +14,14 @@
 
 **Phát hiện lừa đảo nhắm vào trẻ em trên mạng xã hội Việt Nam bằng AI đa phương thức — chạy trong trình duyệt, không cần cài app.**
 
+---
+
+### Giới thiệu đề tài
+
+ViFake Analytics là hệ thống phát hiện nội dung lừa đảo trực tuyến nhắm vào trẻ em Việt Nam, hoạt động trực tiếp trên các nền tảng mạng xã hội như Facebook, YouTube và TikTok. Hệ thống kết hợp ba mô hình AI — **PhoBERT** (xử lý ngôn ngữ tự nhiên tiếng Việt), **CLIP** (phân tích hình ảnh và video), và **XGBoost Fusion** (tổng hợp kết quả đa phương thức) — để nhận diện các hành vi lừa đảo đặc thù của thị trường Việt Nam như giả mạo phần thưởng Robux, lừa nạp thẻ, hay dụ dỗ chuyển khoản. Kết quả phân tích được hiển thị trực tiếp trên trang web qua tiện ích mở rộng Chrome, giúp phụ huynh và người dùng nhận biết nguy cơ ngay lập tức mà không cần cài đặt thêm ứng dụng. Toàn bộ hệ thống được xây dựng theo kiến trúc Privacy-by-Design, không lưu trữ nội dung người dùng, đảm bảo tuân thủ Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.
+
+---
+
 `PhoBERT NLP` · `CLIP Vision` · `XGBoost Fusion` · `Chrome Extension`
 
 ---
@@ -207,7 +215,7 @@ Bài viết → AI Engine → Phán quyết → Cảnh báo
 |--|--|
 | 🌐 **API** | `vifake-analytics-api.onrender.com` |
 | 📦 **GitHub** | `github.com/dawng278/vifake-analytics` |
-| 🔑 **Demo Token** | `vifake-demo-2024` |
+| 🔑 **Demo Token** | `demo-token-123` |
 
 *Có câu hỏi không? Sẵn sàng demo live bất kỳ lúc nào.*
 
@@ -224,7 +232,7 @@ Bài viết → AI Engine → Phán quyết → Cảnh báo
 |------|---------|
 | ☐ Docker đang chạy | `docker ps` → `vifake-api` healthy |
 | ☐ Extension đã reload | `chrome://extensions` → Update |
-| ☐ Extension settings đã set | API: `http://localhost:8000` · Token: `vifake-demo-2024` |
+| ☐ Extension settings đã set | API: `https://vifake-analytics-api.onrender.com` · Token: `demo-token-123` |
 | ☐ Facebook đã đăng nhập | Tài khoản test, không phải tài khoản thật |
 | ☐ 4 bài post test sẵn sàng | Xem danh sách bên dưới |
 | ☐ OBS / Loom / Kazam mở sẵn | Ghi màn hình + âm thanh nếu có narrate |
@@ -349,7 +357,7 @@ Có ai biết quán cà phê view đẹp ở Đà Lạt không?
 ```
 🛡️ ViFake Analytics
 API: vifake-analytics-api.onrender.com
-Token: vifake-demo-2024
+Token: demo-token-123
 ```
 
 **Narrate:**

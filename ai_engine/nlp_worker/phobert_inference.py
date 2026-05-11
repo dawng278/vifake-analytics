@@ -93,16 +93,7 @@ class PhoBERTInference:
     def predict(self, text: str) -> Dict[str, Union[str, float, Dict]]:
         """Single text prediction with comprehensive results"""
         if not TRANSFORMERS_AVAILABLE or self.model is None:
-            return {
-                "text": text,
-                "prediction": "SAFE",
-                "confidence": 0.5,
-                "probabilities": {"SAFE": 0.5, "TOXIC": 0.25, "MANIPULATIVE": 0.25},
-                "risk_level": "LOW",
-                "is_safe": True,
-                "requires_review": True,
-                "mock": True,
-            }
+            return self._rule_based_predict(text)
         try:
             # Tokenize input
             inputs = self.tokenizer(
@@ -173,7 +164,95 @@ class PhoBERTInference:
                 return "LOW"
         else:
             return "UNKNOWN"
-    
+
+    def _rule_based_predict(self, text: str) -> Dict[str, Union[str, float, Dict]]:
+        """Keyword-based fallback khi không có torch/transformers (Render free tier).
+        Detect scam patterns đặc thù thị trường Việt Nam."""
+        t = text.lower()
+
+        # ── FAKE_SCAM signals ─────────────────────────────────────────────
+        SCAM_PATTERNS = [
+            # Credential harvesting
+            "mật khẩu", "password", "pass ", "tài khoản", "đăng nhập", "login",
+            "seed phrase", "private key", "otp", "verify acc", "xác nhận acc",
+            # Payment pressure
+            "nạp thẻ trước", "nạp trước", "chuyển khoản trước", "thanh toán trước",
+            "cọc trước", "phí kích hoạt", "phí xác minh",
+            # Gaming scams
+            "robux miễn phí", "robux free", "free robux", "robux hack",
+            "vbucks", "v-bucks", "skin miễn phí", "acc game giá rẻ",
+            "nâng cấp acc", "boost acc",
+            # Crypto scams
+            "airdrop", "connect ví", "metamask", "ví tiền điện tử",
+            "nhân x10", "x100 lợi nhuận", "đầu tư sinh lời",
+            # Urgency / pressure
+            "kẻo hết slot", "còn vài suất", "hết hôm nay", "giới hạn",
+            "nhanh tay", "ưu đãi đặc biệt chỉ hôm nay",
+            # Info gathering
+            "ib mình", "inbox mình", "nhắn tin để nhận", "điền form",
+            "đưa tài khoản", "cho mình tài khoản",
+        ]
+
+        # ── SUSPICIOUS signals ────────────────────────────────────────────
+        SUSPICIOUS_PATTERNS = [
+            "miễn phí", "free", "tặng", "giveaway",
+            "bán acc", "mua acc", "acc game",
+            "kiếm tiền online", "kiếm tiền tại nhà",
+            "hoa hồng", "commission", "affiliate",
+            "link tải", "click vào đây", "bấm vào link",
+            "bit.ly", "tinyurl", "rút gọn link",
+        ]
+
+        text_len = len(t.split())
+        scam_hits  = [p for p in SCAM_PATTERNS     if p in t]
+        susp_hits  = [p for p in SUSPICIOUS_PATTERNS if p in t]
+
+        # Score: mỗi scam keyword +0.18, mỗi suspicious +0.08, cap at 0.97
+        scam_score = min(0.97, 0.35 + len(scam_hits) * 0.18)
+        susp_score = min(0.85, 0.30 + len(susp_hits) * 0.10)
+
+        if scam_hits:
+            prob_fake  = round(scam_score, 3)
+            prob_susp  = round(min(0.3, (1 - scam_score) * 0.4), 3)
+            prob_safe  = round(max(0.03, 1 - prob_fake - prob_susp), 3)
+            prediction = "FAKE_SCAM"
+            confidence = prob_fake
+            risk_level = "HIGH" if confidence >= 0.7 else "MEDIUM"
+            is_safe    = False
+        elif susp_hits:
+            prob_susp  = round(susp_score, 3)
+            prob_fake  = round(min(0.25, susp_score * 0.3), 3)
+            prob_safe  = round(max(0.1, 1 - prob_susp - prob_fake), 3)
+            prediction = "SUSPICIOUS"
+            confidence = prob_susp
+            risk_level = "MEDIUM"
+            is_safe    = False
+        else:
+            prob_safe  = 0.82
+            prob_susp  = 0.12
+            prob_fake  = 0.06
+            prediction = "SAFE"
+            confidence = prob_safe
+            risk_level = "LOW"
+            is_safe    = True
+
+        return {
+            "text":         text,
+            "prediction":   prediction,
+            "confidence":   confidence,
+            "probabilities": {
+                "SAFE":         prob_safe,
+                "TOXIC":        prob_susp,
+                "MANIPULATIVE": prob_fake,
+            },
+            "risk_level":      risk_level,
+            "is_safe":         is_safe,
+            "requires_review": prediction == "SUSPICIOUS",
+            "mock":            True,
+            "mock_reason":     "rule_based_fallback",
+            "matched_patterns": scam_hits or susp_hits,
+        }
+
     def batch_predict(self, texts: List[str]) -> List[Dict]:
         """Batch prediction for efficiency"""
         logger.info(f"📊 Batch processing {len(texts)} texts")

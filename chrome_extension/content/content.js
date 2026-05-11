@@ -343,7 +343,14 @@
       return;
     }
 
-    // For other platforms: Check text length
+    // For Facebook: always inject regardless of text length (image/reel posts have no text)
+    if (PLATFORM === 'facebook') {
+      console.log('[ViFake] FB: injecting button on feed post');
+      injectButtonToElement(postEl);
+      return;
+    }
+
+    // For YouTube/other: require minimum text
     const text = extractPostText(postEl);
     if (text.length < MIN_TEXT_LENGTH) {
       console.log('[ViFake] Skipping post (text too short):', text.length, 'chars');
@@ -391,8 +398,8 @@
   }
 
   function injectButtonToElement(targetEl) {
-    // Mark as scanned to prevent duplicates
-    targetEl.setAttribute(SCAN_ATTR, 'true');
+    // NOTE: do NOT set SCAN_ATTR here — only set it after successful injection
+    // so skeleton posts can be retried by the MutationObserver.
 
     // Create button container
     const container = document.createElement('div');
@@ -420,43 +427,61 @@
     if (PLATFORM === 'facebook') {
       container.classList.add('vifake-container--header');
 
-      // Strategy 1: find the "..." more-options button and insert the badge before it
-      const moreBtn =
-        targetEl.querySelector('[aria-label*="More options" i]') ||
-        targetEl.querySelector('[aria-label*="Tùy chọn khác" i]') ||
-        targetEl.querySelector('[aria-label*="Thêm" i][role="button"]') ||
-        targetEl.querySelector('[aria-label*="options" i][role="button"]');
+      // ── Find the "..." more-options button (aria-label confirmed from live DOM) ──
+      const MORE_SELECTORS = [
+        '[aria-label="Hành động với bài viết này"][role="button"]',
+        '[aria-label="Tùy chọn khác"][role="button"]',
+        '[aria-label="Thêm"][role="button"]',
+        '[aria-label="More options"][role="button"]',
+        '[aria-label="More"][role="button"]',
+        '[aria-label*="Hành động"][role="button"]',
+        '[aria-label*="tùy chọn" i][role="button"]',
+        '[aria-label*="More options" i][role="button"]',
+        '[aria-label*="Actions for this post" i][role="button"]',
+        '[aria-haspopup="menu"][role="button"]:not([aria-label*="React" i]):not([aria-label*="Cảm xúc" i]):not([aria-label*="GIF" i]):not([aria-label*="Emoji" i]):not([aria-label*="Sticker" i]):not([aria-label*="Write" i]):not([aria-label*="Viết" i])',
+      ];
+      let moreBtn = null;
+      for (const sel of MORE_SELECTORS) {
+        try { moreBtn = targetEl.querySelector(sel); } catch(_) {}
+        if (moreBtn) break;
+      }
 
       if (moreBtn) {
-        const headerRow = moreBtn.parentElement;
-        headerRow.insertBefore(container, moreBtn);
+        // Walk up from moreBtn until we find a flex row wide enough to be the real header
+        let insertRef = moreBtn;
+        let flexParent = moreBtn.parentElement;
+        while (flexParent && flexParent !== targetEl) {
+          const st = window.getComputedStyle(flexParent);
+          const isFlex = st.display === 'flex' || st.display === 'inline-flex' || st.display === 'grid';
+          const w = flexParent.getBoundingClientRect().width;
+          if (isFlex && w > 300) break;
+          insertRef = flexParent;
+          flexParent = flexParent.parentElement;
+        }
+        const parent = (flexParent && flexParent !== targetEl) ? flexParent : moreBtn.parentElement;
+        const ref    = (flexParent && flexParent !== targetEl) ? insertRef  : moreBtn;
+        parent.insertBefore(container, ref);
+        targetEl.setAttribute(SCAN_ATTR, 'true');
+        console.log('[ViFake] FB: injected via moreBtn');
         return;
       }
 
-      // Strategy 2: find the header row via the author link (timestamp <a> or author <a>)
-      const authorLink =
-        targetEl.querySelector('a[href*="/groups/"] strong, a[role="link"] strong, h4 a, h3 a') ||
-        targetEl.querySelector('a[role="link"][tabindex="0"]');
-      if (authorLink) {
-        // Walk up until we find a row-like div that also contains an action button or the "..." button
-        let row = authorLink.parentElement;
-        for (let i = 0; i < 5 && row && row !== targetEl; i++) {
-          const style = window.getComputedStyle(row);
-          if (style.display === 'flex' || style.display === 'inline-flex') {
-            row.appendChild(container);
-            return;
-          }
-          row = row.parentElement;
-        }
-      }
-
-      // Fallback: insert before the action bar (like/comment/share)
-      const actionBar = targetEl.querySelector('[role="toolbar"]');
-      if (actionBar?.parentElement) {
-        actionBar.parentElement.insertBefore(container, actionBar);
+      // ── No "..." button found — decide whether to retry or give up ──
+      // If the post has any real content (author link, text), it is a COMMENT or
+      // an unsupported post type — mark it so we stop retrying.
+      // If it has NO content at all, it is a skeleton — leave unmarked so the
+      // MutationObserver retries once Facebook finishes rendering.
+      const hasContent = targetEl.querySelector(
+        'a[role="link"], [dir="auto"], h2, h3, h4, [data-ad-preview]'
+      );
+      if (hasContent) {
+        // Loaded but no "..." button → comment or unsupported layout → don't inject
+        targetEl.setAttribute(SCAN_ATTR, 'true');
+        console.log('[ViFake] FB: loaded article with no moreBtn — skipping (comment?)');
       } else {
-        targetEl.appendChild(container);
+        console.log('[ViFake] FB: skeleton post, will retry');
       }
+      return;
     } else if (PLATFORM === 'tiktok') {
       // For TikTok, try to insert near video controls or description
       const descContainer = targetEl.querySelector('[data-e2e="browse-video-desc"]')
@@ -469,8 +494,10 @@
         // Fallback: append to target element
         targetEl.appendChild(container);
       }
+      targetEl.setAttribute(SCAN_ATTR, 'true');
     } else {
       targetEl.appendChild(container);
+      targetEl.setAttribute(SCAN_ATTR, 'true');
     }
     
     // Debug: log where button was injected
@@ -957,21 +984,19 @@
   function isLikelyFeedPost(post) {
     if (PLATFORM !== 'facebook') return true;
 
-    // Reject if inside Messenger chat (chat overlay, messenger panel)
+    // Reject Messenger / chat contexts (URL or DOM label based)
     const chatLabels = [
       '[aria-label*="chat" i]',
       '[aria-label*="Messenger" i]',
-      '[aria-label*="tin nh\u1eafn" i]',   // Vietnamese: "tin nhắn"
+      '[aria-label*="tin nh\u1eafn" i]',
     ].join(',');
     if (post.closest(chatLabels)) return false;
 
-    // Size filter: chat messages are small (typically <120px).
-    // Real feed posts are taller. Using 200 to be safe for posts with multiple lines.
+    // Only apply size filter when the element has actually been laid out
+    // (off-screen / skeleton posts have rect 0×0 — we retry those later)
     const rect = post.getBoundingClientRect();
-    if (rect.height < 200) return false;
-
-    // Width filter: feed posts span a reasonable width. Chat messages are narrow.
-    if (rect.width < 300) return false;
+    if (rect.height > 0 && rect.height < 150) return false;
+    if (rect.width  > 0 && rect.width  < 300) return false;
 
     return true;
   }
