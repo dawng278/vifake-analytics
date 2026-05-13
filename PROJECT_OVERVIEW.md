@@ -7,7 +7,7 @@
 
 ## 🚨 The Problem We're Solving
 
-**Real data from Vietnam (2023-2024):**
+**Publicly reported fraud context from Vietnam (2023-2024):**
 - The Ministry of Public Security recorded over **16,000 online fraud cases** in the first 6 months of 2023, with estimated losses of **390 billion VND**
 - Children aged 8-17 are the most targeted group via gaming platforms (Roblox, Free Fire) and social media
 - **"Elsagate 2.0" tactics**: Content that appears harmless to adults but contains embedded scam triggers for children
@@ -24,7 +24,31 @@
 
 **ViFake Analytics** is a comprehensive AI-powered system designed to detect and prevent child-targeted scams on Vietnamese social media platforms. The system uses multi-modal AI analysis (vision, NLP, graph analytics) to identify malicious content targeting children, with a Privacy-by-Design architecture ensuring complete ethical compliance.
 
+### Data Evidence Snapshot (Judge-Trust First)
+
+ViFake currently uses a **3-layer data evidence model**:
+
+1. **Synthetic training set (production training source)**  
+   - Source: `data/synthetic/*`  
+   - Used for PhoBERT/XGBoost training and synthetic benchmark reporting.
+2. **Curated real-pattern validation set (internal)**  
+   - Source: `data/real_validation/real_validation_set.jsonl` (80 samples)  
+   - Nature: manually composed from real scam patterns/public warnings; triple-checked by team.
+3. **Planned true real-world benchmark (not completed yet)**  
+   - Target: random/live samples + independent annotation protocol + held-out test split.
+
+**Strict verification conclusion:**  
+- ViFake has **real-world referenced patterns**.  
+- ViFake does **not yet** have a competition-grade independently verified live benchmark.
+
 ### 🔄 Recent Updates (May 11, 2026)
+
+- **Gaming Scam Detection Improvements** - Significant boost in scam detection accuracy targeting children:
+  - **10-Category Intent Classifier**: Expanded from 5 to 10 intent categories, adding specific tracking for `game_item_doubling` and `account_takeover`.
+  - **Semantic Context & Ratio Detection**: Automatically detects unrealistic exchange ratios (e.g., 1000 to 1,000,000) and "game item + action + receive" semantic patterns even without exact keyword matches.
+  - **Gaming Teencode Support**: Added 14 gaming abbreviations to the teencode dictionary and 12 high-risk gaming normalizer keys.
+  - **Safe Override Bugfix**: Fixed logic where gaming contexts (e.g., "robux") were previously bypassed and incorrectly flagged as SAFE.
+  - **High Verification Rate**: 16/16 critical edge cases passed including cookie loggers, test servers, and Robux doubling.
 
 - **Video Analysis Pipeline** - Multi-modal AI detection for TikTok:
   - Audio AI Detection: MFCC + spectrogram analysis for voice clone detection
@@ -62,9 +86,9 @@
 - **Multi-modal AI Analysis**: Combines vision (CLIP), NLP (PhoBERT), and fusion models (XGBoost)
 - **Vietnamese Language Optimization**: PhoBERT fine-tuned on 750+ Vietnamese scam scenarios
 - **14-Feature Fusion Model**: Expanded feature vector including AI scores, linguistic red flags, metadata, and cross-modal consistency
-- **Scam Intent Detection**: 5-category intent classifier (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation)
+- **Scam Intent Detection**: 10-category intent classifier (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation, fake job, fake account trade, crypto fraud, game item doubling, account takeover)
 - **Model Calibration**: Platt scaling for honest confidence scores with reliability diagrams
-- **Vietnamese Scam Detection Engine**: Multi-dimensional pattern matching with safe content whitelisting
+- **Vietnamese Scam Detection Engine**: Multi-dimensional pattern matching with safe content whitelisting, semantic gaming context, and number ratio detection
 - **Real-time Processing**: FastAPI-based B2B2C API with streaming support
 - **Graph Analytics**: Neo4j-powered botnet detection and network analysis
 - **Privacy-by-Design**: Zero-trust RAM processing, no persistent storage of harmful content
@@ -90,16 +114,18 @@
 
 4. **14-feature vector with cross-modal consistency detection**: Expanded fusion input from 2 features to 14 features, including a novel "vision-NLP conflict" feature that detects when safe images accompany harmful text (a common scammer tactic).
 
-5. **Vietnamese scam intent detection**: 5-category intent classifier that detects scammer objectives (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation) rather than just binary classification.
+5. **Vietnamese scam intent detection**: 10-category intent classifier that detects scammer objectives (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation, fake job, fake account trade, crypto fraud, game item doubling, account takeover) rather than just binary classification.
 
 6. **Model calibration for honest uncertainty**: Platt scaling applied to XGBoost fusion model with reliability diagram visualization, addressing overconfidence in low-confidence predictions.
+
+7. **Semantic Context & Number Ratio Detection**: Advanced heuristic tracking of exchange ratios (e.g. send 1k get 100k) and multi-word gaming context patterns that traditional keyword matching miss.
 
 ### Why ViFake over Google SafeSearch / YouTube's classifier / Facebook AI?
 
 | Capability | Global Classifiers | ViFake |
 |---|---|---|
 | Vietnamese teencode detection | ❌ Not trained | ✅ Dual-track scoring |
-| Child-specific scam taxonomy | ❌ Generic "harmful" label | ✅ 3-class: SAFE/SUSPICIOUS/FAKE_SCAM + 5-intent |
+| Child-specific scam taxonomy | ❌ Generic "harmful" label | ✅ 3-class: SAFE/SUSPICIOUS/FAKE_SCAM + 10-intent |
 | Multi-modal fusion features | ❌ 2-3 features | ✅ 14 features with cross-modal consistency |
 | Model calibration | ❌ Overconfident | ✅ Platt scaling with reliability diagrams |
 | B2B API for 3rd-party apps | ❌ Closed ecosystems | ✅ Open REST API |
@@ -151,8 +177,8 @@
 #### 1. **AI Engine** (`ai_engine/`)
 - **Vision Worker**: CLIP FP16 model for image risk scoring
 - **NLP Worker**: PhoBERT inference with ONNX optimization
-- **Vietnamese Scam Detection Engine**: Multi-dimensional pattern matching with safe content whitelisting
-- **Intent Detection**: 5-category scam intent classifier (credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation)
+- **Vietnamese Scam Detection Engine**: Multi-dimensional pattern matching with safe content whitelisting, semantic gaming logic, and ratio detection
+- **Intent Detection**: 10-category scam intent classifier (covers credential harvest, money transfer, urgency pressure, fake reward, grooming/isolation, fake job, fake account trade, crypto fraud, game item doubling, account takeover)
 - **Feature Engineering**: 14-feature vector builder for fusion model
 - **Model Calibration**: Platt scaling for honest confidence scores
 - **RAG Setup**: ChromaDB vector database for scam pattern indexing
@@ -202,6 +228,16 @@
 | Age groups | 8-10, 11-13, 14-17 |
 | Language | Vietnamese only |
 
+### Curated Real-Pattern Validation Set (Internal)
+| Property | Value |
+|----------|-------|
+| Source | `data/real_validation/real_validation_set.jsonl` |
+| Total samples | 80 |
+| Creation method | Manually composed from publicly reported scam templates and safety advisories |
+| Labeling | Triple-checked by internal team |
+| Role in lifecycle | Internal stress-test only (not independent benchmark) |
+| Caveat | Not random live traffic; not third-party audited |
+
 ### Evaluation Results (Synthetic Test Set)
 | Metric | Score |
 |--------|-------|
@@ -209,6 +245,14 @@
 | Precision (macro) | 0.91 |
 | Recall (macro) | 0.93 |
 | F1 Score (macro) | 0.92 |
+
+### Evidence Strength by Metric Source
+| Evidence Item | Current Status | Source Tier | Verification Strength |
+|---|---|---|---|
+| Accuracy/Precision/Recall/F1 (PhoBERT) | Available | Synthetic test split | Moderate (engineering benchmark, not real-world) |
+| Calibration (ECE/MCE) | Available | Synthetic validation split | Moderate |
+| Curated real-pattern stress test | Available (80 samples) | Internal real-pattern set | Limited (non-random, non-independent) |
+| Live/random real-world benchmark F1 | Not available yet | Planned | Not established |
 
 ### Calibration Metrics (Platt Scaling)
 | Metric | Score |
@@ -253,14 +297,14 @@
 
 ### Vietnamese Scam Detection Engine
 - **Method**: Multi-dimensional pattern matching with rule-based scoring
-- **Dimensions**: URL/shortlink detection, financial scam patterns, urgency language, teencode detection, trust manipulation, emoji abuse, caps shouting, safe content indicators
+- **Dimensions**: URL/shortlink detection, financial scam patterns, urgency language, teencode detection, trust manipulation, emoji abuse, caps shouting, safe content indicators, semantic gaming context, and unrealistic number ratios (e.g., 1:1000 doubling scam detection)
 - **Safe Content Whitelist**: 17+ educational patterns ("chính thức của Bộ", "chia sẻ cách học", "phụ huynh có thể", "Bộ GDĐT", etc.) with 0.25-point discount per match
 - **Classification Thresholds**: SAFE (<0.20), SUSPICIOUS (0.20-0.40), FAKE_SCAM (≥0.40)
-- **Purpose**: Fallback when PhoBERT confidence is low, and primary detector for Vietnamese-specific scam patterns
+- **Purpose**: Fallback when PhoBERT confidence is low, and primary detector for Vietnamese-specific scam patterns (now with advanced gaming context guardrails)
 
-### Intent Detection (5-Category)
-- **Categories**: credential_harvest, money_transfer, urgency_pressure, fake_reward, grooming_isolation
-- **Method**: Pattern-based scoring with Vietnamese keyword matching
+### Intent Detection (10-Category)
+- **Categories**: `credential_harvest`, `money_transfer`, `urgency_pressure`, `fake_reward`, `grooming_isolation`, `fake_job`, `fake_account_trade`, `crypto_fraud`, `game_item_doubling`, `account_takeover`
+- **Method**: Pattern-based scoring with Vietnamese keyword matching and custom regex-based intent modeling
 - **Output**: Per-intent scores, primary intent label with explanation, risk-weighted score
 - **Purpose**: Detect scammer objectives beyond binary classification
 
@@ -301,6 +345,17 @@ This is a valid concern. Our mitigation strategy:
 - **Template-grounded**: Base templates derived from real scam reports, not hallucinated
 - **Perturbation diversity**: The perturbation engine introduces real-world noise patterns (typos, slang) that exist regardless of content origin
 - **Planned real-data validation**: 200+ real post annotation sprint planned post-competition to measure synthetic-to-real gap
+
+## Verification Protocol (for competition-grade real-data claims)
+
+To claim independently verified real-world performance, ViFake will follow this minimum protocol:
+
+1. **Collection source**: random/public posts and warnings from defined platform windows with traceable provenance logs.
+2. **Anonymization rules**: remove or mask direct identifiers before annotation; keep only evidence needed for labeling.
+3. **Independent annotation**: minimum 2 independent annotators + 1 adjudicator for conflicts.
+4. **Disagreement resolution**: documented adjudication rubric; final label requires consensus or adjudicator decision.
+5. **Agreement metrics**: report Cohen's kappa (2 annotators) or Fleiss' kappa (3+ annotators), plus per-class support.
+6. **Benchmark split policy**: fixed holdout test set, never used for rule tuning/model retraining.
 
 ### Data Storage
 - **MongoDB**: Metadata, posts, user interactions, audit logs
@@ -660,6 +715,7 @@ curl -X POST http://localhost:8000/api/v1/analyze \
 |---|---|---|
 | In-memory job storage (`jobs = {}`) | Jobs lost on API restart | Redis/PostgreSQL in Phase 3 |
 | Synthetic training data only | Unknown real-world F1 score | Real annotation sprint (200+ samples) post-competition |
+| Curated real-pattern set is internal | Evidence not independent | External annotation partner + agreement reporting (kappa) |
 | Single-node architecture | No horizontal scaling | Kubernetes in Phase 3 |
 | Graph data is simulated | Botnet detection unvalidated on real networks | Live data pipeline in Phase 4 |
 | No automated test suite | Regression risk on model retrain | pytest suite planned (see Testing Strategy) |
@@ -774,7 +830,9 @@ vifake-analytics/
 
 - **API Response Time**: <500ms (health check), ~420ms–1s (full URL analysis, RTX 2050)
 - **Job Processing**: Async job queue, SSE streaming, poll `/api/v1/job/{id}`
-- **Data Coverage**: 750+ synthetic Vietnamese scam scenarios, 4 scam types
+- **Data Coverage (Synthetic Train)**: 750+ synthetic Vietnamese scam scenarios, 4 scam types
+- **Data Coverage (Curated Real-Pattern Validation)**: 80 internally labeled samples (`FAKE_SCAM`: 36, `SUSPICIOUS`: 20, `SAFE`: 24)
+- **Evidence Note**: Real-world random/independent benchmark is pending
 - **Platform Support**: Facebook, TikTok, YouTube, X/Twitter — OGP crawl + og:image
 - **Memory Footprint**: ~1.4GB RAM (CLIP FP16 + XGBoost + FastAPI)
 - **Cold Start**: ~8s (Docker container restart), <1s subsequent requests
@@ -788,10 +846,11 @@ vifake-analytics/
 - [x] API Gateway development (local dev environment)
 - [x] Web interface creation (local testing dashboard)
 - [x] 14-feature fusion model implementation
-- [x] Intent detection (5 categories) implementation
+- [x] Intent detection (10 categories) implementation
 - [x] Model calibration (Platt scaling) implementation
 - [x] Vietnamese scam detection engine with safe content whitelisting
 - [x] False positive fixes (PhoBERT confidence threshold + fusion override)
+- [x] Gaming scam detection improvements (ratio detection, semantic contexts)
 - [x] Ethical compliance documentation (internal draft — pending independent review)
 
 ### Phase 2: Extension & Localhost Hardening ✅ (Complete)

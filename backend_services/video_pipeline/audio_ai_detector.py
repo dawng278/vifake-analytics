@@ -8,7 +8,6 @@ Implements lightweight classifiers optimized for Render.com free tier.
 import asyncio
 import logging
 import numpy as np
-import librosa
 from typing import Dict, Optional, Tuple
 from pathlib import Path
 import sys
@@ -63,6 +62,7 @@ class AudioAIDetector:
             Dict with AI confidence and features
         """
         try:
+            import librosa
             # Load audio
             y, sr = librosa.load(audio_path, sr=self.sample_rate)
             
@@ -79,6 +79,15 @@ class AudioAIDetector:
                 'analysis_type': 'mfcc_spectrogram'
             }
             
+        except ImportError:
+            logger.warning("⚠️ Librosa not installed. Audio AI Voice detection disabled.")
+            return {
+                'is_ai_voice': False,
+                'ai_confidence': 0.0,
+                'features': {},
+                'analysis_type': 'disabled',
+                'note': 'librosa missing'
+            }
         except Exception as e:
             logger.error(f"❌ Audio AI analysis failed: {e}")
             return {
@@ -104,6 +113,7 @@ class AudioAIDetector:
     
     def _compute_features(self, y: np.ndarray, sr: int) -> Dict:
         """Compute audio features for AI detection"""
+        import librosa
         features = {}
         
         # 1. MFCC features
@@ -207,6 +217,7 @@ class AudioAIDetector:
     
     def _analyze_breath_patterns(self, y: np.ndarray, sr: int) -> float:
         """Analyze breath patterns between speech segments"""
+        import librosa
         # Detect speech segments
         intervals = librosa.effects.split(y, top_db=20)
         
@@ -233,6 +244,7 @@ class AudioAIDetector:
     
     def _analyze_prosody(self, y: np.ndarray, sr: int) -> float:
         """Analyze prosody for unnatural regularity"""
+        import librosa
         # Extract pitch contour
         pitches, magnitudes = librosa.piptrack(y=y, sr=sr, threshold=0.1)
         

@@ -187,9 +187,18 @@
   // ─── TikTok Video URL Extractor ───
   function extractTikTokVideoInfo(postEl) {
     // Get video URL from video element
-    const videoEl = postEl.querySelector('video[src*="tiktok"]')
+    let videoEl = postEl.querySelector('video[src*="tiktok"]')
       || postEl.querySelector('video[src*="tiktokcdn"]')
       || postEl.querySelector('video[src*="muscdn"]');
+
+    // FALLBACK: If post container search failed, search the WHOLE document.
+    // On TikTok fullscreen viewer, there is only ever ONE active video playing.
+    if (!videoEl) {
+        videoEl = document.querySelector('video[src*="tiktok"]')
+          || document.querySelector('video[src*="tiktokcdn"]')
+          || document.querySelector('video[src*="muscdn"]')
+          || document.querySelector('video');
+    }
 
     if (!videoEl || !videoEl.src) return null;
 
@@ -201,8 +210,16 @@
     const authorEl = postEl.querySelector('[data-e2e="browse-username"]')
       || postEl.querySelector('[class*="DivUsername"]');
 
+    let sourceUrl = videoEl.src;
+    
+    // CRITICAL FIX: Modern browsers prevent servers from downloading 'blob:...' local memory objects.
+    // Use canonical page URL if a direct server-side CDN link isn't readily exposed.
+    if (!sourceUrl || sourceUrl.startsWith('blob:')) {
+        sourceUrl = window.location.href;
+    }
+
     return {
-      video_url: videoEl.src,
+      video_url: sourceUrl,
       description: descEl?.textContent?.trim() || '',
       author: authorEl?.textContent?.trim() || '',
       page_url: window.location.href,
@@ -310,6 +327,9 @@
 
   // ─── UI: Inject Check Button ───
   function injectCheckButton(postEl) {
+    // COMPLETELY DISABLED as requested: No injected buttons allowed.
+    return;
+    
     if (postEl.querySelector(`.${BTN_CLASS}`)) return;
 
     // For TikTok: Check if this is the main video container
@@ -1160,22 +1180,74 @@
 
   // Extract images and videos from a post
   function extractMediaUrls(postEl) {
-    const images = [];
+    const scoredImages = []; // Array of {url, area}
     const videos = [];
-    postEl.querySelectorAll('img').forEach(img => {
+    
+    // On TikTok, look global to guarantee view, but score by SIZE to grab main content
+    const searchRoot = PLATFORM === 'tiktok' ? document : (postEl || document);
+
+    // 1. Standard Images
+    searchRoot.querySelectorAll('img').forEach(img => {
       const src = img.src;
       if (!src || src.startsWith('data:')) return;
-      // Filter out tiny icons (avatars are OK, emojis aren't)
       const rect = img.getBoundingClientRect();
-      if (rect.width >= 50 && rect.height >= 50) {
-        images.push(src);
+      const area = rect.width * rect.height;
+      // avatars are usually 40x40 (1600), content is massive (e.g. 500x500 = 250000)
+      if (area > 500) {
+          scoredImages.push({ url: src, area: area });
       }
     });
-    postEl.querySelectorAll('video').forEach(video => {
+
+    // 2. Hidden CSS Backgrounds (TikTok Slideshows)
+    searchRoot.querySelectorAll('div').forEach(div => {
+        // Performance optimization: Only check medium-to-large containers
+        const rect = div.getBoundingClientRect();
+        const area = rect.width * rect.height;
+        if (area < 10000) return; // Skip tiny wrappers
+        
+        let bgUrl = null;
+        // Try quick attribute match first
+        const styleAttr = div.getAttribute('style') || '';
+        if (styleAttr.includes('background-image') && styleAttr.includes('url')) {
+             const match = styleAttr.match(/url\((["']?)(https?:\/\/[^"'\)]+)\1\)/);
+             if (match && match[2]) bgUrl = match[2].replace(/&amp;/g, '&');
+        }
+        
+        // Fallback to computed style if absolutely needed for large central viewport item
+        if (!bgUrl && area > 100000) {
+             const comp = window.getComputedStyle(div).backgroundImage;
+             if (comp && comp.includes('url')) {
+                 const match = comp.match(/url\((["']?)(https?:\/\/[^"'\)]+)\1\)/);
+                 if (match && match[2]) bgUrl = match[2];
+             }
+        }
+
+        if (bgUrl && (bgUrl.includes('http'))) {
+            scoredImages.push({ url: bgUrl, area: area });
+        }
+    });
+    
+    // Sort by geometric AREA descending (Largest image on screen first)
+    scoredImages.sort((a, b) => b.area - a.area);
+    
+    // Take the unique set of the LARGEST images
+    const finalImages = [];
+    const seen = new Set();
+    for (const item of scoredImages) {
+        if (!seen.has(item.url)) {
+            seen.add(item.url);
+            finalImages.push(item.url);
+        }
+        if (finalImages.length >= 3) break; // Top 3 largest images max
+    }
+
+    // Videos
+    searchRoot.querySelectorAll('video').forEach(video => {
       if (video.src) videos.push(video.src);
       video.querySelectorAll('source').forEach(s => { if (s.src) videos.push(s.src); });
     });
-    return { images: [...new Set(images)].slice(0, 5), videos: [...new Set(videos)].slice(0, 3) };
+    
+    return { images: finalImages, videos: [...new Set(videos)].slice(0, 3) };
   }
 
   // Listen for context-menu scan request from background
@@ -1202,7 +1274,25 @@
         showFloatingNotice('error', 'Không tìm thấy bài viết. Hãy bôi đen text hoặc click chuột phải vào trong bài.');
         return;
       }
-      text = (postEl.innerText || '').trim();
+      
+      // Smart Text Extraction: Clone and remove noise (comments, buttons)
+      const clone = postEl.cloneNode(true);
+      // Aggressively prune common comment and side navigation classes from clone
+      const noiseSelectors = [
+          '[data-e2e*="comment"]', '[class*="comment"]', '[class*="Comment"]', 
+          '[class*="Reply"]', 'button', 'nav', 'header', 'footer', '.vifake-ignore'
+      ];
+      noiseSelectors.forEach(sel => {
+          clone.querySelectorAll(sel).forEach(n => n.remove());
+      });
+      
+      // Also truncate extremely long post clones to focus on the TOP part (description)
+      text = (clone.innerText || '').trim();
+      
+      // If text IS STILL huge (>1500 chars), take the first 1000 chars which is where the desc is
+      if (text.length > 1500) {
+          text = text.substring(0, 1500);
+      }
     }
 
     if (text.length < 10) {
@@ -1216,14 +1306,51 @@
     const media = postEl ? extractMediaUrls(postEl) : { images: [], videos: [] };
     const url = location.href;
 
+    // Priority: If on TikTok and we can extract a video URL, use the rich video pipeline!
+    let isVideoScan = false;
+    let videoInfo = null;
+    
+    if (PLATFORM === 'tiktok' && postEl) {
+       videoInfo = extractTikTokVideoInfo(postEl);
+       // ONLY route through video pipeline if it is a real dynamic video.
+       // TikTok 'photo' slideshows must go through standard analyzer to dispatch captured static images correctly!
+       if (videoInfo && videoInfo.video_url && !location.href.includes('/photo/')) {
+           isVideoScan = true;
+       }
+    }
+
     // Show scanning notice
-    const noticeEl = showFloatingNotice('scanning', `Đang quét bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''})...`);
+    const typeStr = isVideoScan ? "video & audio" : `bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''})`;
+    const noticeEl = showFloatingNotice('scanning', `Đang quét sâu ${typeStr}...`);
 
     try {
-      const result = await chrome.runtime.sendMessage({
-        action: 'analyze',
-        payload: { text, url, platform: PLATFORM, images: media.images, videos: media.videos },
-      });
+      let result;
+      if (isVideoScan) {
+          // Route to rich video analysis pipeline
+          result = await chrome.runtime.sendMessage({
+            action: 'analyze_video',
+            payload: videoInfo,
+          });
+          // Map video results to standard structure for unified UI display
+          if (!result.error && result.verdict) {
+              result = {
+                  label: result.verdict,
+                  prediction: result.verdict,
+                  confidence: result.confidence,
+                  analysis_details: {
+                      intent_label: result.is_ai_generated ? "Phát hiện Giọng nói/Video AI" : "Phân tích Video",
+                      intent_explanation: result.explanation || `Bản dịch video: ${result.transcript || "N/A"}`,
+                      video_meta: { is_ai: result.is_ai_generated, ai_conf: result.ai_confidence }
+                  }
+              };
+          }
+      } else {
+          // Fallback to text + image analysis (e.g. slideshows or static posts)
+          result = await chrome.runtime.sendMessage({
+            action: 'analyze',
+            payload: { text, url, platform: PLATFORM, images: media.images, videos: media.videos },
+          });
+      }
 
       noticeEl?.remove();
       showFloatingResult(result, postEl);
@@ -1307,7 +1434,8 @@
       </div>
       <div class="vifake-result-body">
         ${showIntent && details.intent_label ? `<p><strong>Ý định:</strong> ${escapeHtml(details.intent_label)}</p>` : ''}
-        ${showIntent && details.intent_explanation ? `<p>${escapeHtml(details.intent_explanation)}</p>` : ''}
+        ${details.video_meta ? `<p class="vifake-video-pill ${details.video_meta.is_ai ? 'vifake-pill-danger':'vifake-pill-safe'}">${details.video_meta.is_ai ? '🚨 Video/Giọng AI tạo' : '✅ Video Tự nhiên'}</p>` : ''}
+        ${showIntent && details.intent_explanation ? `<p class="vifake-exp-text">${escapeHtml(details.intent_explanation)}</p>` : ''}
         ${label === 'SAFE' ? `<p class="vifake-safe-msg">Không phát hiện dấu hiệu lừa đảo trong nội dung này.</p>` : ''}
         ${label !== 'SAFE' ? `
           <div class="vifake-action-hint">
@@ -1321,6 +1449,15 @@
     `;
     panel.querySelector('.vifake-notice-close').addEventListener('click', () => panel.remove());
     document.body.appendChild(panel);
+    
+    // AUTO-CLOSE after 8 seconds so user doesn't have to manually click "x"
+    setTimeout(() => {
+        if (panel && panel.parentElement) {
+            panel.style.opacity = '0';
+            panel.style.transition = 'opacity 0.5s ease';
+            setTimeout(() => panel.remove(), 500);
+        }
+    }, 8000);
   }
 
   // ─── Helpers ───

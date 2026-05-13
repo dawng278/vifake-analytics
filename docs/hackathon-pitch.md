@@ -120,7 +120,7 @@ Bài viết → AI Engine → Phán quyết → Cảnh báo
 
 | Module | Chi tiết |
 |--------|------|
-| 📝 **PhoBERT NLP** | Phát hiện teencode Việt ("ko", "j", "k"), pattern "nạp thẻ trước", "xác nhận acc". Fine-tuned trên 2800 kịch bản lừa đảo tổng hợp tiếng Việt |
+| 📝 **PhoBERT NLP** | Nhận diện teencode Việt (+14 từ lóng game), phát hiện nhân đôi vật phẩm, cookie logger. Fine-tuned trên 2800 kịch bản lừa đảo tiếng Việt |
 | 🖼️ **CLIP Vision** | Phân tích ảnh đi kèm bài viết. Phát hiện QR code đáng ngờ, text overlay, logo game giả mạo. Chạy CPU-only |
 | ⚡ **XGBoost Fusion** | Kết hợp **30 đặc trưng** trong 3 nhóm: Vision signals (10) + NLP signals (11) + Metadata signals (9) |
 
@@ -135,7 +135,8 @@ Bài viết → AI Engine → Phán quyết → Cảnh báo
 
 - ✅ **Dual-track teencode:** tách NLP embedding và character-level scoring để xử lý chữ viết tắt tiếng Việt
 - ✅ **Cross-modal conflict:** phát hiện ảnh an toàn kèm text độc hại — kỹ thuật lừa đảo phổ biến
-- ✅ **Taxonomy Việt Nam:** 5 loại ý định lừa đảo đặc thù thị trường VN
+- ✅ **Taxonomy Việt Nam:** 10 loại ý định lừa đảo đặc thù thị trường VN (thêm doubling scam, account takeover)
+- ✅ **Number ratio & Semantic context:** Phát hiện tỷ lệ trao đổi phi thực tế (nạp 1k được 100k) và ngữ cảnh game ảo để chặn lừa đảo tự động
 - ✅ **Platt calibration:** confidence score trung thực — ECE giảm từ 0.183 → 0.118
 
 ---

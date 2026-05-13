@@ -37,15 +37,8 @@ class VideoAnalysisPipeline:
 
     async def run(self, video_url: str, description: str = "", author: str = "") -> Dict:
         """
-        Run complete video analysis pipeline.
-        
-        Args:
-            video_url: Direct TikTok video URL
-            description: Video caption from DOM
-            author: Video author/creator
-            
-        Returns:
-            Dict with analysis results
+        Execute parallel processing pipeline to analyze video.
+        Uses cascading recovery flow so Vision OCR integrates into Text NLP.
         """
         extractor = MediaExtractor(video_url)
         
@@ -53,123 +46,81 @@ class VideoAnalysisPipeline:
             logger.info(f"🎬 Starting video analysis: {video_url}")
             
             # ── Bước 1: Extract audio + frames SONG SONG ────────
-            logger.info("📥 Phase 1: Extracting audio and frames...")
+            logger.info("📥 Phase 1: Extracting media components...")
             audio_task = asyncio.create_task(extractor.extract_audio())
             frames_task = asyncio.create_task(extractor.extract_frames(num_frames=8))
             
-            # Chờ cả 2 hoàn thành với exception handling
             audio_path, frame_paths = await asyncio.gather(
                 audio_task, 
                 frames_task,
-                return_exceptions=True   # Không crash nếu 1 branch lỗi
+                return_exceptions=True
             )
-
-            # ── Bước 2: Transcribe + Frame Analysis SONG SONG ───
-            logger.info("🔍 Phase 2: Running parallel analysis...")
             
-            # Branch A: audio → transcription + AI voice detection
-            async def branch_a():
-                if isinstance(audio_path, Exception):
-                    logger.warning(f"⚠️ Audio extraction failed: {audio_path}")
-                    return {
-                        "verdict": "UNKNOWN", 
-                        "confidence": 0.0, 
-                        "intents": {},
-                        "transcript": "",
-                        "audio_ai": {"is_ai_voice": False, "ai_confidence": 0.0},
-                        "error": str(audio_path)
-                    }
-                
+            # ── Bước 2: Visual Analysis (REQUIRED FIRST FOR OCR FUSION) ────────
+            logger.info("🔍 Phase 2: Analyzing visual frames & harvesting OCR text...")
+            vision_result = {
+                "is_ai_generated": False, "confidence": 0.0, 
+                "faces_detected": 0, "clip_analysis": {}
+            }
+            
+            if not isinstance(frame_paths, Exception) and frame_paths:
                 try:
-                    # Transcribe audio
-                    transcript_result = await self.transcriber.transcribe(audio_path)
+                    clip_res = await self.frame_analyzer.analyze_frames(frame_paths)
+                    face_res = await self.face_ai_detector.analyze_frames(frame_paths)
                     
-                    # AI Voice Detection (NEW)
-                    audio_ai_result = await self.audio_ai_detector.analyze_audio(audio_path)
-                    
-                    # Build analysis text from all sources
-                    full_text = self.transcriber.build_analysis_text(
-                        transcript_result["text"], description, author
-                    )
-                    
-                    # Run text analysis using existing pipeline
-                    text_result = await self._run_text_analysis(full_text)
-                    text_result["transcript"] = transcript_result["text"]
-                    text_result["audio_ai"] = audio_ai_result  # Add AI voice detection
-                    
-                    logger.info(f"📝 Text + Audio AI analysis completed: {text_result.get('verdict', 'UNKNOWN')}")
-                    logger.info(f"🎤 AI Voice Detection: {audio_ai_result.get('is_ai_voice', False)} ({audio_ai_result.get('ai_confidence', 0.0):.3f})")
-                    return text_result
-                    
-                except Exception as e:
-                    logger.error(f"❌ Text + Audio AI analysis failed: {e}")
-                    return {
-                        "verdict": "UNKNOWN", 
-                        "confidence": 0.0, 
-                        "intents": {},
-                        "transcript": transcript_result.get("text", ""),
-                        "error": str(e)
-                    }
-
-            # Branch B: frames → AI face detection (NEW)
-            async def branch_b():
-                if isinstance(frame_paths, Exception) or not frame_paths:
-                    logger.warning(f"⚠️ Frame extraction failed: {frame_paths}")
-                    return {
-                        "is_ai_generated": False, 
-                        "confidence": 0.0,
-                        "faces_detected": 0,
-                        "error": str(frame_paths) if isinstance(frame_paths, Exception) else "No frames extracted"
-                    }
-                
-                try:
-                    # Run both CLIP and Face AI detection
-                    clip_result = await self.frame_analyzer.analyze_frames(frame_paths)
-                    face_ai_result = await self.face_ai_detector.analyze_frames(frame_paths)
-                    
-                    # Combine results - prioritize Face AI detection
-                    combined_result = {
-                        "is_ai_generated": face_ai_result.get('is_ai_face', clip_result.get('is_ai_generated', False)),
-                        "confidence": max(
-                            face_ai_result.get('ai_confidence', 0.0),
-                            clip_result.get('confidence', 0.0)
-                        ),
-                        "faces_detected": face_ai_result.get('faces_detected', 0),
+                    vision_result = {
+                        "is_ai_generated": face_res.get('is_ai_face', clip_res.get('is_ai_generated', False)),
+                        "confidence": max(face_res.get('ai_confidence', 0.0), clip_res.get('confidence', 0.0)),
+                        "faces_detected": face_res.get('faces_detected', 0),
                         "frames_analyzed": len(frame_paths),
-                        
-                        # Include both analysis results
-                        "clip_analysis": clip_result,
-                        "face_ai_analysis": face_ai_result,
-                        
-                        # Use Face AI as primary if available
-                        "primary_method": "face_ai" if face_ai_result.get('faces_detected', 0) > 0 else "clip"
+                        "clip_analysis": clip_res,
+                        "face_ai_analysis": face_res,
                     }
-                    
-                    logger.info(f"🤖 Face AI detection completed: {face_ai_result.get('is_ai_face', False)} ({face_ai_result.get('ai_confidence', 0.0):.3f})")
-                    logger.info(f"👥 Faces detected: {face_ai_result.get('faces_detected', 0)}")
-                    return combined_result
-                    
                 except Exception as e:
-                    logger.error(f"❌ Face AI analysis failed: {e}")
-                    return {
-                        "is_ai_generated": False, 
-                        "confidence": 0.0,
-                        "faces_detected": 0,
-                        "frames_analyzed": len(frame_paths) if frame_paths else 0,
-                        "error": str(e)
-                    }
+                    logger.error(f"❌ Visual branch failed: {e}")
+            
+            # HARVEST PIXEL TEXT (OCR)
+            ocr_list = vision_result.get('clip_analysis', {}).get('ocr_texts', [])
+            ocr_combined = " ".join(ocr_list)
+            if ocr_combined:
+                logger.info(f"📝 Visual OCR harvested {len(ocr_combined)} characters of burned-in text")
 
-            # Run both branches in parallel
-            text_result, vision_result = await asyncio.gather(
-                branch_a(), branch_b()
-            )
+            # ── Bước 3: Audio Transcription & NLP (Combines text + visual OCR) ──
+            logger.info("🔍 Phase 3: Commencing composite NLP and Audio analysis...")
+            text_result = {
+                "verdict": "SAFE", "confidence": 0.0, "intents": {}, 
+                "audio_ai": {"is_ai_voice": False, "ai_confidence": 0.0}
+            }
+            
+            try:
+                transcript_txt = ""
+                audio_ai_info = {"is_ai_voice": False, "ai_confidence": 0.0}
+                
+                # Handle transcription if audio exists
+                if not isinstance(audio_path, Exception) and audio_path:
+                    tr_res = await self.transcriber.transcribe(audio_path)
+                    transcript_txt = tr_res.get("text", "")
+                    audio_ai_info = await self.audio_ai_detector.analyze_audio(audio_path)
+                
+                # BUILD MASTER TEXT PAYLOAD (Description + Audio Transcript + PIXEL OCR)
+                full_text = self.transcriber.build_analysis_text(transcript_txt, description, author)
+                
+                if ocr_combined:
+                    full_text += f" [Văn bản video]: {ocr_combined}"
+                
+                logger.debug(f"📜 Sending full composite text to PhoBERT backend: {len(full_text)} chars")
+                text_result = await self._run_text_analysis(full_text)
+                text_result["transcript"] = transcript_txt
+                text_result["audio_ai"] = audio_ai_info
+                
+            except Exception as e:
+                logger.error(f"❌ Composite text branch failed: {e}")
 
-            # ── Bước 3: Tổng hợp kết quả ────────────────────────
-            logger.info("🔀 Phase 3: Merging results...")
+            # ── Bước 4: Merge and Conclude ────────
+            logger.info("🔀 Phase 4: Generating final safety verdict...")
             final_result = self._merge_results(text_result, vision_result)
             
-            logger.info(f"✅ Video analysis completed: {final_result['verdict']} "
-                       f"(confidence: {final_result['confidence']:.3f})")
+            logger.info(f"✅ Video analysis completed: {final_result['verdict']} ({final_result['confidence']:.2f})")
             return final_result
 
         finally:
@@ -206,8 +157,8 @@ class VideoAnalysisPipeline:
             # handled by branch_b in the calling pipeline; here we only need
             # the NLP + fusion pass on the transcript text.
             vision_placeholder = {
-                "combined_risk_score": 0.5,
-                "safety_score": 0.5,
+                "combined_risk_score": 0.0,
+                "safety_score": 1.0,
                 "is_ai_generated": False,
                 "confidence": 0.0,
             }
@@ -258,9 +209,18 @@ class VideoAnalysisPipeline:
 
         # ── Intent analysis ─────────────────────────────────────
         intents = text_result.get("intents", {})
-        intent_count   = sum(1 for v in intents.values() if v > 0.25)
-        max_intent     = max(intents.values()) if intents else 0.0
-        primary_intent = max(intents, key=intents.get) if intents else "none"
+        # Extricate the specific float score map from compound intent response
+        scores_dict = {}
+        if isinstance(intents, dict):
+            if "intent_scores" in intents:
+                scores_dict = intents["intent_scores"]
+            else:
+                # Fallback filter only valid numeric values to avoid comparison error
+                scores_dict = {k: v for k, v in intents.items() if isinstance(v, (int, float))}
+        
+        intent_count   = sum(1 for v in scores_dict.values() if v > 0.25)
+        max_intent     = max(scores_dict.values()) if scores_dict else 0.0
+        primary_intent = max(scores_dict, key=scores_dict.get) if scores_dict else "none"
 
         # Intent labels (Vietnamese)
         INTENT_LABELS = {
@@ -308,7 +268,7 @@ class VideoAnalysisPipeline:
             reasons.append("⚠️ Văn bản có một số từ ngữ đáng ngờ")
 
         # 2. Per-intent reasons (only those with meaningful score)
-        active_intents = [(k, v) for k, v in intents.items() if v > 0.25]
+        active_intents = [(k, v) for k, v in scores_dict.items() if v > 0.25]
         active_intents.sort(key=lambda x: -x[1])
         for intent_key, score in active_intents:
             label = INTENT_LABELS.get(intent_key, intent_key)

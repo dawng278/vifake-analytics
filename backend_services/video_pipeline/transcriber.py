@@ -5,7 +5,6 @@ Handles transcription of TikTok video audio to Vietnamese text
 using OpenAI's Whisper model for speech recognition.
 """
 
-import whisper
 import asyncio
 import logging
 from typing import Dict, Optional
@@ -14,14 +13,28 @@ logger = logging.getLogger(__name__)
 
 # Load model once at startup to avoid repeated loading
 _whisper_model = None
+_whisper_available = True
 
 def get_whisper_model():
-    """Get or create Whisper model instance"""
-    global _whisper_model
+    """Get or create Whisper model instance with graceful fallback"""
+    global _whisper_model, _whisper_available
+    if not _whisper_available:
+        return None
+    
     if _whisper_model is None:
-        logger.info("🎵 Loading Whisper base model...")
-        _whisper_model = whisper.load_model("base")
-        logger.info("✅ Whisper model loaded successfully")
+        try:
+            import whisper
+            logger.info("🎵 Loading Whisper base model...")
+            _whisper_model = whisper.load_model("base")
+            logger.info("✅ Whisper model loaded successfully")
+        except ImportError:
+            logger.warning("⚠️ Whisper library not installed. Speech-to-Text is disabled.")
+            _whisper_available = False
+            return None
+        except Exception as e:
+            logger.error(f"❌ Failed to load Whisper model: {e}")
+            _whisper_available = False
+            return None
     return _whisper_model
 
 class Transcriber:
@@ -65,6 +78,8 @@ class Transcriber:
     def _run_whisper(self, audio_path: str) -> Dict:
         """Run Whisper model on audio file"""
         model = get_whisper_model()
+        if not model:
+             return {"text": "", "language": "vi", "segments": [], "note": "Whisper not installed"}
         
         result = model.transcribe(
             audio_path,

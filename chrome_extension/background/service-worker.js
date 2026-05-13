@@ -60,6 +60,9 @@ chrome.storage.local.get(['apiUrl', 'authToken', 'recentScans'], (data) => {
 
 // ─── Notification helpers ───
 function sendDangerNotification({ title, message, tabId, url }) {
+  // COMPLETELY DISABLED AS REQUESTED: No more system-level notifications.
+  return;
+  
   const notifId = `vifake-${Date.now()}`;
   chrome.notifications.create(notifId, {
     type: 'basic',

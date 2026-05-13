@@ -15,11 +15,19 @@ from pathlib import Path
 from typing import List, Dict, Tuple
 
 import numpy as np
-import cv2
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 logger = logging.getLogger(__name__)
+
+# ── Optional OpenCV ───────────────────────────────────────────────────────
+CV2_AVAILABLE = False
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except ImportError:
+    cv2 = None
+    logger.warning("⚠️ OpenCV (cv2) not installed. Face AI detector will be disabled.")
+
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # ── Optional MediaPipe ──────────────────────────────────────────────────────
 try:
@@ -39,8 +47,14 @@ except (ImportError, AttributeError):
     logger.info("MediaPipe not available — falling back to OpenCV Haar cascade")
 
 # ── OpenCV Haar cascade (always available) ──────────────────────────────────
-_HAAR_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
-_haar_cascade = cv2.CascadeClassifier(_HAAR_PATH)
+_haar_cascade = None
+if CV2_AVAILABLE:
+    try:
+        _HAAR_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+        _haar_cascade = cv2.CascadeClassifier(_HAAR_PATH)
+    except Exception as e:
+        logger.warning(f"⚠️ Failed to load Haar cascade: {e}")
+        _haar_cascade = None
 
 
 class FaceAIDetector:
@@ -73,6 +87,9 @@ class FaceAIDetector:
 
     async def analyze_frames(self, frame_paths: List[str]) -> Dict:
         """Analyze list of frame images and return aggregate deepfake detection result."""
+        if not CV2_AVAILABLE:
+            return {**self._empty_result(), "analysis_type": "disabled", "note": "opencv missing"}
+            
         if not frame_paths:
             return self._empty_result()
         try:

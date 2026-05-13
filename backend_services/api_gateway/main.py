@@ -176,6 +176,7 @@ class AnalyzeRequest(BaseModel):
     platform: str = Field(..., description="Platform: youtube | facebook | tiktok")
     priority: str = Field(default="normal", description="Priority: low | normal | high")
     content: Optional[str] = Field(default=None, description="Optional text content for direct analysis")
+    images: Optional[List[str]] = Field(default=None, description="Optional list of explicit image URLs provided by client")
     
     @field_validator('platform')
     @classmethod
@@ -353,7 +354,7 @@ def fail_job(job_id: str, error: str):
         logger.error(f"❌ Job {job_id} failed: {error}")
 
 # Background processing
-async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optional[str] = None):
+async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optional[str] = None, images: Optional[List[str]] = None):
     """Run complete analysis pipeline with real AI models"""
     try:
         start_time = datetime.now()
@@ -418,7 +419,7 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         
         # Stage 4: Vision Analysis with CLIP (if image available)
         update_job_progress(job_id, 55.0, "🖼️ Running CLIP vision analysis...")
-        vision_result = _run_vision_analysis(url, platform, page_html=_page_html, text=extracted_text)
+        vision_result = _run_vision_analysis(url, platform, page_html=_page_html, text=extracted_text, provided_images=images)
         update_job_progress(job_id, 75.0, "🖼️ CLIP analysis complete")
         
         # Stage 5: Fusion Decision
@@ -930,23 +931,30 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         details['pay_first_risk'] = 0.40
 
     # === 0a2. Gaming context detection (semantic — not just keyword) ===
-    GAME_ITEMS = ['robux', 'roblox', 'skin', 'gem', 'coin', 'diamond', 'kim cương',
-                  'v-bucks', 'vbucks', 'uc', 'cp', 'item game',
-                  'vật phẩm', 'pet', 'gamepass',
-                  # Free Fire
-                  'free fire', 'freefire', 'garena', 'elite pass', 'bundle',
-                  # Liên Quân Mobile
-                  'liên quân', 'lien quan', 'quân huy', 'tướng', 'ngọc',
-                  # PUBG Mobile
-                  'pubg', 'royale pass', 'battle points',
-                  # Generic currencies
-                  ' kc', ' bp', ' rp', ' ep']
+    # Split game items into LONG phrases and SHORT codes that need absolute word boundaries.
+    GAME_ITEMS_LONG = [
+        'robux', 'roblox', 'skin', 'gem', 'coin', 'diamond', 'kim cương',
+        'v-bucks', 'vbucks', 'item game', 'vật phẩm', 'pet', 'gamepass',
+        'free fire', 'freefire', 'garena', 'elite pass', 'bundle',
+        'liên quân', 'lien quan', 'quân huy', 'tướng', 'ngọc',
+        'pubg', 'royale pass', 'battle points'
+    ]
+    # CRITICAL: Short codes like 'uc', 'cp' MUST NOT match as substrings of words like 'chúc'!
+    GAME_ITEMS_SHORT = ['uc', 'cp', 'kc', 'bp', 'rp', 'ep']
+
     ACTION_WORDS = ['đưa', 'gửi', 'cho', 'trade', 'chuyển', 'nhập', 'đổi',
                     'trao', 'bỏ', 'nạp', 'mượn', 'transfer', 'swap', 'drop']
     RECEIVE_WORDS = ['nhận', 'lấy', 'được', 'trả lại', 'hoàn', 'unlock',
                      'trả', 'nhận lại', 'nhận được']
 
-    has_game = any(g in text_lower for g in GAME_ITEMS)
+    has_game = any(g in text_lower for g in GAME_ITEMS_LONG)
+    if not has_game:
+        # Safely check short items with word boundaries only
+        for short_item in GAME_ITEMS_SHORT:
+            if re.search(rf'(?:\s|^){re.escape(short_item)}(?:\s|$|\W)', text_lower):
+                has_game = True
+                break
+
     has_action = any(a in text_lower for a in ACTION_WORDS)
     has_receive = any(r in text_lower for r in RECEIVE_WORDS)
 
@@ -975,8 +983,22 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         flags.append(f'RISKY_P2P_TRADING:{len(p2p_hits)} indicators')
         details['p2p_trading_risk'] = p2p_score
 
+    # === 0a3.5 Hashtag Concatenation detection (TikTok specific evasion) ===
+    # Detects #shoprobuxlau, #shoprobuxgiare, etc which dodge standard delimiters
+    hash_pairs = [
+        (r'robux', r'(lau|giare|giárẻ|uytin|sach|hack)'),
+        (r'quânhuy', r'(lau|giare|lậu|hack)'),
+        (r'kimcương', r'(hack|giare|free|lậu)'),
+    ]
+    for t1, t2 in hash_pairs:
+        if re.search(rf'({t1}.*?{t2}|{t2}.*?{t1})', text_lower):
+            score += 0.60 # Strong Scam indicator - force high priority
+            flags.append(f'SQUASHED_HASHTAG_SCAM:{t1}+{t2}')
+            details['hashtag_fusion_risk'] = 0.60
+            break
+
     # === 0a3. Gaming doubling/trade explicit patterns ===
-    _GAME_CURRENCY = r'(robux|skin|gem|coin|diamond|kim\s*cương|quân\s*huy|tướng|ngọc|uc|elite\s*pass|royale\s*pass|bundle)'
+    _GAME_CURRENCY = r'(robux|rbx|rb|skin|gem|coin|diamond|kim\s*cương|quân\s*huy|tướng|ngọc|uc|elite\s*pass|royale\s*pass|bundle)'
     gaming_doubling_patterns = [
         r'(đưa|gửi|cho|chuyển)\s*.*\d+\s*' + _GAME_CURRENCY + r'.*(nhận|lấy|được|trả)',
         r'(nhận|lấy|được|trả)\s*.*\d+\s*' + _GAME_CURRENCY + r'.*(đưa|gửi|cho)',
@@ -1000,12 +1022,12 @@ def _vietnamese_scam_detector(text: str) -> Dict:
 
     # === 0a4. Market Price Anomaly check (Too good to be true rates) ===
     price_pat = r'(\d+[\.,]?\d*)\s*(k|vnd|đ|đồng)'
-    item_pat = r'(\d+[\.,]?\d*)\s*(robux|rbx|kim cương|kc|quân huy|qh|uc)'
+    item_pat = r'(\d+[\.,]?\d*)\s*(robux|rbx|rb|kim cương|kc|quân huy|qh|uc)'
     f_prices = list(re.finditer(price_pat, text_lower))
     f_items = list(re.finditer(item_pat, text_lower))
     if f_prices and f_items:
         # Limit ratios per 1,000 VND. Setting ceiling to ~10x of official rate safely flags absurdity.
-        p_limits = {'robux': 40, 'rbx': 40, 'kc': 100, 'kim cương': 100, 'qh': 50, 'quân huy': 50, 'uc': 50}
+        p_limits = {'robux': 40, 'rbx': 40, 'rb': 40, 'kc': 100, 'kim cương': 100, 'qh': 50, 'quân huy': 50, 'uc': 50}
         for prc in f_prices:
             for itm in f_items:
                 if abs(prc.start() - itm.start()) < 70: # In close proximity
@@ -1288,19 +1310,39 @@ def _vietnamese_scam_detector(text: str) -> Dict:
 
     # === 8. Safe Content Indicators (negative scoring) ===
     safe_patterns = [
+        # 1. Educational & Study Tips (IELTS, academic)
         r'chính.*thức.*của.*bộ', r'website.*chính.*thức.*của.*bộ',
         r'nguồn.*tin.*chính.*thức', r'theo.*thông.*tin.*từ',
         r'chia.*sẻ.*cách.*học', r'học.*tiếng.*anh', r'học.*toán',
         r'phụ.*huynh.*có.*thể', r'giáo.*dục', r'kiến.*thức',
         r'bộ.*gdđt', r'bộ.*giáo.*dục', r'trường.*học',
         r'giáo.*viên', r'thầy.*cô', r'lớp.*học',
-        r'bài.*tập', r'ôn.*tập', r'học.*bài',
-        r'sách.*giáo.*khoa', r'chương.*trình.*học',
-        # Gaming legitimate content (reviews, tutorials, news)
+        r'bài.*tập', r'ôn.*tập', r'học.*bài', r'ielts.*tips',
+        r'sách.*giáo.*khoa', r'chương.*trình.*học', r'từ.*vựng.*tiếng',
+        r'đề.*thi.*thử', r'bí.*kíp.*học', r'ngữ.*pháp',
+        # 2. Lifestyle, Travel & Food (Blogs)
+        r'nấu.*ăn', r'công.*thức', r'review.*phim', r'review.*ăn.*uống',
+        r'thơm.*phức', r'béo.*ngậy', r'thơm.*nức', r'ăn.*ngon',
+        r'món.*ngon', r'hướng.*dẫn.*làm', r'nguyên.*liệu',
+        r'mukbang', r'ăn.*cùng.*tiktok', r'asmr', r'mlem',
+        r'du.*lịch', r'đi.*chơi', r'khám.*phá', r'vlog.*hàng.*ngày',
+        r'nhật.*ký', r'làm.*đẹp', r'skincare', r'thời.*tiết.*hôm',
+        r'sự.*kiện.*hôm.*nay', r'điểm.*tin', r'báo.*chí',
+        # 3. Cute Pets & Daily Fun
+        r'mèo.*con', r'chú.*cún', r'dễ.*thương', r'hài.*hước',
+        r'meme', r'thú.*cưng', r'pet.*dễ.*thương', r'meo.*meo',
+        # 4. Legitimate Gaming Content
         r'hướng.*dẫn.*chơi', r'review.*game', r'đánh.*giá.*game',
         r'cách.*chơi', r'mẹo.*chơi', r'thủ.*thuật.*chơi',
         r'update.*game', r'cập.*nhật.*game', r'bản.*cập.*nhật',
         r'thi.*đấu.*esport', r'giải.*đấu', r'livestream.*game',
+        r'gameplay', r'highlights', r'montage', r'leo.*rank',
+        r'tướng.*mới', r'bình.*luận.*viên', r'trận.*đấu',
+        r'skin.*mới.*ra', r'event.*trong.*game',
+        # 5. Safe Tutorials & Creative Content
+        r'bước.*1.*bước.*2', r'b1.*b2', r'step.*1.*step.*2',
+        r'cách.*làm.*ảnh', r'tạo.*ảnh.*bằng', r'câu.*lệnh.*chatgpt',
+        r'prompt.*midjourney', r'nhập.*câu.*lệnh', r'hướng.*dẫn.*chi.*tiết',
     ]
     safe_count = sum(1 for pat in safe_patterns if __import__('re').search(pat, text_lower))
     # Don't let safe discount override strong gaming scam signals
@@ -1314,6 +1356,19 @@ def _vietnamese_scam_detector(text: str) -> Dict:
     else:
         safe_discount = min(safe_count * 0.25, 0.6)  # Normal discount for educational content
     score = max(0, score - safe_discount)
+
+    # === 8b. Special Tutorial Classifier (Request: Safe Instructions vs Scam) ===
+    # Check for structured walkthrough anchors (B1/B2, Step 1/2, Bước 1/2)
+    has_tutorial_sequence = bool(__import__('re').search(r'(b1|bước\s*1|step\s*1).*(b2|bước\s*2|step\s*2)', text_lower, __import__('re').DOTALL))
+    if has_tutorial_sequence:
+        # Isolate sensitive keywords that turn a tutorial into a potential phishing vector
+        tutorial_mal_keywords = ['mật khẩu', 'tài khoản', 'đăng nhập', 'nạp thẻ', 'chuyển tiền', 'bấm vào link', 'mã otp']
+        is_suspicious_tut = any(kw in text_lower for kw in tutorial_mal_keywords)
+        if not is_suspicious_tut:
+            # Confirmed benign instructional guide (Recipes, Art, Prompts)
+            score = max(0, score - 0.40) # Massive immunity grant
+            flags.append("SAFE_INSTRUCTIONAL_OVERRIDE")
+
     if safe_count > 0:
         flags.append(f"SAFE_INDICATORS ({safe_count} patterns)")
     details['safe_indicators'] = safe_count
@@ -1375,12 +1430,21 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         "details": details
     }
 
-def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str = "") -> Dict:
+def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str = "", provided_images: Optional[List[str]] = None) -> Dict:
     """Download thumbnail/image then run CLIP analysis; fallback to content-aware heuristics.
     page_html: pre-crawled HTML so we can extract og:image without an extra HTTP request.
-    text: extracted post content — used for heuristic scoring when CLIP is unavailable."""
-    # Step 1: get thumbnail URL (from pre-crawled HTML or crawl independently)
-    thumb_url = _fetch_thumbnail_url(url, platform, page_html)
+    text: extracted post content — used for heuristic scoring when CLIP is unavailable.
+    provided_images: explicit list of direct URLs safely passed from the client browser extensions."""
+    
+    # Intercept logic: Use provided image if available to bypass crawling issues!
+    thumb_url = None
+    if provided_images and len(provided_images) > 0:
+        thumb_url = provided_images[0]
+        logger.info(f"📸 Using client-provided image: {thumb_url[:60]}...")
+    
+    if not thumb_url:
+        # Step 1 fallback: get thumbnail URL (from pre-crawled HTML or crawl independently)
+        thumb_url = _fetch_thumbnail_url(url, platform, page_html)
 
     # Step 2: try real CLIP inference on downloaded image
     if thumb_url:
@@ -1477,6 +1541,32 @@ def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data:
                 result = model.predict(vision_result, nlp_result, metadata)
                 result['feature_count'] = len(model.feature_names) if model.feature_names else 30
                 result['fusion_method'] = f'xgboost_{result["feature_count"]}features'
+                
+                # === 🛑 FUSION DEFENSIVE GUARDRAIL (Anti-False-Positive) 🛑 ===
+                # If PhoBERT is explicitly SAFE and Rule-based is explicitly SAFE and Intent is ZERO,
+                # DO NOT let a skewed XGBoost force a FAKE_SCAM verdict!
+                nlp_pred = nlp_result.get('prediction', 'SAFE')
+                nlp_risk = float(nlp_result.get('risk_score', 0.0))
+                vis_risk = float(vision_result.get('combined_risk_score', 0.0))
+                intent_s = float((nlp_result.get('intent', {}) or {}).get('risk_weighted_score', 0.0))
+                
+                if nlp_pred == "SAFE" and nlp_risk < 0.2 and intent_s < 0.2 and result.get('prediction') == "FAKE_SCAM":
+                    # Severe disagreement: Core NLP is 100% certain it's safe, but ML jumped to SCAM.
+                    # Trust the explicit rule-based safety over the skewed ML.
+                    if vis_risk < 0.35:
+                         logger.warning("🛡️ Fusion Safety Governor: Suppressing XGBoost false positive. Forcing verdict -> SAFE.")
+                         result['prediction'] = "SAFE"
+                         result['confidence'] = 0.95
+                         result['risk_level'] = "LOW"
+                         result['requires_review'] = False
+                         result['fusion_override'] = "safety_governor_suppression"
+                    else:
+                         # Vision is slightly risky, downgrade to SUSPICIOUS instead of full SCAM
+                         logger.warning("🛡️ Fusion Safety Governor: Downgrading conflict to SUSPICIOUS.")
+                         result['prediction'] = "SUSPICIOUS"
+                         result['confidence'] = 0.60
+                         result['risk_level'] = "LOW"
+                
                 logger.info(f"🧠 Fusion ({result['feature_count']}-feature XGBoost): {result.get('prediction')} (confidence: {result.get('confidence', 0):.3f})")
                 return result
             except Exception as e:
@@ -1593,8 +1683,8 @@ async def analyze_post(
     # Create job
     job_id = create_analysis_job(request.url, request.platform, request.priority)
     
-    # Start background processing with optional content
-    background_tasks.add_task(run_full_pipeline, job_id, request.url, request.platform, request.content)
+    # Start background processing with optional content and explicit images
+    background_tasks.add_task(run_full_pipeline, job_id, request.url, request.platform, request.content, request.images)
     
     # Estimate processing time based on priority
     estimated_time = {
@@ -1866,15 +1956,20 @@ async def analyze_video(
     import time
     start_time = time.time()
     
-    logger.info(f"🎬 Video analysis request from {auth_user['user']}: {request.video_url}")
-    
+    target_url = request.video_url
+    # CRITICAL FIX: Modern Chrome exposes local video.src as 'blob:https://tiktok.com/...'
+    # Server-side workers cannot read browser-local memory blobs. Pivot back to page_url!
+    if target_url.startswith("blob:") and request.page_url:
+        logger.info(f"🔄 Remapping browser BLOB address to canonical page source: {request.page_url}")
+        target_url = request.page_url
+
     try:
         # Import pipeline coordinator (sys.path already set at top of file)
         from backend_services.video_pipeline.pipeline_coordinator import VideoAnalysisPipeline
         
         pipeline = VideoAnalysisPipeline()
         result = await pipeline.run(
-            video_url=request.video_url,
+            video_url=target_url,
             description=request.description,
             author=request.author,
         )

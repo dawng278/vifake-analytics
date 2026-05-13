@@ -36,3 +36,13 @@ joblib>=1.3.0
 Pillow>=10.1.0
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
+yt-dlp>=2024.1.0
+
+# === Vision & OCR Intelligence ===
+opencv-python-headless>=4.8.0
+easyocr>=1.7.1
+
+# === Torch CPU variant (Forces compact build, prevents massive CUDA download) ===
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0+cpu
+torchvision==0.17.0+cpu
