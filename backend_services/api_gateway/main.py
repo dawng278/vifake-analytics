@@ -30,6 +30,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel, Field, field_validator
 import uvicorn
+from ai_engine.nlp_worker.market_rate_analyzer import detect_market_price_anomalies
 
 # URL result cache (TTL 300s, max 1000 entries)
 try:
@@ -1265,31 +1266,31 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         flags.append(f'GAMING_DOUBLING_SCAM:explicit ({len(gaming_doubling_hits)} patterns)')
         details['gaming_doubling_explicit'] = gd_score
 
-    # === 0a4. Market Price Anomaly check (Too good to be true rates) ===
-    price_pat = r'(\d+[\.,]?\d*)\s*(k|vnd|đ|đồng)'
-    item_pat = r'(\d+[\.,]?\d*)\s*(robux|rbx|rb|kim cương|kc|quân huy|qh|uc)'
-    f_prices = list(re.finditer(price_pat, text_lower))
-    f_items = list(re.finditer(item_pat, text_lower))
-    if f_prices and f_items:
-        # Limit ratios per 1,000 VND. Setting ceiling to ~10x of official rate safely flags absurdity.
-        p_limits = {'robux': 40, 'rbx': 40, 'rb': 40, 'kc': 100, 'kim cương': 100, 'qh': 50, 'quân huy': 50, 'uc': 50}
-        for prc in f_prices:
-            for itm in f_items:
-                if abs(prc.start() - itm.start()) < 70: # In close proximity
-                    try:
-                        p_val = float(prc.group(1).replace('.', '').replace(',', ''))
-                        if prc.group(2) == 'k': p_val *= 1000
-                        i_val = float(itm.group(1).replace('.', '').replace(',', ''))
-                        i_type = itm.group(2).strip()
-                        if p_val > 0 and i_val > 0:
-                            m_ratio = i_val / (p_val / 1000)
-                            lim = p_limits.get(i_type, 50)
-                            if m_ratio > lim:
-                                score += 0.60 # Extremely high signal
-                                flags.append(f'PRICE_ANOMALY_SCAM:unrealistic_{i_type}_ratio_{m_ratio:.0f}x')
-                                details['price_anomaly_risk'] = 0.60
-                                break
-                    except: pass
+    # === 0a4. Market Price Anomaly check (reference-data driven) ===
+    market_rate_eval = detect_market_price_anomalies(text)
+    if market_rate_eval.get("hits"):
+        market_hits = market_rate_eval["hits"]
+        market_risk = float(market_rate_eval.get("risk_score", 0.0) or 0.0)
+        details['market_rate_reference_version'] = market_rate_eval.get("reference_version", "unknown")
+        details['market_rate_hits'] = market_hits[:5]
+        details['price_anomaly_risk'] = market_risk
+
+        score += market_risk
+
+        scam_hits = [h for h in market_hits if h.get("severity") == "scam"]
+        suspicious_hits = [h for h in market_hits if h.get("severity") == "suspicious"]
+        if scam_hits:
+            top = max(scam_hits, key=lambda h: float(h.get("ratio_over_safe_max") or 0.0))
+            flags.append(
+                "PRICE_ANOMALY_SCAM:"
+                f"{top.get('currency')}@{top.get('ratio_per_1000_vnd')}per1k"
+            )
+        elif suspicious_hits:
+            top = max(suspicious_hits, key=lambda h: float(h.get("ratio_over_safe_max") or 0.0))
+            flags.append(
+                "PRICE_ANOMALY_SUSPICIOUS:"
+                f"{top.get('currency')}@{top.get('ratio_per_1000_vnd')}per1k"
+            )
 
 
     # === 0a4. Account takeover / cookie logger ===

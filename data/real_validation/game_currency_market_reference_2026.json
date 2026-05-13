@@ -1,0 +1,43 @@
+{
+  "version": "2026-05-13",
+  "unit": "currency_per_1000_vnd",
+  "source": "internal_curated_reference_2026",
+  "notes": "Reference ranges are internally curated for scam-gap detection, not financial advice.",
+  "currencies": {
+    "robux": {
+      "aliases": ["robux", "rbx", "rb", "robux card"],
+      "safe_min": 5,
+      "safe_max": 16,
+      "suspicious_high": 24,
+      "scam_high": 40
+    },
+    "quan_huy": {
+      "aliases": ["quân huy", "quan huy", "qh"],
+      "safe_min": 4,
+      "safe_max": 18,
+      "suspicious_high": 28,
+      "scam_high": 50
+    },
+    "uc": {
+      "aliases": ["uc"],
+      "safe_min": 3,
+      "safe_max": 18,
+      "suspicious_high": 30,
+      "scam_high": 50
+    },
+    "kim_cuong": {
+      "aliases": ["kim cương", "kim cuong", "diamond", "kc"],
+      "safe_min": 6,
+      "safe_max": 35,
+      "suspicious_high": 60,
+      "scam_high": 100
+    },
+    "vbucks": {
+      "aliases": ["vbucks", "v-bucks"],
+      "safe_min": 4,
+      "safe_max": 20,
+      "suspicious_high": 35,
+      "scam_high": 60
+    }
+  }
+}

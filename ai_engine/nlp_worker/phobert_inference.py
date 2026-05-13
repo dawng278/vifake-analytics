@@ -14,6 +14,7 @@ import logging
 import numpy as np
 from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
+from ai_engine.nlp_worker.market_rate_analyzer import detect_market_price_anomalies
 
 try:
     from ai_engine.nlp_worker.teencode_normalizer import normalize as _normalize_teencode, contains_high_risk_teencode
@@ -345,39 +346,24 @@ class PhoBERTInference:
                 if ratio >= 30 and not scam_hits:  # 30x+ raw number ratio with gaming = fallback scam trigger
                     scam_hits.append(f'SEMANTIC:number_ratio_x{ratio:.0f}')
 
-        # --- NEW: Specific Market Price Anomaly check ---
-        # E.g. 10k VND = 10,000 Robux (1000x real rate)
-        price_pattern = r'(\d+[\.,]?\d*)\s*(k|vnd|đ|đồng)'
-        item_pattern = r'(\d+[\.,]?\d*)\s*(robux|rbx|kim cương|kc|quân huy|qh|uc)'
-        
-        found_prices = list(_re.finditer(price_pattern, t))
-        found_items = list(_re.finditer(item_pattern, t))
-        
-        if found_prices and found_items:
-            price_limits = {'robux': 40, 'rbx': 40, 'kc': 100, 'kim cương': 100, 'qh': 50, 'quân huy': 50, 'uc': 50}
-            for mp in found_prices:
-                for mi in found_items:
-                    # If they are within 60 characters of each other in the text
-                    if abs(mp.start() - mi.start()) < 60:
-                        try:
-                            # Extract price
-                            p_val = float(mp.group(1).replace('.','').replace(',',''))
-                            if mp.group(2) == 'k': p_val *= 1000
-                            
-                            # Extract item quantity
-                            i_val = float(mi.group(1).replace('.','').replace(',',''))
-                            i_type = mi.group(2).strip()
-                            
-                            if p_val > 0 and i_val > 0:
-                                money_units = p_val / 1000 # Per 1k VND
-                                market_ratio = i_val / money_units
-                                
-                                # Determine limit based on item type
-                                current_limit = price_limits.get(i_type, 50)
-                                if market_ratio > current_limit:
-                                    scam_hits.append(f'SEMANTIC:price_anomaly_{i_type}_ratio{market_ratio:.0f}')
-                                    break # Found one, good enough
-                        except: pass
+        # --- Reference-data Market Price Anomaly check ---
+        market_rate_eval = detect_market_price_anomalies(text)
+        market_hits = market_rate_eval.get("hits", [])
+        has_market_scam = any(h.get("severity") == "scam" for h in market_hits)
+        has_market_suspicious = any(h.get("severity") == "suspicious" for h in market_hits)
+
+        if has_market_scam:
+            top_hit = max(market_hits, key=lambda h: float(h.get("ratio_over_safe_max") or 0.0))
+            scam_hits.append(
+                "SEMANTIC:price_anomaly_"
+                f"{top_hit.get('currency')}_ratio{float(top_hit.get('ratio_per_1000_vnd') or 0):.0f}"
+            )
+        elif has_market_suspicious:
+            top_hit = max(market_hits, key=lambda h: float(h.get("ratio_over_safe_max") or 0.0))
+            susp_hits.append(
+                "SEMANTIC:price_rate_suspicious_"
+                f"{top_hit.get('currency')}_ratio{float(top_hit.get('ratio_per_1000_vnd') or 0):.0f}"
+            )
 
 
         # Boost score when raw teen-code password/account keywords were found

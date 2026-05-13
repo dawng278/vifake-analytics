@@ -623,9 +623,19 @@
 (function () {
   'use strict';
   const RENDER_API = '__VIFAKE_API_URL__';
-  const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:8000'
-    : RENDER_API;
+  function resolveApiBase() {
+    const host = window.location.hostname;
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
+    const isPlaceholder = !RENDER_API || /^__VIFAKE_API_URL__$/.test(RENDER_API);
+
+    if (!isPlaceholder) return RENDER_API;
+    if (!host) return 'http://localhost:8000';
+    if (isLocalhost) return 'http://localhost:8000';
+    // LAN/dev server case: UI served via 192.168.x.x or custom host.
+    return protocol + '//' + host + ':8000';
+  }
+  const API_BASE = resolveApiBase();
   const AUTH_TOKEN = 'demo-token-123';
   const PAGES = ['dashboard','analyze','model','pipeline'];
   let pastedImageDataUrls = [];
@@ -796,6 +806,7 @@
           box=document.getElementById('result-box'), errEl=document.getElementById('api-error');
     btn.disabled=true; thinking.style.display='flex';
     box.classList.remove('show'); errEl.classList.remove('show'); errEl.style.color='';
+    let backendFailReason = '';
 
     const postUrl = rawUrl || 'https://demo.local/post';
     const platform = detectPlatformName(rawUrl) || 'facebook';
@@ -873,7 +884,11 @@
                   try { r = norm(job.result); } catch(ne) { console.error('norm error',ne,job.result); }
                   break;
                 }
-                if (job.status === 'failed') { clearTimeout(warmupTimer); break; }
+                if (job.status === 'failed') {
+                  backendFailReason = job.error || 'Backend job failed';
+                  clearTimeout(warmupTimer);
+                  break;
+                }
               } else { clearTimeout(warmupTimer); break; }
             } catch(_) { /* poll timeout — continue */ }
           }
@@ -884,7 +899,11 @@
     if (!r) {
       await new Promise(res=>setTimeout(res,900+Math.random()*500));
       r=guessFallback(content || rawUrl || '');
-      errEl.textContent='Không thể kết nối API — đang dùng demo data';
+      if (backendFailReason) {
+        errEl.textContent='API xử lý thất bại: ' + backendFailReason + ' — đang dùng demo data';
+      } else {
+        errEl.textContent='Không thể kết nối API (' + API_BASE + ') — đang dùng demo data';
+      }
       errEl.classList.add('show');
     }
     btn.disabled=false; thinking.style.display='none';
