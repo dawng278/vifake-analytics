@@ -15,6 +15,7 @@ import uuid
 import logging
 import os
 import sys
+import unicodedata
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from pathlib import Path
@@ -469,6 +470,10 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
                 "vision_safety": vision_result.get("safety_score", 0.5),
                 "ocr_risk": vision_result.get("ocr_risk", 0.0),
                 "ocr_text_excerpt": vision_result.get("ocr_text_excerpt", ""),
+                "ocr_keyword_hits": vision_result.get("ocr_keyword_hits", []),
+                "ocr_keyword_score": vision_result.get("ocr_keyword_score", 0.0),
+                "clip_keyword_hits": vision_result.get("clip_keyword_hits", []),
+                "clip_keyword_score": vision_result.get("clip_keyword_score", 0.0),
                 "clip_available": vision_result.get("clip_available", True),
                 "ocr_available": vision_result.get("ocr_available", True),
                 "vision_capability_limited": vision_result.get("vision_capability_limited", False),
@@ -511,7 +516,9 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         # Image-only guardrail:
         # If user provided explicit images but runtime vision capability is limited,
         # never emit definitive SAFE.
-        image_only_mode = bool(has_explicit_images and not (content or "").strip())
+        content_for_mode = (content or "").strip()
+        placeholder_content = content_for_mode.lower() in {"null", "undefined", "none"}
+        image_only_mode = bool(has_explicit_images and (not content_for_mode or placeholder_content))
         if image_only_mode and result.get("label") == "SAFE" and bool(vision_result.get("vision_capability_limited", False)):
             result["label"] = "SUSPICIOUS"
             result["risk_level"] = "MEDIUM"
@@ -549,11 +556,30 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         has_gaming_context = any(kw in text_for_check for kw in GAMING_CONTEXT_KEYWORDS)
         vision_risk = float(vision_result.get("combined_risk_score", 0.0) or 0.0)
         ocr_risk = float(vision_result.get("ocr_risk", 0.0) or 0.0)
-        has_visual_scam_signal = vision_risk >= 0.50 or ocr_risk >= 0.45
-        if has_visual_scam_signal:
+        ocr_text_excerpt = str(vision_result.get("ocr_text_excerpt", "") or "")
+        ocr_marker_info = _extract_game_scam_markers(ocr_text_excerpt)
+        ocr_marker_hits = ocr_marker_info.get("hits", [])
+        ocr_marker_score = float(ocr_marker_info.get("score", 0.0))
+        clip_marker_info = _extract_clip_prompt_hits(vision_result)
+        clip_marker_hits = clip_marker_info.get("hits", [])
+        clip_marker_score = float(clip_marker_info.get("score", 0.0))
+        ocr_text_len = len(ocr_text_excerpt.strip())
+        low_ocr_confidence = image_only_mode and ocr_text_len < 12
+        image_only_visual_signal = image_only_mode and (vision_risk >= 0.35 or ocr_risk >= 0.30 or ocr_marker_score >= 0.45 or clip_marker_score >= 0.22)
+        has_visual_scam_signal = vision_risk >= 0.50 or ocr_risk >= 0.45 or ocr_marker_score >= 0.55 or clip_marker_score >= 0.28 or image_only_visual_signal
+        has_gaming_context = has_gaming_context or ("robux" in ocr_marker_hits) or ("game_currency" in ocr_marker_hits) or clip_marker_score >= 0.22
+        if has_visual_scam_signal or low_ocr_confidence:
             _flags = result["analysis_details"].get("nlp_flags", []) or []
             if "VISION_OCR_RISK" not in _flags:
                 _flags.append("VISION_OCR_RISK")
+            if ocr_marker_hits and "OCR_GAME_SCAM_MARKERS" not in _flags:
+                _flags.append("OCR_GAME_SCAM_MARKERS")
+            if clip_marker_hits and "CLIP_GAME_SCAM_MARKERS" not in _flags:
+                _flags.append("CLIP_GAME_SCAM_MARKERS")
+            if low_ocr_confidence and "IMAGE_ONLY_LOW_OCR_CONFIDENCE" not in _flags:
+                _flags.append("IMAGE_ONLY_LOW_OCR_CONFIDENCE")
+            if vision_result.get("analysis_note") == "IMAGE_PARSE_OR_OCR_FAILED" and "IMAGE_PARSE_OR_OCR_FAILED" not in _flags:
+                _flags.append("IMAGE_PARSE_OR_OCR_FAILED")
             result["analysis_details"]["nlp_flags"] = _flags
 
         if not has_scam_flags and nlp_result.get("is_safe", False) and not has_gaming_context and not has_visual_scam_signal:
@@ -569,6 +595,33 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             result["confidence"] = max(result["confidence"], 0.45)
             result["needs_review"] = True
             logger.info(f"⚠️ Gaming context override: gaming keywords found → SUSPICIOUS")
+
+        # Image-only anti-false-negative guardrail for game scams:
+        # even when OCR confidence is weak, marker combinations must never end as SAFE.
+        if image_only_mode and result.get("label") == "SAFE":
+            strong_combo = (
+                ("robux" in ocr_marker_hits or "roblox_brand" in ocr_marker_hits)
+                and ("bang_gia_rate" in ocr_marker_hits or "nap_topup" in ocr_marker_hits or "money_vnd" in ocr_marker_hits)
+            )
+            risky_combo = strong_combo or ("pay_first" in ocr_marker_hits) or ("credential_or_otp" in ocr_marker_hits)
+            if risky_combo or ocr_marker_score >= 0.55 or (clip_marker_score >= 0.28 and low_ocr_confidence):
+                result["label"] = "FAKE_SCAM"
+                result["risk_level"] = "HIGH"
+                result["confidence"] = max(float(result.get("confidence", 0.0)), 0.75, ocr_risk, ocr_marker_score, clip_marker_score)
+                result["needs_review"] = True
+                logger.warning(f"🧱 Image-only marker guardrail: ocr={ocr_marker_hits} clip={clip_marker_hits} -> FAKE_SCAM")
+            elif ocr_marker_hits or image_only_visual_signal:
+                result["label"] = "SUSPICIOUS"
+                result["risk_level"] = "MEDIUM"
+                result["confidence"] = max(float(result.get("confidence", 0.0)), 0.56, ocr_risk, ocr_marker_score, clip_marker_score)
+                result["needs_review"] = True
+                logger.warning(f"🧱 Image-only marker guardrail: markers={ocr_marker_hits} -> SUSPICIOUS")
+            elif low_ocr_confidence:
+                result["label"] = "SUSPICIOUS"
+                result["risk_level"] = "MEDIUM"
+                result["confidence"] = max(float(result.get("confidence", 0.0)), 0.56)
+                result["needs_review"] = True
+                logger.warning("🧱 Image-only low-OCR guardrail -> SUSPICIOUS")
 
         # Vision/OCR guardrail: image-only scams must not be downgraded to SAFE.
         if has_visual_scam_signal and result.get("label") == "SAFE":
@@ -586,7 +639,8 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         # Upgrade borderline FAKE_SCAM to SUSPICIOUS when confidence is in gray zone (0.40-0.69)
         label = result["label"]
         conf_val = result.get("confidence", 0.5)
-        if label == "FAKE_SCAM" and 0.40 <= conf_val < 0.70:
+        keep_fake_for_image_only = bool(image_only_mode and (low_ocr_confidence or ocr_marker_hits or clip_marker_score >= 0.22))
+        if label == "FAKE_SCAM" and 0.40 <= conf_val < 0.70 and not keep_fake_for_image_only:
             result["label"] = "SUSPICIOUS"
             result["risk_level"] = "MEDIUM"
             result["needs_review"] = True
@@ -650,6 +704,72 @@ def _clean_extracted_text(text: str) -> str:
     t = t.replace("\u00a0", " ").replace("\u200b", " ").replace("\ufeff", " ")
     t = _re.sub(r"\s+", " ", t).strip()
     return t
+
+
+def _normalize_for_matching(text: str) -> str:
+    """Normalize text for resilient keyword matching (diacritics/punctuation tolerant)."""
+    import re as _re
+    raw = (text or "").lower().strip()
+    raw = unicodedata.normalize("NFKD", raw)
+    raw = "".join(ch for ch in raw if not unicodedata.combining(ch))
+    raw = raw.replace("đ", "d")
+    raw = _re.sub(r"[^a-z0-9]+", " ", raw)
+    return _re.sub(r"\s+", " ", raw).strip()
+
+
+def _extract_game_scam_markers(text: str) -> Dict:
+    """Return robust OCR/text scam markers for gaming-related fraud."""
+    import re as _re
+    norm = _normalize_for_matching(text)
+    if not norm:
+        return {"hits": [], "score": 0.0}
+    patterns = {
+        "robux": r"\brobux\b|\brbx\b",
+        "roblox_brand": r"\broblox\b",
+        "nap_topup": r"\bnap\b|\btopup\b|\bnap the\b",
+        "bang_gia_rate": r"\bbang gia\b|\bbanggia\b|\brate\b|\bti gia\b|\btigia\b",
+        "uy_tin_claim": r"\buy tin\b|\b100\b",
+        "pay_first": r"\bchuyen khoan truoc\b|\bcoc truoc\b|\bnap truoc\b|\bgui truoc\b",
+        "credential_or_otp": r"\bmat khau\b|\bpassword\b|\botp\b|\bverify\b|\bdang nhap\b",
+        "free_unlock": r"\bfree\b|\bunlock\b|\bgenerator\b|\bhack\b",
+        "game_currency": r"\b(quan huy|uc|vbucks|v bucks|kim cuong|diamond|gem|coin|minecoin)\b",
+        "money_vnd": r"\bvnd\b|\bvn d\b|\b000\b|\d+\s*k\b",
+    }
+    hits = [name for name, pat in patterns.items() if _re.search(pat, norm)]
+    score = min(1.0, 0.15 * len(hits))
+    if "robux" in hits and ("bang_gia_rate" in hits or "nap_topup" in hits):
+        score = max(score, 0.62)
+    if ("robux" in hits or "roblox_brand" in hits) and "money_vnd" in hits and ("nap_topup" in hits or "bang_gia_rate" in hits):
+        score = max(score, 0.75)
+    if "pay_first" in hits or "credential_or_otp" in hits:
+        score = max(score, 0.72)
+    return {"hits": hits, "score": round(score, 3)}
+
+
+def _extract_clip_prompt_hits(vision_result: Dict) -> Dict:
+    """Read CLIP prompt-level probabilities and pull game-scam related hits."""
+    keyword_tokens = (
+        "robux", "roblox", "rbx", "vbucks", "free fire", "lien quan",
+        "quan huy", "pubg", "mlbb", "fortnite", "minecraft", "brawl",
+        "hack", "generator", "giveaway", "free", "nap the", "phishing", "scam"
+    )
+    hits = []
+    max_score = 0.0
+    for key, value in (vision_result or {}).items():
+        if not isinstance(key, str):
+            continue
+        try:
+            prob = float(value)
+        except Exception:
+            continue
+        if prob < 0.12:
+            continue
+        key_l = key.lower()
+        if any(tok in key_l for tok in keyword_tokens):
+            hits.append({"prompt": key[:80], "score": round(prob, 3)})
+            max_score = max(max_score, prob)
+    hits = sorted(hits, key=lambda x: x["score"], reverse=True)[:5]
+    return {"hits": hits, "score": round(max_score, 3)}
 
 
 def _is_probably_garbled(text: str) -> bool:
@@ -1051,10 +1171,14 @@ def _vietnamese_scam_detector(text: str) -> Dict:
     # Split game items into LONG phrases and SHORT codes that need absolute word boundaries.
     GAME_ITEMS_LONG = [
         'robux', 'roblox', 'skin', 'gem', 'coin', 'diamond', 'kim cương',
-        'v-bucks', 'vbucks', 'item game', 'vật phẩm', 'pet', 'gamepass',
+        'v-bucks', 'vbucks', 'item game', 'vật phẩm', 'pet', 'gamepass', 'limited', 'limited item',
+        'robux card', 'card robux', 'thẻ robux', 'rate robux', 'tỉ giá robux',
         'free fire', 'freefire', 'garena', 'elite pass', 'bundle',
         'liên quân', 'lien quan', 'quân huy', 'tướng', 'ngọc',
-        'pubg', 'royale pass', 'battle points'
+        'pubg', 'royale pass', 'battle points',
+        'mlbb', 'mobile legends', 'moonton',
+        'fortnite', 'minecraft', 'brawl stars',
+        'fc mobile', 'fifa mobile', 'ea sports fc',
     ]
     # CRITICAL: Short codes like 'uc', 'cp' MUST NOT match as substrings of words like 'chúc'!
     GAME_ITEMS_SHORT = ['uc', 'cp', 'kc', 'bp', 'rp', 'ep']
@@ -1086,11 +1210,15 @@ def _vietnamese_scam_detector(text: str) -> Dict:
     # === 0a3. P2P Direct Trading / Unofficial Store Detection ===
     # Catches selling game items directly via banking/momo/cards which is risky for kids.
     p2p_trade_patterns = [
-        r'(bán|thu mua|sell|trade)\s+(robux|roblox|acc|nick|skin|vật phẩm|v-bucks)',
+        r'(bán|thu mua|sell|trade)\s+(robux|roblox|acc|nick|skin|vật phẩm|v-bucks|quân huy|uc|kim cương)',
         r'(stk|mb bank|vietcombank|techcombank|agribank|acb|vib|tpbank|bidv|vpbank)',
         r'(momo|zalopay|vnpay|banking)',
         r'(gdtg|giao dịch trung gian|giao dịch trực tiếp|gạch thẻ|đổi tiền)',
         r'(robux sạch|robux 120h|gift gamepass)',
+        r'(rate|tỉ\s*giá|ti\s*gia)\s*(robux|rbx|quân huy|uc|kim cương|skin)',
+        r'(đồ|do|item)\s*limited',
+        r'(card|thẻ)\s*(robux|rbx)',
+        r'acc\s*(xịn|xin|vip|full\s*skin|rank\s*cao|giá\s*rẻ|giare)',
     ]
     p2p_hits = [pat for pat in p2p_trade_patterns if re.search(pat, text_lower)]
     # Only flag as risky P2P if trading context is combined with a direct asset sale OR banking info
@@ -1591,6 +1719,9 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
         base["risk_level"] = "HIGH" if risk >= 0.7 else ("MEDIUM" if risk >= 0.4 else "LOW")
         return base
 
+    image_processing_failed = False
+    image_processing_error = ""
+
     # Step 2: try real CLIP inference on downloaded image
     if thumb_url:
         try:
@@ -1628,9 +1759,11 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
                 }
 
                 # 2b. OCR text score from image itself (critical for image-only scans)
-                ocr_text = extract_text_from_image(tmp_path, conf_threshold=0.45, max_chars=1200) if ocr_available else ""
+                ocr_text = extract_text_from_image(tmp_path, conf_threshold=0.40, max_chars=1200) if ocr_available else ""
                 ocr_text_l = (ocr_text or "").lower()
                 ocr_risk = 0.0
+                ocr_kw_hits = []
+                ocr_kw_score = 0.0
                 if ocr_text and len(ocr_text.strip()) >= 8:
                     try:
                         ocr_nlp = _vietnamese_scam_detector(ocr_text)
@@ -1640,14 +1773,34 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
 
                     # Extra hard-boost for known gaming scam lexicon on image text.
                     img_high_kw = [
-                        "robux", "nạp robux", "bảng giá", "uy tín", "nạp thả ga",
-                        "free robux", "unlock robux", "nạp thẻ", "chuyển khoản trước",
+                        "robux", "roblox",
+                        "nạp robux", "nap robux",
+                        "bảng giá", "bang gia",
+                        "uy tín", "uy tin",
+                        "nạp thả ga", "nap tha ga",
+                        "free robux", "unlock robux", "nạp thẻ", "nap the",
+                        "chuyển khoản trước", "chuyen khoan truoc",
+                        "vnd", "vnđ",
                     ]
                     kw_hits = sum(1 for kw in img_high_kw if kw in ocr_text_l)
                     if kw_hits >= 2:
                         ocr_risk = max(ocr_risk, min(0.95, 0.55 + 0.1 * kw_hits))
+                    elif kw_hits == 1:
+                        ocr_risk = max(ocr_risk, 0.48)
+
+                # Accent-insensitive marker extraction for noisy OCR text.
+                ocr_markers = _extract_game_scam_markers(ocr_text)
+                ocr_kw_hits = ocr_markers.get("hits", [])
+                ocr_kw_score = float(ocr_markers.get("score", 0.0))
+                if ocr_kw_score > 0:
+                    ocr_risk = max(ocr_risk, min(0.95, ocr_kw_score))
 
                 clip_risk = float(result.get("combined_risk_score", 0.2))
+                clip_marker_info = _extract_clip_prompt_hits(result)
+                clip_marker_hits = clip_marker_info.get("hits", [])
+                clip_marker_score = float(clip_marker_info.get("score", 0.0))
+                if clip_marker_score >= 0.22:
+                    clip_risk = max(clip_risk, min(0.92, 0.45 + 0.35 * clip_marker_score))
                 final_risk = max(clip_risk, ocr_risk)
                 capability_limited = (not clip_available) and (not ocr_available)
                 # Fail-closed for image-only scan when runtime lacks both CLIP + OCR.
@@ -1658,6 +1811,10 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
                 result["combined_risk_score"] = round(final_risk, 3)
                 result["ocr_text_excerpt"] = (ocr_text[:220] if ocr_text else "")
                 result["ocr_risk"] = round(ocr_risk, 3)
+                result["ocr_keyword_hits"] = ocr_kw_hits
+                result["ocr_keyword_score"] = round(ocr_kw_score, 3)
+                result["clip_keyword_hits"] = clip_marker_hits
+                result["clip_keyword_score"] = round(clip_marker_score, 3)
                 result["clip_available"] = clip_available
                 result["ocr_available"] = ocr_available
                 result["vision_capability_limited"] = capability_limited
@@ -1669,6 +1826,8 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
             finally:
                 os.unlink(tmp_path)
         except Exception as e:
+            image_processing_failed = bool(provided_images)
+            image_processing_error = str(e)
             logger.warning(f"⚠️ CLIP image analysis failed ({e}), using heuristics")
 
     # Fallback: content-aware heuristics (URL + text)
@@ -1736,7 +1895,8 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
         # mark as uncertain and avoid overconfident SAFE.
         fallback_result["combined_risk_score"] = max(float(fallback_result["combined_risk_score"]), 0.56)
         fallback_result["scam_risk"] = fallback_result["combined_risk_score"]
-        fallback_result["analysis_note"] = "IMAGE_ONLY_HEURISTIC_FALLBACK"
+        fallback_result["analysis_note"] = "IMAGE_PARSE_OR_OCR_FAILED" if image_processing_failed else "IMAGE_ONLY_HEURISTIC_FALLBACK"
+        fallback_result["image_error"] = image_processing_error
     return _normalize_vision_result(fallback_result)
 
 def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data: Dict = None) -> Dict:
@@ -2181,10 +2341,45 @@ async def runtime_capabilities():
     detail = {}
 
     try:
+        import sys as _sys
         import importlib.util as _ilu
-        clip_available = bool(_ilu.find_spec("torch")) and bool(_ilu.find_spec("transformers"))
-        ocr_available = bool(_ilu.find_spec("easyocr"))
-        nlp_model_available = bool(_ilu.find_spec("torch")) and bool(_ilu.find_spec("transformers"))
+        _torch_spec = _ilu.find_spec("torch")
+        _transformers_spec = _ilu.find_spec("transformers")
+        _easyocr_spec = _ilu.find_spec("easyocr")
+        _accelerate_spec = _ilu.find_spec("accelerate")
+
+        clip_available = bool(_torch_spec) and bool(_transformers_spec)
+        ocr_available = bool(_easyocr_spec)
+        nlp_model_available = bool(_torch_spec) and bool(_transformers_spec)
+
+        detail["python_executable"] = _sys.executable
+        detail["python_version"] = _sys.version
+        detail["specs"] = {
+            "torch": bool(_torch_spec),
+            "transformers": bool(_transformers_spec),
+            "easyocr": bool(_easyocr_spec),
+            "accelerate": bool(_accelerate_spec),
+        }
+
+        # Try real imports for stronger diagnostics.
+        _import_errors = {}
+        try:
+            import torch as _torch
+            detail["torch_version"] = getattr(_torch, "__version__", "")
+        except Exception as _te:
+            _import_errors["torch"] = str(_te)
+        try:
+            import transformers as _tf
+            detail["transformers_version"] = getattr(_tf, "__version__", "")
+        except Exception as _tfe:
+            _import_errors["transformers"] = str(_tfe)
+        try:
+            import easyocr as _ocr
+            detail["easyocr_version"] = getattr(_ocr, "__version__", "")
+        except Exception as _oe:
+            _import_errors["easyocr"] = str(_oe)
+        if _import_errors:
+            detail["import_errors"] = _import_errors
     except Exception as e:
         detail["import_probe_error"] = str(e)
 

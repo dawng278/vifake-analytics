@@ -237,23 +237,47 @@ class CLIPVisionWorker:
         # Individual label probabilities
         for i, label in enumerate(self.CANDIDATE_LABELS):
             scores[label] = float(probs[i])
-        
-        # Aggregate risk scores using label_risk_map
-        risk_subscores = {}
-        for idx, category in self.LABEL_RISK_MAP.items():
-            risk_subscores[category] = float(probs[idx]) if idx < len(probs) else 0.0
 
-        scam_score       = risk_subscores.get("scam_risk", 0.0)
-        money_score      = risk_subscores.get("money_risk", 0.0)
-        fake_reward_score= risk_subscores.get("fake_reward_risk", 0.0)
-        deepfake_score   = risk_subscores.get("deepfake_risk", 0.0)
+        # Aggregate risk scores directly from configured prompt groups.
+        # NOTE: previous implementation mapped indices to category names but then
+        # looked up non-existent keys (scam_risk/money_risk/...), which could
+        # understate risk for scam banners.
+        safe_probs = [float(probs[i]) for i in self._safe_indices if i < len(probs)]
+        suspicious_probs = [float(probs[i]) for i in self._suspicious_indices if i < len(probs)]
+        high_risk_probs = [float(probs[i]) for i in self._high_risk_indices if i < len(probs)]
 
-        # Combined content risk (max across scam-related labels)
-        combined_risk = max(scam_score, money_score, fake_reward_score, deepfake_score)
-        
-        # Safety score: safe labels vs risk labels
-        safe_content = probs[0] + probs[1]  # cooking + educational
-        safety_score = safe_content / (safe_content + combined_risk + 1e-8)
+        safe_score = max(safe_probs) if safe_probs else 0.0
+        suspicious_score = max(suspicious_probs) if suspicious_probs else 0.0
+        high_risk_score = max(high_risk_probs) if high_risk_probs else 0.0
+
+        # Weighted combination: suspicious is meaningful but should not overpower
+        # explicit high-risk prompts.
+        combined_risk = max(high_risk_score, suspicious_score * 0.6)
+
+        # Derive explainable subscores from semantic label text.
+        label_pairs = list(enumerate(self.CANDIDATE_LABELS))
+        scam_score = max(
+            (float(probs[i]) for i, l in label_pairs
+             if any(k in l.lower() for k in ("scam", "phishing", "fraud", "robux", "hack"))),
+            default=high_risk_score
+        )
+        money_score = max(
+            (float(probs[i]) for i, l in label_pairs
+             if any(k in l.lower() for k in ("bank", "payment", "wallet", "airdrop", "token", "transfer", "qr"))),
+            default=suspicious_score
+        )
+        fake_reward_score = max(
+            (float(probs[i]) for i, l in label_pairs
+             if any(k in l.lower() for k in ("prize", "giveaway", "winner", "free"))),
+            default=suspicious_score
+        )
+        deepfake_score = max(
+            (float(probs[i]) for i, l in label_pairs if "deepfake" in l.lower() or "ai-generated" in l.lower()),
+            default=0.0
+        )
+
+        # Safety score uses grouped safe-vs-risk ratio.
+        safety_score = safe_score / (safe_score + combined_risk + 1e-8)
         
         # Risk level
         if combined_risk >= self.config.risk_threshold:
@@ -274,6 +298,9 @@ class CLIPVisionWorker:
             "money_risk":          money_score,
             "fake_reward_risk":    fake_reward_score,
             "deepfake_risk":       deepfake_score,
+            "safe_score":          safe_score,
+            "suspicious_score":    suspicious_score,
+            "high_risk_score":     high_risk_score,
             # Legacy aliases kept for pipeline compatibility
             "violent_risk":        0.0,
             "sexual_risk":         0.0,

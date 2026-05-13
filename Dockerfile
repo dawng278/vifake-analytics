@@ -8,11 +8,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Lightweight requirements only — no torch / transformers / mediapipe / whisper / easyocr
-# Rule-based NLP fallback + XGBoost fusion handle inference without heavy ML deps
+# Deploy requirements include FastAPI + OCR + CPU Torch/Transformers runtime
+# so CLIP/PhoBERT and image OCR can run in Docker as well.
 COPY requirements-deploy.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --timeout 120 -r requirements-deploy.txt
+    pip install --timeout 300 -r requirements-deploy.txt
 
 # Copy application code
 COPY . .

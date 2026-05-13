@@ -13,6 +13,7 @@ Design constraints:
 import logging
 import os
 from typing import Optional
+import tempfile
 
 logger = logging.getLogger(__name__)
 
@@ -63,10 +64,73 @@ def extract_text_from_image(
         if reader is None:
             return ""
 
-        results = reader.readtext(image_path, detail=1)
-        # Each result: (bbox, text, confidence)
-        accepted = [text for (_bbox, text, conf) in results if conf >= conf_threshold]
-        extracted = " ".join(accepted).strip()
+        def _dedupe_text(text: str) -> str:
+            seen = set()
+            out = []
+            for part in (text or "").split():
+                key = part.lower()
+                if key in seen:
+                    continue
+                seen.add(key)
+                out.append(part)
+            return " ".join(out).strip()
+
+        def _extract_pass(path: str, threshold: float) -> str:
+            results = reader.readtext(path, detail=1)
+            accepted = [text for (_bbox, text, conf) in results if conf >= threshold]
+            if not accepted and threshold > 0.09:
+                accepted = [text for (_bbox, text, conf) in results if conf >= 0.05 and len(str(text).strip()) >= 2]
+            return " ".join(accepted).strip()
+
+        extracted = _extract_pass(image_path, conf_threshold)
+
+        # Fallback passes for stylized social banners: crop text-heavy zones,
+        # boost contrast, sharpen, and upscale. This helps colorful Robux/shop images.
+        if len(extracted) < 80:
+            try:
+                from PIL import Image, ImageOps, ImageEnhance, ImageFilter
+                with Image.open(image_path).convert("RGB") as im:
+                    w, h = im.size
+                    if w < 280 or h < 280:
+                        im = im.resize((max(280, w * 4), max(280, h * 4)), Image.Resampling.LANCZOS)
+                        w, h = im.size
+                    boxes = [
+                        (0, 0, w, h),
+                        (int(w * 0.18), int(h * 0.25), int(w * 0.84), int(h * 0.78)),
+                        (int(w * 0.18), int(h * 0.40), int(w * 0.82), int(h * 0.74)),
+                        (int(w * 0.10), int(h * 0.65), int(w * 0.90), int(h * 0.92)),
+                    ]
+                    variants = []
+                    for box in boxes:
+                        crop = im.crop(box)
+                        for scale in (2, 3):
+                            resized = crop.resize(
+                                (max(1, crop.width * scale), max(1, crop.height * scale)),
+                                Image.Resampling.LANCZOS,
+                            )
+                            gray = ImageOps.grayscale(resized)
+                            boosted = ImageOps.autocontrast(gray)
+                            boosted = ImageEnhance.Contrast(boosted).enhance(1.9)
+                            variants.append(boosted)
+                            sharp = boosted.filter(ImageFilter.SHARPEN)
+                            variants.append(sharp)
+
+                    texts = [extracted]
+                    for variant in variants:
+                        with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                            tmp_path = tmp.name
+                        try:
+                            variant.save(tmp_path, "PNG")
+                            alt = _extract_pass(tmp_path, max(0.08, conf_threshold - 0.32))
+                            if alt:
+                                texts.append(alt)
+                        finally:
+                            if os.path.isfile(tmp_path):
+                                os.unlink(tmp_path)
+                    extracted = _dedupe_text(" ".join(texts))
+            except Exception as _e:
+                logger.debug(f"OCR fallback preprocessing skipped: {_e}")
+
         if extracted:
             logger.info(f"🔤 OCR extracted {len(extracted)} chars from {os.path.basename(image_path)}")
         return extracted[:max_chars]

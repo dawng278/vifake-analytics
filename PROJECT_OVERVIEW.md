@@ -873,7 +873,6 @@ vifake-analytics/
 ### Phase 4: Nâng cao
 - [ ] Real-time social media monitoring (webhook)
 - [ ] Graph analytics với dữ liệu thật
-- [ ] Multi-language support (Khmer, Thai)
 - [ ] Community reporting system
 
 ## 🤝 Contributing

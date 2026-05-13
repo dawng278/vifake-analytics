@@ -1,0 +1,2809 @@
+{
+  "summary": {
+    "total": 209,
+    "correct": 84,
+    "accuracy": 0.4019
+  },
+  "global_confusion_matrix": {
+    "FAKE_SCAM": {
+      "FAKE_SCAM": 52,
+      "SUSPICIOUS": 14,
+      "SAFE": 26
+    },
+    "SUSPICIOUS": {
+      "FAKE_SCAM": 27,
+      "SUSPICIOUS": 4,
+      "SAFE": 24
+    },
+    "SAFE": {
+      "FAKE_SCAM": 5,
+      "SUSPICIOUS": 29,
+      "SAFE": 28
+    }
+  },
+  "global_metrics": {
+    "FAKE_SCAM": {
+      "precision": 0.619,
+      "recall": 0.5652,
+      "f1": 0.5909,
+      "support": 92
+    },
+    "SUSPICIOUS": {
+      "precision": 0.0851,
+      "recall": 0.0727,
+      "f1": 0.0784,
+      "support": 55
+    },
+    "SAFE": {
+      "precision": 0.359,
+      "recall": 0.4516,
+      "f1": 0.4,
+      "support": 62
+    }
+  },
+  "per_game": {
+    "brawl_stars": {
+      "total": 14,
+      "accuracy": 0.4286,
+      "scam_false_negative_safe": 2,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 5,
+          "SUSPICIOUS": 0,
+          "SAFE": 2
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 3,
+          "SUSPICIOUS": 1,
+          "SAFE": 0
+        },
+        "SAFE": {
+          "FAKE_SCAM": 1,
+          "SUSPICIOUS": 2,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.5556,
+          "recall": 0.7143,
+          "f1": 0.625,
+          "support": 7
+        },
+        "SUSPICIOUS": {
+          "precision": 0.3333,
+          "recall": 0.25,
+          "f1": 0.2857,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        }
+      }
+    },
+    "cross_game": {
+      "total": 4,
+      "accuracy": 0.5,
+      "scam_false_negative_safe": 0,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 2,
+          "SUSPICIOUS": 0,
+          "SAFE": 0
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 1,
+          "SUSPICIOUS": 0,
+          "SAFE": 0
+        },
+        "SAFE": {
+          "FAKE_SCAM": 1,
+          "SUSPICIOUS": 0,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.5,
+          "recall": 1.0,
+          "f1": 0.6667,
+          "support": 2
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 1
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 1
+        }
+      }
+    },
+    "fc_mobile": {
+      "total": 14,
+      "accuracy": 0.2857,
+      "scam_false_negative_safe": 2,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 4,
+          "SUSPICIOUS": 1,
+          "SAFE": 2
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 3,
+          "SUSPICIOUS": 0,
+          "SAFE": 1
+        },
+        "SAFE": {
+          "FAKE_SCAM": 1,
+          "SUSPICIOUS": 2,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.5,
+          "recall": 0.5714,
+          "f1": 0.5333,
+          "support": 7
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        }
+      }
+    },
+    "fortnite": {
+      "total": 14,
+      "accuracy": 0.4286,
+      "scam_false_negative_safe": 1,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 6,
+          "SUSPICIOUS": 0,
+          "SAFE": 1
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 2,
+          "SUSPICIOUS": 0,
+          "SAFE": 2
+        },
+        "SAFE": {
+          "FAKE_SCAM": 0,
+          "SUSPICIOUS": 3,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.75,
+          "recall": 0.8571,
+          "f1": 0.8,
+          "support": 7
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        }
+      }
+    },
+    "freefire": {
+      "total": 22,
+      "accuracy": 0.3636,
+      "scam_false_negative_safe": 2,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 8,
+          "SUSPICIOUS": 1,
+          "SAFE": 2
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 5,
+          "SUSPICIOUS": 0,
+          "SAFE": 1
+        },
+        "SAFE": {
+          "FAKE_SCAM": 1,
+          "SUSPICIOUS": 4,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.5714,
+          "recall": 0.7273,
+          "f1": 0.64,
+          "support": 11
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 6
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 5
+        }
+      }
+    },
+    "lienquan": {
+      "total": 15,
+      "accuracy": 0.2667,
+      "scam_false_negative_safe": 1,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 4,
+          "SUSPICIOUS": 2,
+          "SAFE": 1
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 2,
+          "SUSPICIOUS": 0,
+          "SAFE": 2
+        },
+        "SAFE": {
+          "FAKE_SCAM": 0,
+          "SUSPICIOUS": 4,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.6667,
+          "recall": 0.5714,
+          "f1": 0.6154,
+          "support": 7
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        }
+      }
+    },
+    "minecraft": {
+      "total": 14,
+      "accuracy": 0.2857,
+      "scam_false_negative_safe": 2,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 3,
+          "SUSPICIOUS": 2,
+          "SAFE": 2
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 2,
+          "SUSPICIOUS": 0,
+          "SAFE": 2
+        },
+        "SAFE": {
+          "FAKE_SCAM": 0,
+          "SUSPICIOUS": 2,
+          "SAFE": 1
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.6,
+          "recall": 0.4286,
+          "f1": 0.5,
+          "support": 7
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.2,
+          "recall": 0.3333,
+          "f1": 0.25,
+          "support": 3
+        }
+      }
+    },
+    "mlbb": {
+      "total": 15,
+      "accuracy": 0.4,
+      "scam_false_negative_safe": 2,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 5,
+          "SUSPICIOUS": 1,
+          "SAFE": 2
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 2,
+          "SUSPICIOUS": 1,
+          "SAFE": 1
+        },
+        "SAFE": {
+          "FAKE_SCAM": 0,
+          "SUSPICIOUS": 3,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.7143,
+          "recall": 0.625,
+          "f1": 0.6667,
+          "support": 8
+        },
+        "SUSPICIOUS": {
+          "precision": 0.2,
+          "recall": 0.25,
+          "f1": 0.2222,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        }
+      }
+    },
+    "other": {
+      "total": 67,
+      "accuracy": 0.5075,
+      "scam_false_negative_safe": 10,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 5,
+          "SUSPICIOUS": 5,
+          "SAFE": 10
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 2,
+          "SUSPICIOUS": 2,
+          "SAFE": 12
+        },
+        "SAFE": {
+          "FAKE_SCAM": 0,
+          "SUSPICIOUS": 4,
+          "SAFE": 27
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.7143,
+          "recall": 0.25,
+          "f1": 0.3704,
+          "support": 20
+        },
+        "SUSPICIOUS": {
+          "precision": 0.1818,
+          "recall": 0.125,
+          "f1": 0.1481,
+          "support": 16
+        },
+        "SAFE": {
+          "precision": 0.551,
+          "recall": 0.871,
+          "f1": 0.675,
+          "support": 31
+        }
+      }
+    },
+    "pubg": {
+      "total": 14,
+      "accuracy": 0.2857,
+      "scam_false_negative_safe": 2,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 4,
+          "SUSPICIOUS": 1,
+          "SAFE": 2
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 3,
+          "SUSPICIOUS": 0,
+          "SAFE": 1
+        },
+        "SAFE": {
+          "FAKE_SCAM": 1,
+          "SUSPICIOUS": 2,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.5,
+          "recall": 0.5714,
+          "f1": 0.5333,
+          "support": 7
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        }
+      }
+    },
+    "roblox_robux": {
+      "total": 16,
+      "accuracy": 0.375,
+      "scam_false_negative_safe": 2,
+      "confusion_matrix": {
+        "FAKE_SCAM": {
+          "FAKE_SCAM": 6,
+          "SUSPICIOUS": 1,
+          "SAFE": 2
+        },
+        "SUSPICIOUS": {
+          "FAKE_SCAM": 2,
+          "SUSPICIOUS": 0,
+          "SAFE": 2
+        },
+        "SAFE": {
+          "FAKE_SCAM": 0,
+          "SUSPICIOUS": 3,
+          "SAFE": 0
+        }
+      },
+      "metrics": {
+        "FAKE_SCAM": {
+          "precision": 0.75,
+          "recall": 0.6667,
+          "f1": 0.7059,
+          "support": 9
+        },
+        "SUSPICIOUS": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 4
+        },
+        "SAFE": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 3
+        }
+      }
+    }
+  },
+  "details": [
+    {
+      "index": 1,
+      "game": "roblox_robux",
+      "scenario": "robux_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Ib mình ngay để nhận 80,000 Robux miễn phí! Cần nạp thẻ trước 50k để xác nhận acc. Chỉ còn 10 suất!"
+    },
+    {
+      "index": 2,
+      "game": "roblox_robux",
+      "scenario": "robux_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.4301,
+      "error": null,
+      "text": "Admin Roblox tặng 10,000 Robux cho người dùng dưới 1 năm. Verify acc tại link: bit.ly/roblox-ev3nt trước 12h đêm."
+    },
+    {
+      "index": 3,
+      "game": "freefire",
+      "scenario": "freefire_diamond_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Free Fire event mới: nạp 20 kim cương nhận lại 500 kim cương! Đăng ký tại ff-reward.xyz trước khi hết hạn!"
+    },
+    {
+      "index": 4,
+      "game": "freefire",
+      "scenario": "freefire_credential_harvest",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Garena tặng acc FF Max cho các bạn đăng ký tại trang này: garena-free.click. Nhập user + pass nhận quà ngay!"
+    },
+    {
+      "index": 5,
+      "game": "mlbb",
+      "scenario": "mlbb_diamond_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5878,
+      "error": null,
+      "text": "MLBB event skin Collector free! Đăng nhập ML tại moonton-event.xyz để nhận. Share cho 5 bạn để kích hoạt."
+    },
+    {
+      "index": 6,
+      "game": "freefire",
+      "scenario": "gaming_recruitment",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Team mình đang tuyển thành viên chơi Free Fire. Nếu bạn giỏi rank cao thì ib, không cần nạp tiền gì cả."
+    },
+    {
+      "index": 7,
+      "game": "other",
+      "scenario": "crypto_doubling_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Giveaway 1000 USDT! Gửi 0.05 ETH về ví này để nhận lại 0.5 ETH. Chương trình của Binance Vietnam. Chỉ còn 2 giờ!"
+    },
+    {
+      "index": 8,
+      "game": "other",
+      "scenario": "metamask_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Airdrop USDT: kết nối ví MetaMask tại metamask-vn.xyz và ký transaction để nhận 500 USDT miễn phí!"
+    },
+    {
+      "index": 9,
+      "game": "other",
+      "scenario": "crypto_investment_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "P2E game mới 2026: kiếm 50 USDT mỗi ngày, deposit 200 USDT để bắt đầu. ROI 300% trong 7 ngày!"
+    },
+    {
+      "index": 10,
+      "game": "other",
+      "scenario": "genuine_question",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Mình mới mua USDT lần đầu, không biết ví nào uy tín. Các anh chị chỉ dùm với!"
+    },
+    {
+      "index": 11,
+      "game": "other",
+      "scenario": "otp_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5114,
+      "error": null,
+      "text": "Admin game nhắn tin yêu cầu nhập OTP để nhận thưởng sự kiện. Mã OTP của bạn là xxx. Nhập ngay tại trang này!"
+    },
+    {
+      "index": 12,
+      "game": "other",
+      "scenario": "bank_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.9978,
+      "error": null,
+      "text": "Ngân hàng Vietcombank thông báo: tài khoản của bạn bị khóa do giao dịch bất thường. Xác nhận tại vcb-verify.com."
+    },
+    {
+      "index": 13,
+      "game": "other",
+      "scenario": "legitimate_otp",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5116,
+      "error": null,
+      "text": "Hệ thống gửi OTP: 472819. Không cung cấp OTP cho bất kỳ ai, kể cả nhân viên ngân hàng."
+    },
+    {
+      "index": 14,
+      "game": "other",
+      "scenario": "fake_job_ctv",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Tuyển CTV online làm việc từ xa: gõ dữ liệu 2-3h/ngày, lương 200k-500k/ngày. Phí đăng ký 300k (hoàn lại sau 7 ngày)."
+    },
+    {
+      "index": 15,
+      "game": "other",
+      "scenario": "ambiguous_job_post",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Công ty tuyển nhân viên part-time: viết nội dung mạng xã hội, 3-5 triệu/tháng. Liên hệ qua email để CV."
+    },
+    {
+      "index": 16,
+      "game": "other",
+      "scenario": "fake_scholarship",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Học bổng du học Nhật toàn phần! Chỉ cần nộp phí xét duyệt hồ sơ 2 triệu đồng. Deadline 15/5. Apply ngay!"
+    },
+    {
+      "index": 17,
+      "game": "other",
+      "scenario": "legitimate_scholarship",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Thông báo học bổng JASSO 2026: apply qua trang chính thức jasso.or.jp. Không mất phí."
+    },
+    {
+      "index": 18,
+      "game": "other",
+      "scenario": "romance_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Mình quen một người nước ngoài rất tốt, muốn gửi quà cho bạn nhưng bị giữ ở hải quan. Nộp phí 500k để nhận quà."
+    },
+    {
+      "index": 19,
+      "game": "other",
+      "scenario": "romance_scam_victim_report",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Có người lạ add fb mình rồi nói yêu mình sau 3 ngày chat, nay bảo gửi tiền mua vé về Việt Nam. Scam không mọi người?"
+    },
+    {
+      "index": 20,
+      "game": "other",
+      "scenario": "fake_product_listing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "iPhone 15 Pro Max 256GB chính hãng giảm 70%! Chỉ còn 9 triệu. Inbox ngay để đặt hàng. Ship COD toàn quốc."
+    },
+    {
+      "index": 21,
+      "game": "other",
+      "scenario": "legitimate_small_business",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Shop mình bán ốp lưng iPhone handmade, giá từ 80k-150k, ship toàn quốc. Inbox để xem mẫu nha mọi người!"
+    },
+    {
+      "index": 22,
+      "game": "other",
+      "scenario": "school_daily",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Hôm nay mình học toán với thầy Nguyễn, bài tập khá hay các bạn ơi. Ai không hiểu thì cmt mình giải thích!"
+    },
+    {
+      "index": 23,
+      "game": "other",
+      "scenario": "school_daily",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Thi học kỳ sắp tới rồi, stress quá. Ai có tài liệu ôn tập Vật lý 12 không cho mình xin với."
+    },
+    {
+      "index": 24,
+      "game": "lienquan",
+      "scenario": "gaming_achievement",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "T vừa leo rank Huyền Thoại trong Liên Quân rồi! Khó lắm nhưng cuối cùng cũng lên được 😭"
+    },
+    {
+      "index": 25,
+      "game": "other",
+      "scenario": "gaming_normal",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Ai chơi Genshin Impact không? Mình cần người co-op để clear domain mới. Server Asia nha."
+    },
+    {
+      "index": 26,
+      "game": "other",
+      "scenario": "fake_giveaway",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5942,
+      "error": null,
+      "text": "GIVEAWAY KHỦNG! Share bài này + tag 3 bạn = cơ hội nhận ngay iPhone 15 Pro! Kết quả công bố sau 24h!"
+    },
+    {
+      "index": 27,
+      "game": "other",
+      "scenario": "fake_brand_giveaway",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.4675,
+      "error": null,
+      "text": "Fan Page Coca-Cola VN tặng 1000 phần quà cho người share bài và tag bạn bè. Không cần mua gì!"
+    },
+    {
+      "index": 28,
+      "game": "other",
+      "scenario": "ewallet_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "MoMo ví điện tử: Chúc mừng! Bạn được hoàn tiền 500k. Xác nhận nhận tiền tại: momo-reward.net"
+    },
+    {
+      "index": 29,
+      "game": "other",
+      "scenario": "legitimate_payment_notification",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5116,
+      "error": null,
+      "text": "MoMo thông báo: giao dịch 200,000đ đến tài khoản của bạn lúc 14:32. Nếu không phải bạn thực hiện, liên hệ 1900545441."
+    },
+    {
+      "index": 30,
+      "game": "other",
+      "scenario": "streaming_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5316,
+      "error": null,
+      "text": "Netflix tặng Premium 1 tháng miễn phí! Click link để kích hoạt: netflix-vn.free.click. Ưu đãi hết hôm nay!"
+    },
+    {
+      "index": 31,
+      "game": "other",
+      "scenario": "shared_streaming_account",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5481,
+      "error": null,
+      "text": "Acc Netflix Premium còn 3 tháng, mình không dùng nữa. Bán 100k cho ai cần. Có thể test trước khi mua."
+    },
+    {
+      "index": 32,
+      "game": "other",
+      "scenario": "social_normal",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Mình đang học làm bánh tại nhà, vừa ra lò mẻ bánh bông lan đầu tiên. Không ngon lắm nhưng tự hào quá hehe."
+    },
+    {
+      "index": 33,
+      "game": "other",
+      "scenario": "social_normal",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Cuối tuần ai có kế hoạch gì chưa? T muốn rủ mọi người đi cafe ngồi tám, khu Quận 3 nhé!"
+    },
+    {
+      "index": 34,
+      "game": "freefire",
+      "scenario": "fake_hack_tool",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Bí kíp hack kim cương Free Fire 2026 không cần nạp tiền! Tải app này về và làm theo hướng dẫn."
+    },
+    {
+      "index": 35,
+      "game": "freefire",
+      "scenario": "free_fire_code_share",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Mã code Free Fire tháng 5/2026: FF-XMAS-2026. Vào game → Sự kiện → Nhập code. Chia sẻ cho bạn bè!"
+    },
+    {
+      "index": 36,
+      "game": "other",
+      "scenario": "shared_course_account",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5116,
+      "error": null,
+      "text": "Ai muốn học code Python free không? Mình có khóa học Udemy còn hạn account. Dm để lấy link."
+    },
+    {
+      "index": 37,
+      "game": "other",
+      "scenario": "legitimate_free_course",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Khóa học Python miễn phí từ FUNiX: funix.edu.vn/python-co-ban. Học online, có chứng chỉ sau khi hoàn thành."
+    },
+    {
+      "index": 38,
+      "game": "other",
+      "scenario": "fake_streamer_job",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Tuyển idol stream game: thu nhập 5-20 triệu/tháng, không cần kinh nghiệm, làm việc từ nhà. Nộp phí training 1 triệu."
+    },
+    {
+      "index": 39,
+      "game": "other",
+      "scenario": "ecommerce_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Shopee voucher 200k dành riêng cho thành viên! Nhập mã: SHOPEE200K tại trang shopee-voucher.net để áp dụng."
+    },
+    {
+      "index": 40,
+      "game": "other",
+      "scenario": "legitimate_promotion",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Shopee Flash Sale hôm nay: giảm tới 70% nhiều danh mục. Tải app hoặc vào shopee.vn để xem deals."
+    },
+    {
+      "index": 41,
+      "game": "other",
+      "scenario": "emotional_post",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Bạn trai/bạn gái t vừa chia tay, buồn quá. Có ai muốn chat không, cần người lắng nghe."
+    },
+    {
+      "index": 42,
+      "game": "other",
+      "scenario": "social_engineering_setup",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Người lạ add fb mình và ngay hôm sau xin số điện thoại, bảo muốn tâm sự. Có gì đáng lo không?"
+    },
+    {
+      "index": 43,
+      "game": "other",
+      "scenario": "school_fee_request",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.998,
+      "error": null,
+      "text": "Admin Zalo nhóm lớp thông báo: nộp học phí học thêm 500k qua SĐT 09xxxxxxxx. Chuyển khoản trước ngày 15."
+    },
+    {
+      "index": 44,
+      "game": "other",
+      "scenario": "legitimate_school_fee",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5116,
+      "error": null,
+      "text": "Trường THPT Nguyễn Du thông báo: thu học phí HK2 qua tài khoản trường tại VietinBank. Chi tiết tại cổng thông tin."
+    },
+    {
+      "index": 45,
+      "game": "other",
+      "scenario": "tutor_request",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Cần tìm gia sư Toán cho con lớp 10, khu vực Cầu Giấy HN. Lương thỏa thuận, 2 buổi/tuần. Liên hệ qua messenger."
+    },
+    {
+      "index": 46,
+      "game": "other",
+      "scenario": "online_tutoring_ad",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Dạy kèm Tiếng Anh online: 150k/buổi 60 phút qua Zoom. Cam kết IELTS 6.5+ sau 6 tháng hoặc hoàn tiền 100%."
+    },
+    {
+      "index": 47,
+      "game": "other",
+      "scenario": "entertainment",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Mình đang xem phim Đất Rừng Phương Nam bản mới, hay lắm mọi người ơi. Ai chưa xem thì đi xem đi!"
+    },
+    {
+      "index": 48,
+      "game": "other",
+      "scenario": "book_sharing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Review sách Đắc Nhân Tâm: mình đọc xong rồi, hay thật sự. Ai cần mình share file PDF free."
+    },
+    {
+      "index": 49,
+      "game": "other",
+      "scenario": "piracy_site_promotion",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Link tải phim lậu không quảng cáo: phim-moi.xyz. Có đủ phim Việt Nam và nước ngoài mới nhất!"
+    },
+    {
+      "index": 50,
+      "game": "other",
+      "scenario": "technical_help_request",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Ai biết cách fix lỗi ModuleNotFoundError trong Python không? Mình đang học lập trình mà bị lỗi này hoài."
+    },
+    {
+      "index": 51,
+      "game": "other",
+      "scenario": "forex_investment_question",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Hỏi thật: đầu tư vào sàn forex online có uy tín không? Người ta giới thiệu lợi nhuận 30%/tháng."
+    },
+    {
+      "index": 52,
+      "game": "other",
+      "scenario": "fake_trading_platform",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Sàn đầu tư XYZ-trade.com: lợi nhuận 30-50%/tháng, rút tiền bất cứ lúc nào. Đăng ký nhận 1 triệu vốn free!"
+    },
+    {
+      "index": 53,
+      "game": "other",
+      "scenario": "personal_data_broker_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Ai cần check lại thông tin về người yêu cũ không? Dịch vụ tìm kiếm thông tin cá nhân, liên hệ inbox."
+    },
+    {
+      "index": 54,
+      "game": "other",
+      "scenario": "legitimate_info_request",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Cần hỏi: cách tra cứu thông tin xe máy đã đăng ký qua Cục Đăng kiểm thì vào trang nào?"
+    },
+    {
+      "index": 55,
+      "game": "other",
+      "scenario": "follower_buying_service",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Bot tự động tăng follow Instagram 10k/ngày, giá 200k. Bảo hành drop follow 30 ngày."
+    },
+    {
+      "index": 56,
+      "game": "other",
+      "scenario": "scam_warning_post",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Bị lừa mất 5 triệu rồi mọi người ơi. Tin người lạ add fb bảo làm CTV online. Cảnh báo mọi người đừng tin!"
+    },
+    {
+      "index": 57,
+      "game": "other",
+      "scenario": "official_scam_warning",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Cảnh báo: đang có kẻ lừa đảo giả mạo Bộ Công An gọi điện bảo bạn liên quan vụ án. Không nghe theo!"
+    },
+    {
+      "index": 58,
+      "game": "other",
+      "scenario": "streaming_account_sharing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5481,
+      "error": null,
+      "text": "Inbox t nha, t có acc Netflix Premium 4K còn 6 tháng, bán 150k. Chia sẻ 4 người cùng dùng."
+    },
+    {
+      "index": 59,
+      "game": "freefire",
+      "scenario": "game_account_sale",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9984,
+      "error": null,
+      "text": "Đổi acc game Free Fire rank Huyền Thoại, skin full, giá 500k. Thương lượng được. Có video clip chứng minh."
+    },
+    {
+      "index": 60,
+      "game": "freefire",
+      "scenario": "gaming_scam_victim",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Mình vừa mua acc FF trên một trang web và bị đổi pass ngay sau khi chuyển tiền. Ai biết cách lấy lại tiền không?"
+    },
+    {
+      "index": 61,
+      "game": "freefire",
+      "scenario": "fake_topup_event",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Event đặc biệt: nạp 100k nhận 300k kim cương Free Fire! Ưu đãi chỉ trong hôm nay, link thanh toán trong comment."
+    },
+    {
+      "index": 62,
+      "game": "other",
+      "scenario": "achievement_sharing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "T vừa hoàn thành khóa học Python cơ bản trên Coursera. Certificate đẹp lắm, cảm ơn mọi người đã support!"
+    },
+    {
+      "index": 63,
+      "game": "other",
+      "scenario": "career_advice_request",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Mình học lập trình web 6 tháng theo lộ trình tự học, giờ đang tìm việc intern. Ai có kinh nghiệm tuyển dụng tư vấn với!"
+    },
+    {
+      "index": 64,
+      "game": "other",
+      "scenario": "legitimate_job_post",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Cty tuyển dev React 2-3 năm kinh nghiệm, remote 100%, lương 25-35M. Nộp CV tại hr@company.vn"
+    },
+    {
+      "index": 65,
+      "game": "other",
+      "scenario": "paid_survey",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5116,
+      "error": null,
+      "text": "Mình đang tìm phụ huynh có con học lớp 6-9 muốn tham gia khảo sát về phương pháp học tập. Thù lao 200k. Điền form tại link."
+    },
+    {
+      "index": 66,
+      "game": "other",
+      "scenario": "legitimate_ux_research",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Ai ở TP.HCM muốn tham gia nghiên cứu người dùng cho app mới không? Thù lao 300k/buổi 1 tiếng. Inbox để đặt lịch."
+    },
+    {
+      "index": 67,
+      "game": "other",
+      "scenario": "money_laundering_recruitment",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Hội anh em ơi, mình đang bị bắt ép giao dịch bất hợp pháp. Ai có Zalo OTP giả mạo giúp mình bypass với."
+    },
+    {
+      "index": 68,
+      "game": "other",
+      "scenario": "predatory_lending_ad",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Bạn có khoản vay cần thanh toán? Chúng tôi hỗ trợ đảo nợ, lãi suất 0% tháng đầu. Liên hệ ngay!"
+    },
+    {
+      "index": 69,
+      "game": "other",
+      "scenario": "loan_shark_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Vay tiền nhanh không cần thế chấp, giải ngân trong 2h: vay-nhanh247.net. Lãi suất 5%/ngày (=1825%/năm)."
+    },
+    {
+      "index": 70,
+      "game": "other",
+      "scenario": "hometown_community",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Tìm đồng hương quê Nghệ An ở Sài Gòn để giao lưu, tạo kết nối cộng đồng. Nhóm Zalo chính thức: [link]"
+    },
+    {
+      "index": 71,
+      "game": "other",
+      "scenario": "career_question_teen",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Mình 16 tuổi muốn kiếm tiền online mà không biết bắt đầu từ đâu. Freelance viết content được không ạ?"
+    },
+    {
+      "index": 72,
+      "game": "other",
+      "scenario": "mlm_pyramid_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Kiếm 500k mỗi ngày chỉ cần 1 tiếng làm việc online! Không cần kinh nghiệm, làm từ nhà. Ib để biết bí quyết!"
+    },
+    {
+      "index": 73,
+      "game": "other",
+      "scenario": "legitimate_affiliate_education",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Hướng dẫn kiếm tiền từ affiliate marketing Amazon: viết review sản phẩm, đặt link, nhận hoa hồng 3-10%. Đây là tóm tắt model."
+    },
+    {
+      "index": 74,
+      "game": "other",
+      "scenario": "tiktok_coin_scam",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.4773,
+      "error": null,
+      "text": "Trick độc: gửi 1 tin nhắn này tới 10 người bạn sẽ nhận ngay 50 xu TikTok vào tài khoản trong 24h!"
+    },
+    {
+      "index": 75,
+      "game": "other",
+      "scenario": "account_recovery_request",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5114,
+      "error": null,
+      "text": "Tài khoản TikTok của mình bị hack mất rồi! Ai biết cách recover không? Mình chưa verify SĐT."
+    },
+    {
+      "index": 76,
+      "game": "other",
+      "scenario": "retail_phishing",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Discount voucher VinMart 30% toàn bộ sản phẩm! Lấy voucher miễn phí tại: vinmart-voucher.net Hôm nay thôi!"
+    },
+    {
+      "index": 77,
+      "game": "other",
+      "scenario": "legitimate_promotion",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Winmart/VinMart đang có chương trình khuyến mãi thành viên. Xem tại app WinMart+ hoặc cửa hàng."
+    },
+    {
+      "index": 78,
+      "game": "other",
+      "scenario": "product_review",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Mình vừa mua điện thoại Samsung Galaxy A55 chính hãng giá 9.5 triệu tại Thế Giới Di Động. Review sau khi dùng 1 tuần nhé!"
+    },
+    {
+      "index": 79,
+      "game": "other",
+      "scenario": "gray_market_electronics",
+      "source_file": "real_validation_set.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Muốn mua Samsung A55 giá rẻ? Inbox t ngay, hàng xách tay Hàn nguyên seal, bảo hành 12 tháng. Chỉ 7 triệu!"
+    },
+    {
+      "index": 80,
+      "game": "fortnite",
+      "scenario": "fortnite_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.4891,
+      "error": null,
+      "text": "Bán battle pass fortnite giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 81,
+      "game": "pubg",
+      "scenario": "pubg_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.4889,
+      "error": null,
+      "text": "Bán x-suit pubg giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 82,
+      "game": "freefire",
+      "scenario": "freefire_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của free fire, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 83,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Sự kiện nạp gem x2, chuyển khoản trước 299k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 84,
+      "game": "lienquan",
+      "scenario": "lienquan_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.4775,
+      "error": null,
+      "text": "Mua bán skin lq qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 85,
+      "game": "freefire",
+      "scenario": "freefire_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5173,
+      "error": null,
+      "text": "Mua bán acc ff qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 86,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.9981,
+      "error": null,
+      "text": "Có shop nào nạp robux card uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 87,
+      "game": "freefire",
+      "scenario": "freefire_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng acc ff miễn phí cho 100 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 88,
+      "game": "pubg",
+      "scenario": "pubg_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.4687,
+      "error": null,
+      "text": "Rate uc hôm nay 10k = 50.000, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 89,
+      "game": "mlbb",
+      "scenario": "mlbb_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Có tips farm diamond mlbb hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 90,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Trao đổi acc roblox rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 91,
+      "game": "freefire",
+      "scenario": "freefire_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.4689,
+      "error": null,
+      "text": "Rate kim cương hôm nay 10k = x2 tài nguyên, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 92,
+      "game": "fortnite",
+      "scenario": "fortnite_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5405,
+      "error": null,
+      "text": "Có tips farm v-bucks hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 93,
+      "game": "fortnite",
+      "scenario": "fortnite_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của fortnite, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 94,
+      "game": "freefire",
+      "scenario": "freefire_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Bán acc huyền thoại free fire giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 95,
+      "game": "minecraft",
+      "scenario": "minecraft_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5399,
+      "error": null,
+      "text": "Admin minecraft hỗ trợ nạp minecoin giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 96,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Bán gamepass giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 97,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Huyền Thoại trong roblox, ai chơi cùng không?"
+    },
+    {
+      "index": 98,
+      "game": "fortnite",
+      "scenario": "fortnite_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tool hack vbucks bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 99,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.9981,
+      "error": null,
+      "text": "Admin roblox hỗ trợ nạp robux giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 100,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tool hack rbx bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 101,
+      "game": "minecraft",
+      "scenario": "minecraft_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tool hack minecoin bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 102,
+      "game": "freefire",
+      "scenario": "freefire_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4775,
+      "error": null,
+      "text": "Bán skin súng giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 103,
+      "game": "lienquan",
+      "scenario": "lienquan_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Legendary trong liên quân, ai chơi cùng không?"
+    },
+    {
+      "index": 104,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4561,
+      "error": null,
+      "text": "Shop fc mobile cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 105,
+      "game": "mlbb",
+      "scenario": "mlbb_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.9981,
+      "error": null,
+      "text": "Có shop nào nạp kim cương ml uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 106,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5405,
+      "error": null,
+      "text": "Bán icon giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 107,
+      "game": "mlbb",
+      "scenario": "mlbb_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng kim cương ml miễn phí cho 100 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 108,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng skin brawl miễn phí cho 20 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 109,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tặng robux miễn phí cho 50 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 110,
+      "game": "freefire",
+      "scenario": "freefire_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4561,
+      "error": null,
+      "text": "Shop free fire cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 111,
+      "game": "mlbb",
+      "scenario": "mlbb_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5399,
+      "error": null,
+      "text": "Admin mlbb hỗ trợ nạp kim cương ml giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 112,
+      "game": "lienquan",
+      "scenario": "lienquan_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Rate acc lq hôm nay 10k = x2 tài nguyên, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 113,
+      "game": "fortnite",
+      "scenario": "fortnite_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Trao đổi acc fortnite rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 114,
+      "game": "mlbb",
+      "scenario": "mlbb_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Rate diamond mlbb hôm nay 10k = x2 tài nguyên, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 115,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.4889,
+      "error": null,
+      "text": "Bán gamepass roblox giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 116,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Bán acc huyền thoại giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 117,
+      "game": "lienquan",
+      "scenario": "lienquan_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5405,
+      "error": null,
+      "text": "Bán tướng giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 118,
+      "game": "fortnite",
+      "scenario": "fortnite_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Bán acc rank cao giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 119,
+      "game": "minecraft",
+      "scenario": "minecraft_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tặng realm miễn phí cho 100 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 120,
+      "game": "cross_game",
+      "scenario": "cross_game_anti_scam_warning",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Cảnh báo: đừng đưa OTP, mật khẩu hay cọc trước khi mua bán acc game online."
+    },
+    {
+      "index": 121,
+      "game": "mlbb",
+      "scenario": "mlbb_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4515,
+      "error": null,
+      "text": "Shop mlbb cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 122,
+      "game": "fortnite",
+      "scenario": "fortnite_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Admin fortnite hỗ trợ nạp v-bucks giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 123,
+      "game": "minecraft",
+      "scenario": "minecraft_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.4891,
+      "error": null,
+      "text": "Bán rank vip minecraft giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 124,
+      "game": "lienquan",
+      "scenario": "lienquan_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4561,
+      "error": null,
+      "text": "Shop liên quân cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 125,
+      "game": "mlbb",
+      "scenario": "mlbb_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mua bán diamond mlbb qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 126,
+      "game": "pubg",
+      "scenario": "pubg_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5173,
+      "error": null,
+      "text": "Trao đổi acc pubg rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 127,
+      "game": "minecraft",
+      "scenario": "minecraft_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Có shop nào nạp realm uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 128,
+      "game": "minecraft",
+      "scenario": "minecraft_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Kim Cương trong minecraft, ai chơi cùng không?"
+    },
+    {
+      "index": 129,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5173,
+      "error": null,
+      "text": "Trao đổi acc brawl stars rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 130,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Trao đổi acc fc mobile rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 131,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của brawl stars, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 132,
+      "game": "minecraft",
+      "scenario": "minecraft_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Rate realm hôm nay 10k = 10.000, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 133,
+      "game": "freefire",
+      "scenario": "freefire_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tool hack kim cương bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 134,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5029,
+      "error": null,
+      "text": "Có tips farm acc brawl hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 135,
+      "game": "lienquan",
+      "scenario": "lienquan_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Sự kiện nạp quân huy x2, chuyển khoản trước 150k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 136,
+      "game": "lienquan",
+      "scenario": "lienquan_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng skin lq miễn phí cho 30 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 137,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng acc fc miễn phí cho 50 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 138,
+      "game": "freefire",
+      "scenario": "freefire_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5399,
+      "error": null,
+      "text": "Admin free fire hỗ trợ nạp kim cương giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 139,
+      "game": "cross_game",
+      "scenario": "cross_game_account_market",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5204,
+      "error": null,
+      "text": "Bán acc xịn nhiều game cho học sinh, giá rẻ, giao dịch qua chuyển khoản."
+    },
+    {
+      "index": 140,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Sự kiện nạp acc fc x2, chuyển khoản trước 150k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 141,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Huyền Thoại trong brawl stars, ai chơi cùng không?"
+    },
+    {
+      "index": 142,
+      "game": "fortnite",
+      "scenario": "fortnite_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Kim Cương trong fortnite, ai chơi cùng không?"
+    },
+    {
+      "index": 143,
+      "game": "pubg",
+      "scenario": "pubg_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của pubg, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 144,
+      "game": "cross_game",
+      "scenario": "cross_game_credential_harvest",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng quà game bất kỳ cho học sinh, chỉ cần nhập tài khoản + mật khẩu để nhận code."
+    },
+    {
+      "index": 145,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Có shop nào nạp fc point uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 146,
+      "game": "freefire",
+      "scenario": "freefire_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Legendary trong free fire, ai chơi cùng không?"
+    },
+    {
+      "index": 147,
+      "game": "mlbb",
+      "scenario": "mlbb_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Trao đổi acc mlbb rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 148,
+      "game": "pubg",
+      "scenario": "pubg_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Sự kiện nạp uc x2, chuyển khoản trước 50k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 149,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Admin fc mobile hỗ trợ nạp acc fc giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 150,
+      "game": "fortnite",
+      "scenario": "fortnite_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Rate acc fortnite hôm nay 10k = 100.000, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 151,
+      "game": "minecraft",
+      "scenario": "minecraft_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Trao đổi acc minecraft rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 152,
+      "game": "mlbb",
+      "scenario": "mlbb_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của mlbb, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 153,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tool hack skin brawl bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 154,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tool hack coin fc bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 155,
+      "game": "fortnite",
+      "scenario": "fortnite_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.4775,
+      "error": null,
+      "text": "Mua bán acc fortnite qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 156,
+      "game": "pubg",
+      "scenario": "pubg_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5204,
+      "error": null,
+      "text": "Mua bán royale pass qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 157,
+      "game": "minecraft",
+      "scenario": "minecraft_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Mua bán realm qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 158,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4515,
+      "error": null,
+      "text": "Shop roblox cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 159,
+      "game": "minecraft",
+      "scenario": "minecraft_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Sự kiện nạp realm x2, chuyển khoản trước 199k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 160,
+      "game": "mlbb",
+      "scenario": "mlbb_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Bán acc vinh quang mlbb giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 161,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mua bán gem qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 162,
+      "game": "fortnite",
+      "scenario": "fortnite_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng acc fortnite miễn phí cho 20 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 163,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.4687,
+      "error": null,
+      "text": "Rate robux card hôm nay 10k = 20.000, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 164,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5029,
+      "error": null,
+      "text": "Có tips farm acc fc hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 165,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4561,
+      "error": null,
+      "text": "Shop brawl stars cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 166,
+      "game": "lienquan",
+      "scenario": "lienquan_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.9981,
+      "error": null,
+      "text": "Có shop nào nạp quân huy uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 167,
+      "game": "pubg",
+      "scenario": "pubg_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4515,
+      "error": null,
+      "text": "Shop pubg cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 168,
+      "game": "freefire",
+      "scenario": "freefire_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Trao đổi acc free fire rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 169,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.4775,
+      "error": null,
+      "text": "Mua bán robux qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 170,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Rate gem hôm nay 10k = x2 tài nguyên, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 171,
+      "game": "mlbb",
+      "scenario": "mlbb_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Sự kiện nạp acc mlbb x2, chuyển khoản trước 50k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 172,
+      "game": "fortnite",
+      "scenario": "fortnite_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Sự kiện nạp vbucks x2, chuyển khoản trước 20k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 173,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của fc mobile, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 174,
+      "game": "pubg",
+      "scenario": "pubg_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4775,
+      "error": null,
+      "text": "Bán skin súng giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 175,
+      "game": "pubg",
+      "scenario": "pubg_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Legendary trong pubg, ai chơi cùng không?"
+    },
+    {
+      "index": 176,
+      "game": "lienquan",
+      "scenario": "lienquan_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Tool hack quân huy bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 177,
+      "game": "lienquan",
+      "scenario": "lienquan_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của liên quân, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 178,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Bán acc top server fc mobile giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 179,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Có tips farm robux card hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 180,
+      "game": "mlbb",
+      "scenario": "mlbb_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Legendary trong mlbb, ai chơi cùng không?"
+    },
+    {
+      "index": 181,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Sự kiện nạp robux x2, chuyển khoản trước 199k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 182,
+      "game": "lienquan",
+      "scenario": "lienquan_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5399,
+      "error": null,
+      "text": "Admin liên quân hỗ trợ nạp quân huy giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 183,
+      "game": "lienquan",
+      "scenario": "lienquan_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Bán skin sss liên quân giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 184,
+      "game": "freefire",
+      "scenario": "freefire_scam_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Sự kiện nạp elite pass x2, chuyển khoản trước 150k để nhận ngay trong 5 phút."
+    },
+    {
+      "index": 185,
+      "game": "pubg",
+      "scenario": "pubg_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.9981,
+      "error": null,
+      "text": "Có shop nào nạp uc uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 186,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Admin brawl stars hỗ trợ nạp acc brawl giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 187,
+      "game": "freefire",
+      "scenario": "freefire_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5029,
+      "error": null,
+      "text": "Có shop nào nạp acc ff uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 188,
+      "game": "minecraft",
+      "scenario": "minecraft_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5405,
+      "error": null,
+      "text": "Bán server vip giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 189,
+      "game": "lienquan",
+      "scenario": "lienquan_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Có tips farm quân huy hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 190,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_safe_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Mình vừa leo rank Cao Thủ trong fc mobile, ai chơi cùng không?"
+    },
+    {
+      "index": 191,
+      "game": "pubg",
+      "scenario": "pubg_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tool hack royale pass bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 192,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_suspicious_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5029,
+      "error": null,
+      "text": "Mua bán acc fc qua trung gian cá nhân, có cọc nhẹ để giữ đơn."
+    },
+    {
+      "index": 193,
+      "game": "minecraft",
+      "scenario": "minecraft_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SAFE",
+      "confidence": 0.25,
+      "error": null,
+      "text": "Có tips farm realm hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 194,
+      "game": "minecraft",
+      "scenario": "minecraft_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của minecraft, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 195,
+      "game": "roblox_robux",
+      "scenario": "roblox_robux_safe_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Review skin mới của roblox, đẹp nhưng hơi đắt."
+    },
+    {
+      "index": 196,
+      "game": "pubg",
+      "scenario": "pubg_scam_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.5281,
+      "error": null,
+      "text": "Admin pubg hỗ trợ nạp uc giá rẻ, gửi OTP để kích hoạt ưu đãi."
+    },
+    {
+      "index": 197,
+      "game": "pubg",
+      "scenario": "pubg_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Có tips farm acc pubg hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 198,
+      "game": "minecraft",
+      "scenario": "minecraft_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4561,
+      "error": null,
+      "text": "Shop minecraft cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 199,
+      "game": "freefire",
+      "scenario": "freefire_safe_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SAFE",
+      "predicted": "SUSPICIOUS",
+      "confidence": 0.9991,
+      "error": null,
+      "text": "Có tips farm kim cương hợp lệ trong game không mọi người?"
+    },
+    {
+      "index": 200,
+      "game": "fc_mobile",
+      "scenario": "fc_mobile_scam_pattern_7",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.9968,
+      "error": null,
+      "text": "Rate fc point hôm nay 10k = 50.000, inbox ngay kẻo hết slot."
+    },
+    {
+      "index": 201,
+      "game": "mlbb",
+      "scenario": "mlbb_scam_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tool hack acc mlbb bản 2026, tải apk mod không ban acc tại link rút gọn."
+    },
+    {
+      "index": 202,
+      "game": "fortnite",
+      "scenario": "fortnite_scam_pattern_6",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "SAFE",
+      "confidence": 0.4561,
+      "error": null,
+      "text": "Shop fortnite cam kết 100% uy tín, cần đăng nhập tài khoản để kiểm tra tồn kho."
+    },
+    {
+      "index": 203,
+      "game": "pubg",
+      "scenario": "pubg_scam_pattern_2",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9985,
+      "error": null,
+      "text": "Tặng acc pubg miễn phí cho 50 bạn đầu tiên, nhập user + pass để verify tài khoản."
+    },
+    {
+      "index": 204,
+      "game": "mlbb",
+      "scenario": "mlbb_scam_pattern_5",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9983,
+      "error": null,
+      "text": "Bán acc vinh quang giá siêu rẻ, chỉ nhận cọc trước 50% rồi giao sau."
+    },
+    {
+      "index": 205,
+      "game": "lienquan",
+      "scenario": "lienquan_suspicious_pattern_4",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5032,
+      "error": null,
+      "text": "Trao đổi acc liên quân rank cao, có video quay màn hình chứng minh."
+    },
+    {
+      "index": 206,
+      "game": "cross_game",
+      "scenario": "cross_game_otp_harvest",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "FAKE_SCAM",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.9982,
+      "error": null,
+      "text": "Shop nạp game toàn nền tảng, gửi mã OTP để xác nhận chủ tài khoản."
+    },
+    {
+      "index": 207,
+      "game": "fortnite",
+      "scenario": "fortnite_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "SAFE",
+      "confidence": 0.9981,
+      "error": null,
+      "text": "Có shop nào nạp vbucks uy tín không, mình sợ bị lừa."
+    },
+    {
+      "index": 208,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_suspicious_pattern_1",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5033,
+      "error": null,
+      "text": "Bán brawler hiếm brawl stars giá rẻ, ưu tiên chuyển khoản trước cho nhanh."
+    },
+    {
+      "index": 209,
+      "game": "brawl_stars",
+      "scenario": "brawl_stars_suspicious_pattern_3",
+      "source_file": "game_coverage_extension_2026.jsonl",
+      "expected": "SUSPICIOUS",
+      "predicted": "FAKE_SCAM",
+      "confidence": 0.5029,
+      "error": null,
+      "text": "Có shop nào nạp acc brawl uy tín không, mình sợ bị lừa."
+    }
+  ]
+}

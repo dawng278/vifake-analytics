@@ -1,0 +1,1550 @@
+[
+  {
+    "text": "bán acc game rank cao full skin, có trung gian cá nhân",
+    "label": 1,
+    "scenario": "roblox_suspicious_market",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_270901",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "event tặng mobile legends free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_561916",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 skin lq, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "lien_quan_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_744482",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "admin game hỗ trợ nạp quân huy, chuyển khoản trước rồi mình gửi code sau",
+    "label": 1,
+    "scenario": "lien_quan_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_972647",
+      "conversation_turns": 1,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "event tặng fc mobile free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "fc_mobile_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_690374",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tool hack uc 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "pubg_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_958915",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "tool hack robux 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "roblox_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_521135",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 skin lq, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "lien_quan_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_214157",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tool hack kim cương ml 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_494651",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "review skin mới trong minecraft, nhìn đẹp thật",
+    "label": 0,
+    "scenario": "minecraft_safe_normal",
+    "severity": "low",
+    "age_group": "11-13",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_318171",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "review skin mới trong lien quan, nhìn đẹp thật",
+    "label": 0,
+    "scenario": "lien_quan_safe_normal",
+    "severity": "low",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_190896",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "review skin mới trong free fire, nhìn đẹp thật",
+    "label": 0,
+    "scenario": "free_fire_safe_normal",
+    "severity": "low",
+    "age_group": "11-13",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_666394",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "ai có tips chơi acc fc hiệu quả không",
+    "label": 0,
+    "scenario": "fc_mobile_safe_normal",
+    "severity": "low",
+    "age_group": "11-13",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_257521",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "tool hack skin brawl 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "brawl_stars_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_382586",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 minecoin, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "minecraft_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_634839",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "ai có tips chơi account minecraft hiệu quả không",
+    "label": 0,
+    "scenario": "minecraft_safe_normal",
+    "severity": "low",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_969788",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "rate acc mlbb hôm nay bao nhiêu, có shop nào uy tín không",
+    "label": 1,
+    "scenario": "mlbb_suspicious_market",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_341908",
+      "conversation_turns": 2,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "shop vbucks rate siêu rẻ, nạp trước 50k nhận ngay 10k vbucks trong 5 phút",
+    "label": 1,
+    "scenario": "fortnite_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_485748",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "admin game hỗ trợ nạp skin brawl, chuyển khoản trước rồi mình gửi code sau",
+    "label": 1,
+    "scenario": "brawl_stars_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_622877",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "bán acc game rank cao full skin, có trung gian cá nhân",
+    "label": 1,
+    "scenario": "fortnite_suspicious_market",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_899525",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "event tặng minecoin free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "minecraft_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_542972",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "ai có tips chơi mlbb hiệu quả không",
+    "label": 0,
+    "scenario": "mlbb_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_246458",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "bán acc game rank cao full skin, có trung gian cá nhân",
+    "label": 1,
+    "scenario": "free_fire_suspicious_market",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_612878",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "rate kim cương ml hôm nay bao nhiêu, có shop nào uy tín không",
+    "label": 1,
+    "scenario": "mlbb_suspicious_market",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_241117",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tool hack account minecraft 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "minecraft_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_622551",
+      "conversation_turns": 2,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "event tặng robux free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "roblox_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_458010",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "cảnh báo: đừng đưa otp hoặc pass khi mua bán acc game",
+    "label": 0,
+    "scenario": "mlbb_safe_normal",
+    "severity": "low",
+    "age_group": "14-17",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_337728",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 minecoin, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "minecraft_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_154274",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "review skin mới trong brawl stars, nhìn đẹp thật",
+    "label": 0,
+    "scenario": "brawl_stars_safe_normal",
+    "severity": "low",
+    "age_group": "14-17",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_983151",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "rate acc ff hôm nay bao nhiêu, có shop nào uy tín không",
+    "label": 1,
+    "scenario": "free_fire_suspicious_market",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_763601",
+      "conversation_turns": 1,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "bán fifa mobile giá rẻ, chỉ giao dịch chuyển khoản",
+    "label": 1,
+    "scenario": "fc_mobile_suspicious_market",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_740416",
+      "conversation_turns": 1,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "mình vừa leo rank xong, ai chơi lien quan cùng không",
+    "label": 0,
+    "scenario": "lien_quan_safe_normal",
+    "severity": "low",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_489747",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "shop rbx rate siêu rẻ, nạp trước 50k nhận ngay full skin trong 5 phút",
+    "label": 1,
+    "scenario": "roblox_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_562709",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "tool hack royale pass 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "pubg_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_460444",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "tool hack skin lq 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "lien_quan_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_375357",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "shop mobile legends rate siêu rẻ, nạp trước 99k nhận ngay acc vip trong 5 phút",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_848724",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "event tặng gem free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "brawl_stars_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_184928",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "shop mlbb rate siêu rẻ, nạp trước 99k nhận ngay acc vip trong 5 phút",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_175921",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "bán acc fc giá rẻ, chỉ giao dịch chuyển khoản",
+    "label": 1,
+    "scenario": "fc_mobile_suspicious_market",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_613018",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 uc, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "pubg_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_758747",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "admin game hỗ trợ nạp minecraft, chuyển khoản trước rồi mình gửi code sau",
+    "label": 1,
+    "scenario": "minecraft_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_176583",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "ai có tips chơi minecraft hiệu quả không",
+    "label": 0,
+    "scenario": "minecraft_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_813642",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 acc pubg, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "pubg_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_872142",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "tool hack rbx 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "roblox_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_532258",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "tool hack fortnite 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "fortnite_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_187139",
+      "conversation_turns": 1,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "ai có tips chơi limited hiệu quả không",
+    "label": 0,
+    "scenario": "roblox_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_232213",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "bán fifa mobile giá rẻ, chỉ giao dịch chuyển khoản",
+    "label": 1,
+    "scenario": "fc_mobile_suspicious_market",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_230775",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "event tặng free fire free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "free_fire_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_136011",
+      "conversation_turns": 2,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 acc mlbb, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_768743",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "mua acc xịn giá tốt, cọc trước 30% rồi giao pass",
+    "label": 1,
+    "scenario": "brawl_stars_suspicious_market",
+    "severity": "medium",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_433830",
+      "conversation_turns": 2,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 rbx, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "roblox_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_642284",
+      "conversation_turns": 2,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "tool hack gem 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "brawl_stars_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_142487",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "event tặng skin hiếm free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "fortnite_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_204635",
+      "conversation_turns": 1,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "event tặng elite pass free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "free_fire_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_506634",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "cảnh báo: đừng đưa otp hoặc pass khi mua bán acc game",
+    "label": 0,
+    "scenario": "pubg_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_302610",
+      "conversation_turns": 1,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "bán acc game rank cao full skin, có trung gian cá nhân",
+    "label": 1,
+    "scenario": "minecraft_suspicious_market",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_315545",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "mua acc xịn giá tốt, cọc trước 30% rồi giao pass",
+    "label": 1,
+    "scenario": "free_fire_suspicious_market",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_993311",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "event tặng acc pubg free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "pubg_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_965808",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "event tặng acc ff free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "free_fire_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_213524",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "shop kim cương ml rate siêu rẻ, nạp trước 50k nhận ngay full skin trong 5 phút",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_505854",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 free fire, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "free_fire_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_938894",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "ai có tips chơi quân huy hiệu quả không",
+    "label": 0,
+    "scenario": "lien_quan_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_796654",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 fifa mobile, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "fc_mobile_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_596287",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "event tặng realm free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "minecraft_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.97,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_948361",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "event tặng skin hiếm free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "fortnite_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_103984",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 acc brawl, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "brawl_stars_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_199496",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "admin game hỗ trợ nạp gem, chuyển khoản trước rồi mình gửi code sau",
+    "label": 1,
+    "scenario": "brawl_stars_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_423254",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "tool hack pubg 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "pubg_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.96,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_307985",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "shop liên quân rate siêu rẻ, nạp trước 199k nhận ngay full skin trong 5 phút",
+    "label": 1,
+    "scenario": "lien_quan_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_860127",
+      "conversation_turns": 3,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "shop minecoin rate siêu rẻ, nạp trước 20k nhận ngay full skin trong 5 phút",
+    "label": 1,
+    "scenario": "minecraft_scam_extension",
+    "severity": "high",
+    "age_group": "8-10",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_180598",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "chỉ hôm nay x2 uc, gửi otp để kích hoạt ưu đãi",
+    "label": 1,
+    "scenario": "pubg_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": true
+    },
+    "metadata": {
+      "synthetic_id": "gameext_147786",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "bán kim cương ml giá rẻ, chỉ giao dịch chuyển khoản",
+    "label": 1,
+    "scenario": "mlbb_suspicious_market",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_677549",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "rate robux hôm nay bao nhiêu, có shop nào uy tín không",
+    "label": 1,
+    "scenario": "roblox_suspicious_market",
+    "severity": "medium",
+    "age_group": "11-13",
+    "realism_score": 0.91,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_867324",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "tool hack mobile legends 2026, tải apk mod không ban acc",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.95,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_253119",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "mình vừa leo rank xong, ai chơi lien quan cùng không",
+    "label": 0,
+    "scenario": "lien_quan_safe_normal",
+    "severity": "low",
+    "age_group": "14-17",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_769343",
+      "conversation_turns": 1,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "rate robux card hôm nay bao nhiêu, có shop nào uy tín không",
+    "label": 1,
+    "scenario": "roblox_suspicious_market",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.94,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_201584",
+      "conversation_turns": 1,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "mua acc xịn giá tốt, cọc trước 30% rồi giao pass",
+    "label": 1,
+    "scenario": "pubg_suspicious_market",
+    "severity": "medium",
+    "age_group": "8-10",
+    "realism_score": 0.92,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_966428",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "event tặng limited free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "roblox_scam_extension",
+    "severity": "high",
+    "age_group": "14-17",
+    "realism_score": 0.93,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_757541",
+      "conversation_turns": 2,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "mình vừa leo rank xong, ai chơi mlbb cùng không",
+    "label": 0,
+    "scenario": "mlbb_safe_normal",
+    "severity": "low",
+    "age_group": "14-17",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_329267",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "review skin mới trong fortnite, nhìn đẹp thật",
+    "label": 0,
+    "scenario": "fortnite_safe_normal",
+    "severity": "low",
+    "age_group": "11-13",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_485750",
+      "conversation_turns": 2,
+      "language_variant": "teencode_heavy"
+    }
+  },
+  {
+    "text": "mình vừa leo rank xong, ai chơi minecraft cùng không",
+    "label": 0,
+    "scenario": "minecraft_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.88,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_258070",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "mình vừa leo rank xong, ai chơi pubg cùng không",
+    "label": 0,
+    "scenario": "pubg_safe_normal",
+    "severity": "low",
+    "age_group": "14-17",
+    "realism_score": 0.89,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_980990",
+      "conversation_turns": 1,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "ai có tips chơi kim cương hiệu quả không",
+    "label": 0,
+    "scenario": "free_fire_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_697814",
+      "conversation_turns": 2,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "event tặng acc mlbb free, nhập user + pass để verify nhận quà",
+    "label": 1,
+    "scenario": "mlbb_scam_extension",
+    "severity": "high",
+    "age_group": "11-13",
+    "realism_score": 0.9,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_166200",
+      "conversation_turns": 3,
+      "language_variant": "mixed_vn_en"
+    }
+  },
+  {
+    "text": "cảnh báo: đừng đưa otp hoặc pass khi mua bán acc game",
+    "label": 0,
+    "scenario": "fortnite_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.87,
+    "risk_indicators": {
+      "asks_for_credentials": true,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_290050",
+      "conversation_turns": 2,
+      "language_variant": "formal_vn"
+    }
+  },
+  {
+    "text": "ai có tips chơi skin brawl hiệu quả không",
+    "label": 0,
+    "scenario": "brawl_stars_safe_normal",
+    "severity": "low",
+    "age_group": "8-10",
+    "realism_score": 0.86,
+    "risk_indicators": {
+      "asks_for_credentials": false,
+      "includes_fake_link": false,
+      "creates_urgency": false
+    },
+    "metadata": {
+      "synthetic_id": "gameext_833032",
+      "conversation_turns": 3,
+      "language_variant": "formal_vn"
+    }
+  }
+]

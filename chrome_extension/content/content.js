@@ -464,25 +464,23 @@
       return handleTikTokVideoCheck(postEl, btn, container);
     }
 
-    // Facebook/YouTube text analysis
+    // Facebook/YouTube text/image analysis
     const text = extractPostText(postEl);
     const url = extractPostUrl(postEl);
+    const media = await extractMediaUrls(postEl);
 
-    if (text.length < MIN_TEXT_LENGTH) {
+    if (text.length < MIN_TEXT_LENGTH && media.images.length === 0) {
       showResult(container, { error: 'Nội dung quá ngắn để phân tích' });
       return;
     }
 
     // P2-B: skip trivially clean short text
     const preCheck = quickScamScore(text);
-    if (preCheck.skip) {
+    if (preCheck.skip && media.images.length === 0) {
       showResult(container, { label: 'SAFE', prediction: 'SAFE', confidence: 0.95,
         analysis_details: { nlp_flags: [], intent_label: '' } });
       return;
     }
-
-    // P2-A: collect images from the post for richer analysis
-    const media = extractMediaUrls(postEl);
 
     // Show scanning state
     btn.disabled = true;
@@ -1111,16 +1109,33 @@
   }
 
   // Extract images and videos from a post
-  function extractMediaUrls(postEl) {
+  async function imageElementToDataUrl(img) {
+    if (!img || !img.complete || !img.naturalWidth || !img.naturalHeight) return null;
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      return canvas.toDataURL('image/jpeg', 0.88);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function extractMediaUrls(postEl) {
     const images = [];
     const videos = [];
-    const collectImage = (img) => {
+    const collectImage = async (img) => {
       const src = img.src;
       if (!src || src.startsWith('data:')) return;
       // Filter out tiny icons (avatars are OK, emojis aren't)
       const rect = img.getBoundingClientRect();
       if (rect.width >= 50 && rect.height >= 50) {
-        images.push(src);
+        const dataUrl = (src.startsWith('blob:') || src.includes('fbcdn') || src.includes('tiktokcdn'))
+          ? await imageElementToDataUrl(img)
+          : null;
+        images.push(dataUrl || src);
       }
     };
     const collectVideo = (video) => {
@@ -1129,8 +1144,10 @@
       video.querySelectorAll('source').forEach(s => { if (s.src) videos.push(s.src); });
     };
 
-    if (postEl.matches?.('img')) collectImage(postEl);
-    postEl.querySelectorAll('img').forEach(collectImage);
+    if (postEl.matches?.('img')) await collectImage(postEl);
+    for (const img of postEl.querySelectorAll('img')) {
+      await collectImage(img);
+    }
     if (postEl.matches?.('video')) collectVideo(postEl);
     postEl.querySelectorAll('video').forEach(collectVideo);
     return { images: [...new Set(images)].slice(0, 5), videos: [...new Set(videos)].slice(0, 3) };
@@ -1166,9 +1183,13 @@
     // Limit text length
     if (text.length > 5000) text = text.substring(0, 5000);
 
-    const media = postEl ? extractMediaUrls(postEl) : { images: [], videos: [] };
+    const media = postEl ? await extractMediaUrls(postEl) : { images: [], videos: [] };
     if (context.srcUrl && /\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(context.srcUrl)) {
-      media.images.unshift(context.srcUrl);
+      let contextImage = null;
+      if (lastRightClickedEl && lastRightClickedEl.matches?.('img')) {
+        contextImage = await imageElementToDataUrl(lastRightClickedEl);
+      }
+      media.images.unshift(contextImage || context.srcUrl);
     }
     if (context.srcUrl && /\.(mp4|webm|mov|m3u8)(\?|#|$)/i.test(context.srcUrl)) {
       media.videos.unshift(context.srcUrl);

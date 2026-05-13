@@ -101,6 +101,20 @@ class PhoBERTScamTrainer:
             
             with open(val_path, 'r', encoding='utf-8') as f:
                 val_data = json.load(f)
+
+            # Optional extension sets for game-domain coverage (Roblox/LQ/PUBG/...)
+            ext_train_path = f"{self.config.data_dir}/phobert_train_game_extension.json"
+            ext_val_path = f"{self.config.data_dir}/phobert_val_game_extension.json"
+            if os.path.exists(ext_train_path):
+                with open(ext_train_path, "r", encoding="utf-8") as f:
+                    ext_train = json.load(f)
+                train_data.extend(ext_train)
+                logger.info(f"➕ Loaded extension train samples: {len(ext_train)}")
+            if os.path.exists(ext_val_path):
+                with open(ext_val_path, "r", encoding="utf-8") as f:
+                    ext_val = json.load(f)
+                val_data.extend(ext_val)
+                logger.info(f"➕ Loaded extension val samples: {len(ext_val)}")
             
             logger.info(f"✅ Loaded {len(train_data)} training samples")
             logger.info(f"✅ Loaded {len(val_data)} validation samples")
