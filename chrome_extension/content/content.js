@@ -187,18 +187,9 @@
   // ─── TikTok Video URL Extractor ───
   function extractTikTokVideoInfo(postEl) {
     // Get video URL from video element
-    let videoEl = postEl.querySelector('video[src*="tiktok"]')
+    const videoEl = postEl.querySelector('video[src*="tiktok"]')
       || postEl.querySelector('video[src*="tiktokcdn"]')
       || postEl.querySelector('video[src*="muscdn"]');
-
-    // FALLBACK: If post container search failed, search the WHOLE document.
-    // On TikTok fullscreen viewer, there is only ever ONE active video playing.
-    if (!videoEl) {
-        videoEl = document.querySelector('video[src*="tiktok"]')
-          || document.querySelector('video[src*="tiktokcdn"]')
-          || document.querySelector('video[src*="muscdn"]')
-          || document.querySelector('video');
-    }
 
     if (!videoEl || !videoEl.src) return null;
 
@@ -210,16 +201,8 @@
     const authorEl = postEl.querySelector('[data-e2e="browse-username"]')
       || postEl.querySelector('[class*="DivUsername"]');
 
-    let sourceUrl = videoEl.src;
-    
-    // CRITICAL FIX: Modern browsers prevent servers from downloading 'blob:...' local memory objects.
-    // Use canonical page URL if a direct server-side CDN link isn't readily exposed.
-    if (!sourceUrl || sourceUrl.startsWith('blob:')) {
-        sourceUrl = window.location.href;
-    }
-
     return {
-      video_url: sourceUrl,
+      video_url: videoEl.src,
       description: descEl?.textContent?.trim() || '',
       author: authorEl?.textContent?.trim() || '',
       page_url: window.location.href,
@@ -327,57 +310,9 @@
 
   // ─── UI: Inject Check Button ───
   function injectCheckButton(postEl) {
-    // COMPLETELY DISABLED as requested: No injected buttons allowed.
-    return;
-    
-    if (postEl.querySelector(`.${BTN_CLASS}`)) return;
-
-    // For TikTok: Check if this is the main video container
-    if (PLATFORM === 'tiktok') {
-      const mainContainer = findMainVideoContainer(postEl);
-      const targetContainer = mainContainer || postEl;
-      
-      // Get unique video ID
-      const videoId = getVideoId(targetContainer);
-      
-      // Check if we already processed this video
-      if (window.vifakeProcessedVideos && window.vifakeProcessedVideos.has(videoId)) {
-        console.log('[ViFake] Video already processed:', videoId);
-        return;
-      }
-      
-      // Check if main container already has button
-      if (targetContainer.querySelector(`.${BTN_CLASS}`)) {
-        console.log('[ViFake] Container already has button');
-        return;
-      }
-      
-      // Mark this video as processed
-      if (!window.vifakeProcessedVideos) {
-        window.vifakeProcessedVideos = new Set();
-      }
-      window.vifakeProcessedVideos.add(videoId);
-      
-      console.log('[ViFake] Injecting button for TikTok video:', videoId);
-      injectButtonToElement(targetContainer);
-      return;
-    }
-
-    // For Facebook: always inject regardless of text length (image/reel posts have no text)
-    if (PLATFORM === 'facebook') {
-      console.log('[ViFake] FB: injecting button on feed post');
-      injectButtonToElement(postEl);
-      return;
-    }
-
-    // For YouTube/other: require minimum text
-    const text = extractPostText(postEl);
-    if (text.length < MIN_TEXT_LENGTH) {
-      console.log('[ViFake] Skipping post (text too short):', text.length, 'chars');
-      return;
-    }
-    console.log('[ViFake] Injecting button for post with', text.length, 'chars');
-    injectButtonToElement(postEl);
+    // Button injection disabled by request.
+    // Also clean up any previously injected button in this post node.
+    postEl.querySelectorAll('.vifake-container').forEach(el => el.remove());
   }
 
   function findMainVideoContainer(element) {
@@ -418,8 +353,8 @@
   }
 
   function injectButtonToElement(targetEl) {
-    // NOTE: do NOT set SCAN_ATTR here — only set it after successful injection
-    // so skeleton posts can be retried by the MutationObserver.
+    // Mark as scanned to prevent duplicates
+    targetEl.setAttribute(SCAN_ATTR, 'true');
 
     // Create button container
     const container = document.createElement('div');
@@ -447,61 +382,43 @@
     if (PLATFORM === 'facebook') {
       container.classList.add('vifake-container--header');
 
-      // ── Find the "..." more-options button (aria-label confirmed from live DOM) ──
-      const MORE_SELECTORS = [
-        '[aria-label="Hành động với bài viết này"][role="button"]',
-        '[aria-label="Tùy chọn khác"][role="button"]',
-        '[aria-label="Thêm"][role="button"]',
-        '[aria-label="More options"][role="button"]',
-        '[aria-label="More"][role="button"]',
-        '[aria-label*="Hành động"][role="button"]',
-        '[aria-label*="tùy chọn" i][role="button"]',
-        '[aria-label*="More options" i][role="button"]',
-        '[aria-label*="Actions for this post" i][role="button"]',
-        '[aria-haspopup="menu"][role="button"]:not([aria-label*="React" i]):not([aria-label*="Cảm xúc" i]):not([aria-label*="GIF" i]):not([aria-label*="Emoji" i]):not([aria-label*="Sticker" i]):not([aria-label*="Write" i]):not([aria-label*="Viết" i])',
-      ];
-      let moreBtn = null;
-      for (const sel of MORE_SELECTORS) {
-        try { moreBtn = targetEl.querySelector(sel); } catch(_) {}
-        if (moreBtn) break;
-      }
+      // Strategy 1: find the "..." more-options button and insert the badge before it
+      const moreBtn =
+        targetEl.querySelector('[aria-label*="More options" i]') ||
+        targetEl.querySelector('[aria-label*="Tùy chọn khác" i]') ||
+        targetEl.querySelector('[aria-label*="Thêm" i][role="button"]') ||
+        targetEl.querySelector('[aria-label*="options" i][role="button"]');
 
       if (moreBtn) {
-        // Walk up from moreBtn until we find a flex row wide enough to be the real header
-        let insertRef = moreBtn;
-        let flexParent = moreBtn.parentElement;
-        while (flexParent && flexParent !== targetEl) {
-          const st = window.getComputedStyle(flexParent);
-          const isFlex = st.display === 'flex' || st.display === 'inline-flex' || st.display === 'grid';
-          const w = flexParent.getBoundingClientRect().width;
-          if (isFlex && w > 300) break;
-          insertRef = flexParent;
-          flexParent = flexParent.parentElement;
-        }
-        const parent = (flexParent && flexParent !== targetEl) ? flexParent : moreBtn.parentElement;
-        const ref    = (flexParent && flexParent !== targetEl) ? insertRef  : moreBtn;
-        parent.insertBefore(container, ref);
-        targetEl.setAttribute(SCAN_ATTR, 'true');
-        console.log('[ViFake] FB: injected via moreBtn');
+        const headerRow = moreBtn.parentElement;
+        headerRow.insertBefore(container, moreBtn);
         return;
       }
 
-      // ── No "..." button found — decide whether to retry or give up ──
-      // If the post has any real content (author link, text), it is a COMMENT or
-      // an unsupported post type — mark it so we stop retrying.
-      // If it has NO content at all, it is a skeleton — leave unmarked so the
-      // MutationObserver retries once Facebook finishes rendering.
-      const hasContent = targetEl.querySelector(
-        'a[role="link"], [dir="auto"], h2, h3, h4, [data-ad-preview]'
-      );
-      if (hasContent) {
-        // Loaded but no "..." button → comment or unsupported layout → don't inject
-        targetEl.setAttribute(SCAN_ATTR, 'true');
-        console.log('[ViFake] FB: loaded article with no moreBtn — skipping (comment?)');
-      } else {
-        console.log('[ViFake] FB: skeleton post, will retry');
+      // Strategy 2: find the header row via the author link (timestamp <a> or author <a>)
+      const authorLink =
+        targetEl.querySelector('a[href*="/groups/"] strong, a[role="link"] strong, h4 a, h3 a') ||
+        targetEl.querySelector('a[role="link"][tabindex="0"]');
+      if (authorLink) {
+        // Walk up until we find a row-like div that also contains an action button or the "..." button
+        let row = authorLink.parentElement;
+        for (let i = 0; i < 5 && row && row !== targetEl; i++) {
+          const style = window.getComputedStyle(row);
+          if (style.display === 'flex' || style.display === 'inline-flex') {
+            row.appendChild(container);
+            return;
+          }
+          row = row.parentElement;
+        }
       }
-      return;
+
+      // Fallback: insert before the action bar (like/comment/share)
+      const actionBar = targetEl.querySelector('[role="toolbar"]');
+      if (actionBar?.parentElement) {
+        actionBar.parentElement.insertBefore(container, actionBar);
+      } else {
+        targetEl.appendChild(container);
+      }
     } else if (PLATFORM === 'tiktok') {
       // For TikTok, try to insert near video controls or description
       const descContainer = targetEl.querySelector('[data-e2e="browse-video-desc"]')
@@ -514,10 +431,8 @@
         // Fallback: append to target element
         targetEl.appendChild(container);
       }
-      targetEl.setAttribute(SCAN_ATTR, 'true');
     } else {
       targetEl.appendChild(container);
-      targetEl.setAttribute(SCAN_ATTR, 'true');
     }
     
     // Debug: log where button was injected
@@ -1004,24 +919,29 @@
   function isLikelyFeedPost(post) {
     if (PLATFORM !== 'facebook') return true;
 
-    // Reject Messenger / chat contexts (URL or DOM label based)
+    // Reject if inside Messenger chat (chat overlay, messenger panel)
     const chatLabels = [
       '[aria-label*="chat" i]',
       '[aria-label*="Messenger" i]',
-      '[aria-label*="tin nh\u1eafn" i]',
+      '[aria-label*="tin nh\u1eafn" i]',   // Vietnamese: "tin nhắn"
     ].join(',');
     if (post.closest(chatLabels)) return false;
 
-    // Only apply size filter when the element has actually been laid out
-    // (off-screen / skeleton posts have rect 0×0 — we retry those later)
+    // Size filter: chat messages are small (typically <120px).
+    // Real feed posts are taller. Using 200 to be safe for posts with multiple lines.
     const rect = post.getBoundingClientRect();
-    if (rect.height > 0 && rect.height < 150) return false;
-    if (rect.width  > 0 && rect.width  < 300) return false;
+    if (rect.height < 200) return false;
+
+    // Width filter: feed posts span a reasonable width. Chat messages are narrow.
+    if (rect.width < 300) return false;
 
     return true;
   }
 
   function scanForPosts() {
+    // Global cleanup in case older injected buttons still exist on page
+    document.querySelectorAll('.vifake-container').forEach(el => el.remove());
+
     // Skip chat/messenger contexts entirely (URL-based)
     if (PLATFORM === 'facebook' && isMessengerContext()) return;
 
@@ -1079,7 +999,6 @@
     debounceTimer = setTimeout(scanForPosts, DEBOUNCE_MS);
   });
 
-  /*
   // Start observing
   observer.observe(document.body, {
     childList: true,
@@ -1088,7 +1007,6 @@
 
   // Initial scan
   scanForPosts();
-  */
   
   // Clear processed videos when page changes significantly
   if (PLATFORM === 'tiktok') {
@@ -1119,9 +1037,7 @@
       }
     }
     
-    /*
     setInterval(debouncedScan, SCAN_INTERVAL);
-    */
     
     // Debug: Add command to clear all scan markers
     console.log('[ViFake] TikTok mode enabled. Run this in console to reset all buttons:');
@@ -1180,74 +1096,22 @@
 
   // Extract images and videos from a post
   function extractMediaUrls(postEl) {
-    const scoredImages = []; // Array of {url, area}
+    const images = [];
     const videos = [];
-    
-    // On TikTok, look global to guarantee view, but score by SIZE to grab main content
-    const searchRoot = PLATFORM === 'tiktok' ? document : (postEl || document);
-
-    // 1. Standard Images
-    searchRoot.querySelectorAll('img').forEach(img => {
+    postEl.querySelectorAll('img').forEach(img => {
       const src = img.src;
       if (!src || src.startsWith('data:')) return;
+      // Filter out tiny icons (avatars are OK, emojis aren't)
       const rect = img.getBoundingClientRect();
-      const area = rect.width * rect.height;
-      // avatars are usually 40x40 (1600), content is massive (e.g. 500x500 = 250000)
-      if (area > 500) {
-          scoredImages.push({ url: src, area: area });
+      if (rect.width >= 50 && rect.height >= 50) {
+        images.push(src);
       }
     });
-
-    // 2. Hidden CSS Backgrounds (TikTok Slideshows)
-    searchRoot.querySelectorAll('div').forEach(div => {
-        // Performance optimization: Only check medium-to-large containers
-        const rect = div.getBoundingClientRect();
-        const area = rect.width * rect.height;
-        if (area < 10000) return; // Skip tiny wrappers
-        
-        let bgUrl = null;
-        // Try quick attribute match first
-        const styleAttr = div.getAttribute('style') || '';
-        if (styleAttr.includes('background-image') && styleAttr.includes('url')) {
-             const match = styleAttr.match(/url\((["']?)(https?:\/\/[^"'\)]+)\1\)/);
-             if (match && match[2]) bgUrl = match[2].replace(/&amp;/g, '&');
-        }
-        
-        // Fallback to computed style if absolutely needed for large central viewport item
-        if (!bgUrl && area > 100000) {
-             const comp = window.getComputedStyle(div).backgroundImage;
-             if (comp && comp.includes('url')) {
-                 const match = comp.match(/url\((["']?)(https?:\/\/[^"'\)]+)\1\)/);
-                 if (match && match[2]) bgUrl = match[2];
-             }
-        }
-
-        if (bgUrl && (bgUrl.includes('http'))) {
-            scoredImages.push({ url: bgUrl, area: area });
-        }
-    });
-    
-    // Sort by geometric AREA descending (Largest image on screen first)
-    scoredImages.sort((a, b) => b.area - a.area);
-    
-    // Take the unique set of the LARGEST images
-    const finalImages = [];
-    const seen = new Set();
-    for (const item of scoredImages) {
-        if (!seen.has(item.url)) {
-            seen.add(item.url);
-            finalImages.push(item.url);
-        }
-        if (finalImages.length >= 3) break; // Top 3 largest images max
-    }
-
-    // Videos
-    searchRoot.querySelectorAll('video').forEach(video => {
+    postEl.querySelectorAll('video').forEach(video => {
       if (video.src) videos.push(video.src);
       video.querySelectorAll('source').forEach(s => { if (s.src) videos.push(s.src); });
     });
-    
-    return { images: finalImages, videos: [...new Set(videos)].slice(0, 3) };
+    return { images: [...new Set(images)].slice(0, 5), videos: [...new Set(videos)].slice(0, 3) };
   }
 
   // Listen for context-menu scan request from background
@@ -1274,25 +1138,7 @@
         showFloatingNotice('error', 'Không tìm thấy bài viết. Hãy bôi đen text hoặc click chuột phải vào trong bài.');
         return;
       }
-      
-      // Smart Text Extraction: Clone and remove noise (comments, buttons)
-      const clone = postEl.cloneNode(true);
-      // Aggressively prune common comment and side navigation classes from clone
-      const noiseSelectors = [
-          '[data-e2e*="comment"]', '[class*="comment"]', '[class*="Comment"]', 
-          '[class*="Reply"]', 'button', 'nav', 'header', 'footer', '.vifake-ignore'
-      ];
-      noiseSelectors.forEach(sel => {
-          clone.querySelectorAll(sel).forEach(n => n.remove());
-      });
-      
-      // Also truncate extremely long post clones to focus on the TOP part (description)
-      text = (clone.innerText || '').trim();
-      
-      // If text IS STILL huge (>1500 chars), take the first 1000 chars which is where the desc is
-      if (text.length > 1500) {
-          text = text.substring(0, 1500);
-      }
+      text = (postEl.innerText || '').trim();
     }
 
     if (text.length < 10) {
@@ -1306,51 +1152,14 @@
     const media = postEl ? extractMediaUrls(postEl) : { images: [], videos: [] };
     const url = location.href;
 
-    // Priority: If on TikTok and we can extract a video URL, use the rich video pipeline!
-    let isVideoScan = false;
-    let videoInfo = null;
-    
-    if (PLATFORM === 'tiktok' && postEl) {
-       videoInfo = extractTikTokVideoInfo(postEl);
-       // ONLY route through video pipeline if it is a real dynamic video.
-       // TikTok 'photo' slideshows must go through standard analyzer to dispatch captured static images correctly!
-       if (videoInfo && videoInfo.video_url && !location.href.includes('/photo/')) {
-           isVideoScan = true;
-       }
-    }
-
     // Show scanning notice
-    const typeStr = isVideoScan ? "video & audio" : `bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''})`;
-    const noticeEl = showFloatingNotice('scanning', `Đang quét sâu ${typeStr}...`);
+    const noticeEl = showFloatingNotice('scanning', `Đang quét bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''})...`);
 
     try {
-      let result;
-      if (isVideoScan) {
-          // Route to rich video analysis pipeline
-          result = await chrome.runtime.sendMessage({
-            action: 'analyze_video',
-            payload: videoInfo,
-          });
-          // Map video results to standard structure for unified UI display
-          if (!result.error && result.verdict) {
-              result = {
-                  label: result.verdict,
-                  prediction: result.verdict,
-                  confidence: result.confidence,
-                  analysis_details: {
-                      intent_label: result.is_ai_generated ? "Phát hiện Giọng nói/Video AI" : "Phân tích Video",
-                      intent_explanation: result.explanation || `Bản dịch video: ${result.transcript || "N/A"}`,
-                      video_meta: { is_ai: result.is_ai_generated, ai_conf: result.ai_confidence }
-                  }
-              };
-          }
-      } else {
-          // Fallback to text + image analysis (e.g. slideshows or static posts)
-          result = await chrome.runtime.sendMessage({
-            action: 'analyze',
-            payload: { text, url, platform: PLATFORM, images: media.images, videos: media.videos },
-          });
-      }
+      const result = await chrome.runtime.sendMessage({
+        action: 'analyze',
+        payload: { text, url, platform: PLATFORM, images: media.images, videos: media.videos },
+      });
 
       noticeEl?.remove();
       showFloatingResult(result, postEl);
@@ -1434,8 +1243,7 @@
       </div>
       <div class="vifake-result-body">
         ${showIntent && details.intent_label ? `<p><strong>Ý định:</strong> ${escapeHtml(details.intent_label)}</p>` : ''}
-        ${details.video_meta ? `<p class="vifake-video-pill ${details.video_meta.is_ai ? 'vifake-pill-danger':'vifake-pill-safe'}">${details.video_meta.is_ai ? '🚨 Video/Giọng AI tạo' : '✅ Video Tự nhiên'}</p>` : ''}
-        ${showIntent && details.intent_explanation ? `<p class="vifake-exp-text">${escapeHtml(details.intent_explanation)}</p>` : ''}
+        ${showIntent && details.intent_explanation ? `<p>${escapeHtml(details.intent_explanation)}</p>` : ''}
         ${label === 'SAFE' ? `<p class="vifake-safe-msg">Không phát hiện dấu hiệu lừa đảo trong nội dung này.</p>` : ''}
         ${label !== 'SAFE' ? `
           <div class="vifake-action-hint">
@@ -1449,15 +1257,6 @@
     `;
     panel.querySelector('.vifake-notice-close').addEventListener('click', () => panel.remove());
     document.body.appendChild(panel);
-    
-    // AUTO-CLOSE after 8 seconds so user doesn't have to manually click "x"
-    setTimeout(() => {
-        if (panel && panel.parentElement) {
-            panel.style.opacity = '0';
-            panel.style.transition = 'opacity 0.5s ease';
-            setTimeout(() => panel.remove(), 500);
-        }
-    }, 8000);
   }
 
   // ─── Helpers ───
