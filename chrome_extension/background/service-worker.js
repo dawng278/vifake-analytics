@@ -38,15 +38,63 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId !== 'vifake-scan-post') return;
   if (!tab?.id) return;
-  // Send message to content script to scan from last right-clicked element
-  chrome.tabs.sendMessage(tab.id, {
+  sendContextMenuScan(tab, info).catch(err => {
+    console.error('[ViFake] Failed to send context menu message:', err);
+  });
+});
+
+function isSupportedScanUrl(url = '') {
+  const u = String(url).toLowerCase();
+  return (
+    u.startsWith('https://www.facebook.com/') ||
+    u.startsWith('https://facebook.com/') ||
+    u.startsWith('https://m.facebook.com/') ||
+    u.includes('youtube.com/') ||
+    u.includes('tiktok.com/') ||
+    u.startsWith('https://x.com/') ||
+    u.startsWith('https://twitter.com/')
+  );
+}
+
+async function sendContextMenuScan(tab, info) {
+  const payload = {
     action: 'scanFromContextMenu',
     selectionText: info.selectionText || '',
     srcUrl: info.srcUrl || '',
     linkUrl: info.linkUrl || '',
     pageUrl: info.pageUrl || tab.url || '',
-  }).catch(err => console.error('[ViFake] Failed to send context menu message:', err));
-});
+  };
+
+  try {
+    await chrome.tabs.sendMessage(tab.id, payload);
+    return;
+  } catch (err) {
+    const msg = String(err?.message || err || '');
+    const canInject = isSupportedScanUrl(tab.url || '');
+    if (msg.includes('Receiving end does not exist') && !canInject) {
+      console.warn('[ViFake] Context menu scan is only supported on Facebook/YouTube/TikTok/X pages.');
+      return;
+    }
+    if (!msg.includes('Receiving end does not exist') || !canInject) {
+      throw err;
+    }
+  }
+
+  // Fallback: content script may not be ready yet, inject and retry once.
+  try {
+    await chrome.scripting.insertCSS({
+      target: { tabId: tab.id },
+      files: ['content/content.css'],
+    });
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content/content.js'],
+    });
+    await chrome.tabs.sendMessage(tab.id, payload);
+  } catch (injectErr) {
+    console.warn('[ViFake] Failed to inject content script for context-menu scan:', injectErr);
+  }
+}
 
 // Load settings on startup
 chrome.storage.local.get(['apiUrl', 'authToken', 'recentScans'], (data) => {

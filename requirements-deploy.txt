@@ -44,5 +44,10 @@ easyocr>=1.7.1
 
 # === Torch CPU variant (Forces compact build, prevents massive CUDA download) ===
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.2.0+cpu
-torchvision==0.17.0+cpu
+torch==2.2.0+cpu; python_version < "3.13"
+torch==2.12.0+cpu; python_version >= "3.13"
+
+# === NLP/Vision model runtime ===
+transformers>=4.40.0
+accelerate>=0.27.0
+safetensors>=0.4.3

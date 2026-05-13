@@ -469,6 +469,10 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
                 "vision_safety": vision_result.get("safety_score", 0.5),
                 "ocr_risk": vision_result.get("ocr_risk", 0.0),
                 "ocr_text_excerpt": vision_result.get("ocr_text_excerpt", ""),
+                "clip_available": vision_result.get("clip_available", True),
+                "ocr_available": vision_result.get("ocr_available", True),
+                "vision_capability_limited": vision_result.get("vision_capability_limited", False),
+                "vision_note": vision_result.get("analysis_note", ""),
                 "fusion_method": fusion_result.get("fusion_method", "unknown"),
                 "calibration_applied": fusion_result.get("calibration_applied", False),
                 "confidence_raw": fusion_result.get("confidence_raw", fusion_result.get("confidence", 0.5)),
@@ -503,6 +507,21 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
                 _flags.append("LOW_TEXT_QUALITY_REVIEW")
             result["analysis_details"]["nlp_flags"] = _flags
             logger.warning("⚠️ Crawl-quality guardrail: weak Facebook extraction cannot be SAFE -> SUSPICIOUS")
+
+        # Image-only guardrail:
+        # If user provided explicit images but runtime vision capability is limited,
+        # never emit definitive SAFE.
+        image_only_mode = bool(has_explicit_images and not (content or "").strip())
+        if image_only_mode and result.get("label") == "SAFE" and bool(vision_result.get("vision_capability_limited", False)):
+            result["label"] = "SUSPICIOUS"
+            result["risk_level"] = "MEDIUM"
+            result["confidence"] = max(float(result.get("confidence", 0.0)), 0.56)
+            result["needs_review"] = True
+            _flags = result["analysis_details"].get("nlp_flags", []) or []
+            if "IMAGE_ONLY_CAPABILITY_LIMITED" not in _flags:
+                _flags.append("IMAGE_ONLY_CAPABILITY_LIMITED")
+            result["analysis_details"]["nlp_flags"] = _flags
+            logger.warning("⚠️ Image-only guardrail: CLIP/OCR unavailable -> SAFE disabled")
         
         # Safe content override: if NLP has NO scam flags and says SAFE, trust NLP over XGBoost
         # (XGBoost trained on synthetic scam data can bias toward FAKE_SCAM for neutral text)
@@ -1579,8 +1598,15 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
             import base64 as _b64
             from PIL import Image as PILImage
             import io, tempfile, os
-            from ai_engine.vision_worker.ocr_extractor import extract_text_from_image
-            worker = get_vision_worker()
+            from ai_engine.vision_worker.ocr_extractor import extract_text_from_image, _EASYOCR_AVAILABLE
+            try:
+                worker = get_vision_worker()
+                clip_available = worker is not None
+            except Exception as _clip_e:
+                worker = None
+                clip_available = False
+                logger.warning(f"⚠️ CLIP unavailable in current runtime: {_clip_e}")
+            ocr_available = bool(_EASYOCR_AVAILABLE)
             if thumb_url.startswith("data:image/"):
                 try:
                     _payload = thumb_url.split(",", 1)[1]
@@ -1602,7 +1628,7 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
                 }
 
                 # 2b. OCR text score from image itself (critical for image-only scans)
-                ocr_text = extract_text_from_image(tmp_path, conf_threshold=0.45, max_chars=1200)
+                ocr_text = extract_text_from_image(tmp_path, conf_threshold=0.45, max_chars=1200) if ocr_available else ""
                 ocr_text_l = (ocr_text or "").lower()
                 ocr_risk = 0.0
                 if ocr_text and len(ocr_text.strip()) >= 8:
@@ -1623,11 +1649,21 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
 
                 clip_risk = float(result.get("combined_risk_score", 0.2))
                 final_risk = max(clip_risk, ocr_risk)
+                capability_limited = (not clip_available) and (not ocr_available)
+                # Fail-closed for image-only scan when runtime lacks both CLIP + OCR.
+                # In this state, SAFE would be misleading because model cannot read image text.
+                if capability_limited and provided_images:
+                    final_risk = max(final_risk, 0.56)
+                    result["analysis_note"] = "IMAGE_ONLY_CAPABILITY_LIMITED"
                 result["combined_risk_score"] = round(final_risk, 3)
                 result["ocr_text_excerpt"] = (ocr_text[:220] if ocr_text else "")
                 result["ocr_risk"] = round(ocr_risk, 3)
+                result["clip_available"] = clip_available
+                result["ocr_available"] = ocr_available
+                result["vision_capability_limited"] = capability_limited
                 logger.info(
-                    f"🖼️ Vision fused: clip={clip_risk:.3f} ocr={ocr_risk:.3f} final={final_risk:.3f}"
+                    f"🖼️ Vision fused: clip={clip_risk:.3f} ocr={ocr_risk:.3f} final={final_risk:.3f} "
+                    f"(clip={clip_available}, ocr={ocr_available})"
                 )
                 return _normalize_vision_result(result)
             finally:
@@ -1684,14 +1720,24 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
     risk_score = round(risk_score, 3)
     logger.info(f"🖼️ Vision heuristic: risk={risk_score:.3f} (high={high_hits} med={med_hits} url={url_hits})")
 
-    return _normalize_vision_result({
+    fallback_result = {
         "combined_risk_score": risk_score,
         "safety_score": round(1.0 - risk_score, 3),
         "violent_risk": 0.1,
         "scam_risk": risk_score,
         "sexual_risk": 0.05,
         "inappropriate_risk": round(risk_score * 0.5, 3),
-    })
+        "clip_available": False,
+        "ocr_available": False,
+        "vision_capability_limited": bool(provided_images),
+    }
+    if provided_images:
+        # If user explicitly provided image but vision stack fell back to URL/text heuristic only,
+        # mark as uncertain and avoid overconfident SAFE.
+        fallback_result["combined_risk_score"] = max(float(fallback_result["combined_risk_score"]), 0.56)
+        fallback_result["scam_risk"] = fallback_result["combined_risk_score"]
+        fallback_result["analysis_note"] = "IMAGE_ONLY_HEURISTIC_FALLBACK"
+    return _normalize_vision_result(fallback_result)
 
 def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data: Dict = None) -> Dict:
     """Run XGBoost fusion with 29-feature vector or rule-based fallback"""
@@ -2124,6 +2170,37 @@ async def health_check():
         "version": "1.0.0",
         "active_jobs": len(active_jobs),
         "completed_jobs": len(job_results)
+    }
+
+@app.get("/api/v1/capabilities")
+async def runtime_capabilities():
+    """Runtime capability probe for UI diagnostics (no auth required)."""
+    clip_available = False
+    ocr_available = False
+    nlp_model_available = False
+    detail = {}
+
+    try:
+        import importlib.util as _ilu
+        clip_available = bool(_ilu.find_spec("torch")) and bool(_ilu.find_spec("transformers"))
+        ocr_available = bool(_ilu.find_spec("easyocr"))
+        nlp_model_available = bool(_ilu.find_spec("torch")) and bool(_ilu.find_spec("transformers"))
+    except Exception as e:
+        detail["import_probe_error"] = str(e)
+
+    return {
+        "status": "ok",
+        "clip_available": clip_available,
+        "ocr_available": ocr_available,
+        "nlp_model_available": nlp_model_available,
+        "vision_stack_ready": bool(clip_available and ocr_available),
+        "recommendation": (
+            "docker compose up --build -d"
+            if not (clip_available and ocr_available and nlp_model_available)
+            else "runtime_ready"
+        ),
+        "detail": detail,
+        "timestamp": datetime.now().isoformat(),
     }
 
 @app.post("/api/v1/analyze/video", response_model=VideoAnalyzeResponse)
