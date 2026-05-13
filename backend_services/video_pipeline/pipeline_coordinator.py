@@ -136,10 +136,10 @@ class VideoAnalysisPipeline:
         if not text or len(text.strip()) < 10:
             # Video không có lời hoặc transcription thất bại
             return {
-                "verdict": "SAFE",  # Default to safe for empty content
-                "confidence": 0.5,
+                "verdict": "SUSPICIOUS",  # Fail-closed: insufficient evidence should not be SAFE
+                "confidence": 0.55,
                 "intents": {},
-                "note": "Không transcribe được nội dung audio"
+                "note": "Không trích xuất được nội dung audio/text từ video"
             }
         
         try:
@@ -178,8 +178,8 @@ class VideoAnalysisPipeline:
         except Exception as e:
             logger.error(f"❌ Text analysis pipeline failed: {e}")
             return {
-                "verdict": "SAFE",
-                "confidence": 0.5,
+                "verdict": "SUSPICIOUS",
+                "confidence": 0.55,
                 "intents": {},
                 "error": str(e)
             }
@@ -192,11 +192,11 @@ class VideoAnalysisPipeline:
         text_verdict = text_result.get("verdict", "UNKNOWN")
         text_conf    = text_result.get("confidence", 0.0)
 
-        # UNKNOWN means extraction/analysis failed entirely → default SAFE (avoid false positive)
+        # UNKNOWN means extraction/analysis failed entirely → SUSPICIOUS (fail-closed)
         if text_verdict == "UNKNOWN":
-            logger.warning("⚠️ Text analysis returned UNKNOWN — defaulting to SAFE")
-            text_verdict = "SAFE"
-            text_conf    = 0.3
+            logger.warning("⚠️ Text analysis returned UNKNOWN — defaulting to SUSPICIOUS")
+            text_verdict = "SUSPICIOUS"
+            text_conf    = 0.55
 
         # ── AI generation scores ────────────────────────────────
         vision_ai_conf = vision_result.get("confidence", 0.0)
@@ -242,21 +242,39 @@ class VideoAnalysisPipeline:
         # Priority: text NLP verdict is always primary
         # AI detection only upgrades (never downgrades) if there is real evidence
         final_verdict = text_verdict
+        clip_analysis = vision_result.get("clip_analysis", {}) or {}
+        visual_scam_score = float(clip_analysis.get("ocr_risk_score", 0.0) or 0.0)
+        visual_keyword_hits = int(clip_analysis.get("ocr_keyword_hits", 0) or 0)
 
         if text_verdict == "FAKE_SCAM":
             final_verdict = "FAKE_SCAM"
         elif text_verdict == "SUSPICIOUS":
             final_verdict = "SUSPICIOUS"
         elif text_verdict == "SAFE":
+            if visual_scam_score >= 0.65 or visual_keyword_hits >= 5:
+                final_verdict = "FAKE_SCAM"
+            elif visual_scam_score >= 0.35 or visual_keyword_hits >= 3:
+                final_verdict = "SUSPICIOUS"
             # Only upgrade if AI confidence is genuinely high AND there is some
             # corroborating evidence (intent hits or audio anomaly)
-            has_supporting_evidence = (intent_count > 0) or (audio_ai_conf > 0.6)
-            if is_ai_generated and final_ai_score > 0.6 and has_supporting_evidence:
+            has_supporting_evidence = (intent_count > 0) or (audio_ai_conf > 0.6) or (visual_scam_score >= 0.35)
+            if final_verdict == "SAFE" and is_ai_generated and final_ai_score > 0.6 and has_supporting_evidence:
                 final_verdict = "SUSPICIOUS"
-            elif high_confidence_ai and final_ai_score > 0.7:
+            elif final_verdict == "SAFE" and high_confidence_ai and final_ai_score > 0.7:
                 final_verdict = "SUSPICIOUS"
-            else:
-                final_verdict = "SAFE"  # No evidence → stay SAFE
+            elif final_verdict == "SAFE":
+                final_verdict = "SAFE"  # Explicitly safe only when extraction quality is good
+
+        # Fail-closed guardrail:
+        # If transcript is empty and no frames/faces were analyzed, cannot assert SAFE.
+        _transcript = (text_result.get("transcript") or "").strip()
+        _frames_analyzed = int(vision_result.get("frames_analyzed", 0) or 0)
+        _faces_detected = int(vision_result.get("faces_detected", 0) or 0)
+        _no_media_evidence = (len(_transcript) < 5) and (_frames_analyzed == 0) and (_faces_detected == 0)
+        if _no_media_evidence and final_verdict == "SAFE":
+            final_verdict = "SUSPICIOUS"
+            text_conf = max(text_conf, 0.55)
+            logger.warning("⚠️ No transcript + no analyzed frames → forcing SUSPICIOUS (fail-closed)")
 
         # ── Build rich explanation ──────────────────────────────
         reasons = []
@@ -298,6 +316,10 @@ class VideoAnalysisPipeline:
             else:
                 reasons.append(f"🖼 Hình ảnh có dấu hiệu AI-generated ({pct}%)")
 
+        if visual_scam_score >= 0.35 or visual_keyword_hits >= 3:
+            pct = round(max(visual_scam_score, min(visual_keyword_hits / 8, 1.0)) * 100)
+            reasons.append(f"🖼 Văn bản trong video có dấu hiệu scam/game-payment ({pct}%)")
+
         # 4. Positive signals when verdict is SAFE
         if final_verdict == "SAFE":
             if not active_intents and audio_ai_conf < 0.4 and vision_ai_conf < 0.4:
@@ -315,11 +337,12 @@ class VideoAnalysisPipeline:
             danger_evidence = max(
                 (text_conf if text_verdict != "SAFE" else 0.0),
                 final_ai_score,
+                visual_scam_score,
                 max_intent * 0.5,
             )
             final_conf = max(0.5, 1.0 - danger_evidence)
         else:
-            final_conf = max(text_conf, final_ai_score, max_intent)
+            final_conf = max(text_conf, final_ai_score, visual_scam_score, max_intent)
 
         # Risk level
         if final_verdict == "FAKE_SCAM":
@@ -347,5 +370,6 @@ class VideoAnalysisPipeline:
             "vision_frames_analyzed":   vision_result.get("frames_analyzed", 0),
             "vision_faces_detected":    vision_result.get("faces_detected", 0),
             "audio_ai_detected":        text_result.get("audio_ai", {}).get("is_ai_voice", False),
+            "visual_scam_score":        round(visual_scam_score, 3),
+            "visual_scam_keyword_hits": visual_keyword_hits,
         }
-

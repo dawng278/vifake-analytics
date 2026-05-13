@@ -2,9 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Minimal system deps — no ffmpeg (no audio pipeline on free tier)
+# System deps for video pipeline (yt-dlp + ffmpeg)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Lightweight requirements only — no torch / transformers / mediapipe / whisper / easyocr

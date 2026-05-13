@@ -42,6 +42,9 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   chrome.tabs.sendMessage(tab.id, {
     action: 'scanFromContextMenu',
     selectionText: info.selectionText || '',
+    srcUrl: info.srcUrl || '',
+    linkUrl: info.linkUrl || '',
+    pageUrl: info.pageUrl || tab.url || '',
   }).catch(err => console.error('[ViFake] Failed to send context menu message:', err));
 });
 
@@ -144,9 +147,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 // ─── Core: Analyze ───
 async function handleAnalyze(payload, tabId) {
   const { text, url, platform, images } = payload;  // P2-A: destructure images
+  const hasText = !!(text && text.trim().length >= 10);
+  const hasImages = Array.isArray(images) && images.length > 0;
 
-  if (!text || text.trim().length < 10) {
-    return { error: 'Nội dung quá ngắn để phân tích' };
+  if (!hasText && !hasImages) {
+    return { error: 'Cần văn bản hoặc ảnh để phân tích' };
   }
 
   // Update badge to scanning
@@ -172,7 +177,7 @@ async function handleAnalyze(payload, tabId) {
         url: url || 'https://facebook.com/unknown',
         platform: platform || 'facebook',
         priority: 'high',
-        content: text,
+        ...(hasText ? { content: text } : {}),
         ...(images && images.length > 0 ? { images } : {}),  // P2-A: include images when present
       }),
     });
@@ -191,7 +196,7 @@ async function handleAnalyze(payload, tabId) {
     // Step 3: Store result
     const scanRecord = {
       id: jobId,
-      text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+      text: hasText ? text.substring(0, 100) + (text.length > 100 ? '...' : '') : '[image-only scan]',
       result: result,
       timestamp: Date.now(),
       platform: platform || 'facebook',
@@ -300,12 +305,16 @@ async function handleAnalyzeVideo(payload, tabId) {
   }
 
   try {
+    const settings = await getStorage(['apiUrl', 'authToken']);
+    const currentApiUrl = settings.apiUrl || DEFAULT_API_URL;
+    const currentToken = settings.authToken || DEFAULT_AUTH_TOKEN;
+
     // Step 1: Start video analysis job
-    const response = await fetch(`${apiUrl}/api/v1/analyze/video`, {
+    const response = await fetch(`${currentApiUrl}/api/v1/analyze/video`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`,
+        'Authorization': `Bearer ${currentToken}`,
       },
       body: JSON.stringify({
         video_url,
@@ -337,7 +346,7 @@ async function handleAnalyzeVideo(payload, tabId) {
     // Step 2: Record scan
     const scanRecord = {
       url: page_url,
-      platform: 'tiktok',
+      platform: inferPlatformFromUrl(page_url || video_url),
       result: {
         label: result.verdict,
         prediction: result.verdict,
@@ -352,7 +361,6 @@ async function handleAnalyzeVideo(payload, tabId) {
         }
       },
       timestamp: Date.now(),
-      platform: 'tiktok',
     };
 
     await addRecentScan(scanRecord);
@@ -393,4 +401,13 @@ function updateVideoBadge(tabId, result) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function inferPlatformFromUrl(url = '') {
+  const u = String(url).toLowerCase();
+  if (u.includes('tiktok.com')) return 'tiktok';
+  if (u.includes('youtube.com') || u.includes('youtu.be')) return 'youtube';
+  if (u.includes('x.com') || u.includes('twitter.com')) return 'twitter';
+  if (u.includes('facebook.com') || u.includes('fb.watch')) return 'facebook';
+  return 'unknown';
 }

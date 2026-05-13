@@ -173,7 +173,7 @@ def get_fusion_model():
 class AnalyzeRequest(BaseModel):
     """Request model for content analysis"""
     url: str = Field(..., description="URL to analyze")
-    platform: str = Field(..., description="Platform: youtube | facebook | tiktok")
+    platform: str = Field(..., description="Platform: youtube | facebook | tiktok | twitter")
     priority: str = Field(default="normal", description="Priority: low | normal | high")
     content: Optional[str] = Field(default=None, description="Optional text content for direct analysis")
     images: Optional[List[str]] = Field(default=None, description="Optional list of explicit image URLs provided by client")
@@ -181,10 +181,13 @@ class AnalyzeRequest(BaseModel):
     @field_validator('platform')
     @classmethod
     def validate_platform(cls, v):
-        allowed = ['youtube', 'facebook', 'tiktok']
-        if v not in allowed:
+        normalized = (v or "").lower().strip()
+        if normalized == "x":
+            normalized = "twitter"
+        allowed = ['youtube', 'facebook', 'tiktok', 'twitter']
+        if normalized not in allowed:
             raise ValueError(f"Platform must be one of: {allowed}")
-        return v
+        return normalized
     
     @field_validator('priority')
     @classmethod
@@ -358,9 +361,10 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
     """Run complete analysis pipeline with real AI models"""
     try:
         start_time = datetime.now()
+        has_explicit_images = bool(images)
 
         # Cache hit: skip re-analysis for recently seen URLs (TTL 300s)
-        if not content and url_cache is not None:
+        if not content and not has_explicit_images and url_cache is not None:
             cached = url_cache.get(url)
             if cached is not None:
                 logger.info(f"📦 Cache hit for {url[:60]} — returning cached result")
@@ -379,7 +383,7 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
                 import requests as _preq
                 _r = _preq.get(url, headers=_CRAWL_HEADERS, timeout=10, allow_redirects=True)
                 if _r.ok:
-                    _page_html = _r.text
+                    _page_html = _decode_html_response(_r)
                     logger.info(f"🌐 Pre-crawled {len(_page_html)} bytes from {url[:60]}")
             except Exception as _pce:
                 logger.warning(f"⚠️ Pre-crawl failed: {_pce}")
@@ -388,8 +392,8 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
 
             # yt-dlp fallback: if crawled text is too short (<80 chars) for video platforms,
             # try yt-dlp to get title + description + tags from TikTok/YouTube/Facebook
-            _is_video_platform = platform in ("tiktok", "youtube", "facebook") or any(
-                d in url for d in ("tiktok.com", "youtube.com", "youtu.be", "fb.com", "facebook.com")
+            _is_video_platform = platform in ("tiktok", "youtube", "facebook", "twitter") or any(
+                d in url for d in ("tiktok.com", "youtube.com", "youtu.be", "fb.com", "facebook.com", "x.com", "twitter.com")
             )
             if _is_video_platform and len(extracted_text) < 80:
                 try:
@@ -463,6 +467,8 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
                 "intent_label": nlp_result.get("intent_label", ""),
                 "intent_explanation": nlp_result.get("intent_explanation", ""),
                 "vision_safety": vision_result.get("safety_score", 0.5),
+                "ocr_risk": vision_result.get("ocr_risk", 0.0),
+                "ocr_text_excerpt": vision_result.get("ocr_text_excerpt", ""),
                 "fusion_method": fusion_result.get("fusion_method", "unknown"),
                 "calibration_applied": fusion_result.get("calibration_applied", False),
                 "confidence_raw": fusion_result.get("confidence_raw", fusion_result.get("confidence", 0.5)),
@@ -475,6 +481,28 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             "processing_time": processing_time,
             "created_at": datetime.now().isoformat()
         }
+
+        # Crawl-quality guardrail (especially Facebook share/login-wall URLs):
+        # If extracted text is weak/empty/URL-like, never return definitive SAFE.
+        low_text_quality = (
+            (not content)
+            and platform == "facebook"
+            and (
+                len((extracted_text or "").strip()) < 80
+                or (extracted_text or "").strip().lower() == (url or "").strip().lower()
+                or _is_probably_garbled(extracted_text or "")
+            )
+        )
+        if low_text_quality and result.get("label") == "SAFE":
+            result["label"] = "SUSPICIOUS"
+            result["risk_level"] = "MEDIUM"
+            result["confidence"] = max(float(result.get("confidence", 0.0)), 0.45)
+            result["needs_review"] = True
+            _flags = result["analysis_details"].get("nlp_flags", []) or []
+            if "LOW_TEXT_QUALITY_REVIEW" not in _flags:
+                _flags.append("LOW_TEXT_QUALITY_REVIEW")
+            result["analysis_details"]["nlp_flags"] = _flags
+            logger.warning("⚠️ Crawl-quality guardrail: weak Facebook extraction cannot be SAFE -> SUSPICIOUS")
         
         # Safe content override: if NLP has NO scam flags and says SAFE, trust NLP over XGBoost
         # (XGBoost trained on synthetic scam data can bias toward FAKE_SCAM for neutral text)
@@ -500,8 +528,16 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         ]
         text_for_check = extracted_text.lower()
         has_gaming_context = any(kw in text_for_check for kw in GAMING_CONTEXT_KEYWORDS)
+        vision_risk = float(vision_result.get("combined_risk_score", 0.0) or 0.0)
+        ocr_risk = float(vision_result.get("ocr_risk", 0.0) or 0.0)
+        has_visual_scam_signal = vision_risk >= 0.50 or ocr_risk >= 0.45
+        if has_visual_scam_signal:
+            _flags = result["analysis_details"].get("nlp_flags", []) or []
+            if "VISION_OCR_RISK" not in _flags:
+                _flags.append("VISION_OCR_RISK")
+            result["analysis_details"]["nlp_flags"] = _flags
 
-        if not has_scam_flags and nlp_result.get("is_safe", False) and not has_gaming_context:
+        if not has_scam_flags and nlp_result.get("is_safe", False) and not has_gaming_context and not has_visual_scam_signal:
             result["label"] = "SAFE"
             result["risk_level"] = "LOW"
             result["confidence"] = round(min(result["confidence"], 0.25), 3)
@@ -514,6 +550,19 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             result["confidence"] = max(result["confidence"], 0.45)
             result["needs_review"] = True
             logger.info(f"⚠️ Gaming context override: gaming keywords found → SUSPICIOUS")
+
+        # Vision/OCR guardrail: image-only scams must not be downgraded to SAFE.
+        if has_visual_scam_signal and result.get("label") == "SAFE":
+            if vision_risk >= 0.75 or ocr_risk >= 0.65:
+                result["label"] = "FAKE_SCAM"
+                result["risk_level"] = "HIGH"
+                result["confidence"] = max(float(result.get("confidence", 0.0)), vision_risk, ocr_risk, 0.75)
+            else:
+                result["label"] = "SUSPICIOUS"
+                result["risk_level"] = "MEDIUM"
+                result["confidence"] = max(float(result.get("confidence", 0.0)), vision_risk, ocr_risk, 0.55)
+            result["needs_review"] = True
+            logger.warning(f"🖼️ Vision/OCR guardrail: risk={vision_risk:.2f}, ocr={ocr_risk:.2f} → {result['label']}")
 
         # Upgrade borderline FAKE_SCAM to SUSPICIOUS when confidence is in gray zone (0.40-0.69)
         label = result["label"]
@@ -535,7 +584,7 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
 
         complete_job(job_id, result)
         # Store in cache (URL-mode only; don't cache user-pasted content)
-        if not content and url_cache is not None:
+        if not content and not has_explicit_images and url_cache is not None:
             url_cache.set(url, result)
             logger.debug(f"📦 Cached result for {url[:60]}")
         
@@ -559,6 +608,43 @@ _CRAWL_HEADERS = {
     'Sec-Ch-UA-Mobile': '?0',
     'Sec-Ch-UA-Platform': '"Windows"',
 }
+
+def _decode_html_response(resp) -> str:
+    """Decode HTTP response bytes robustly to reduce mojibake."""
+    raw = getattr(resp, "content", b"") or b""
+    if not raw:
+        return getattr(resp, "text", "") or ""
+    for enc in ("utf-8", getattr(resp, "apparent_encoding", None), getattr(resp, "encoding", None), "latin-1"):
+        if not enc:
+            continue
+        try:
+            return raw.decode(enc, errors="replace")
+        except Exception:
+            continue
+    return raw.decode("utf-8", errors="replace")
+
+
+def _clean_extracted_text(text: str) -> str:
+    import html as _html
+    import re as _re
+    t = _html.unescape(text or "")
+    t = t.replace("\u00a0", " ").replace("\u200b", " ").replace("\ufeff", " ")
+    t = _re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def _is_probably_garbled(text: str) -> bool:
+    """Heuristic to drop crawl noise/minified-js/mojibake payloads."""
+    if not text:
+        return True
+    t = text.strip()
+    if len(t) < 20:
+        return False
+    bad_hits = sum(t.count(tok) for tok in ("\ufffd", "�", "Ã", "Â", "Ð", "Ñ"))
+    bad_ratio = bad_hits / max(len(t), 1)
+    symbol_like = sum(1 for c in t if (not c.isalnum()) and (c not in " .,;:!?()[]{}-_/\\@#%&*+=\"'`~|"))
+    symbol_ratio = symbol_like / max(len(t), 1)
+    return bad_ratio > 0.015 or symbol_ratio > 0.08
 
 def _extract_text_from_url(url: str, platform: str, page_html: str = "") -> str:
     """Crawl the real page and extract title, description, og:description, visible text.
@@ -601,7 +687,7 @@ def _extract_text_from_url(url: str, platform: str, page_html: str = "") -> str:
             import requests as _req
             resp = _req.get(url, headers=_CRAWL_HEADERS, timeout=8, allow_redirects=True)
             resp.raise_for_status()
-            page_html = resp.text
+            page_html = _decode_html_response(resp)
         soup = BeautifulSoup(page_html, "lxml")
 
         parts = []
@@ -618,12 +704,16 @@ def _extract_text_from_url(url: str, platform: str, page_html: str = "") -> str:
         for prop in ("og:title", "og:description", "twitter:title", "twitter:description"):
             tag = soup.find("meta", property=prop) or soup.find("meta", attrs={"name": prop})
             if tag and tag.get("content"):
-                parts.append(tag["content"].strip())
+                _v = _clean_extracted_text(tag["content"])
+                if _v and not _is_probably_garbled(_v):
+                    parts.append(_v)
 
         # 3. <meta name="description">
         desc = soup.find("meta", attrs={"name": "description"})
         if desc and desc.get("content"):
-            parts.append(desc["content"].strip())
+            _v = _clean_extracted_text(desc["content"])
+            if _v and not _is_probably_garbled(_v):
+                parts.append(_v)
 
         # 4. YouTube: oEmbed for title + ytInitialData JSON in page
         if platform == "youtube" and "youtube.com" in url:
@@ -726,15 +816,23 @@ def _extract_text_from_url(url: str, platform: str, page_html: str = "") -> str:
         if platform == "facebook":
             for div in soup.find_all("div", {"data-ad-preview": True}):
                 t = div.get_text(" ", strip=True)
-                if t:
+                t = _clean_extracted_text(t)
+                if t and not _is_probably_garbled(t):
                     parts.append(t)
 
         # 7. Fallback: main visible text (first 800 chars)
         if len(parts) < 2:
+            for _tag in soup(["script", "style", "noscript"]):
+                _tag.extract()
             body_text = soup.get_text(" ", strip=True)
-            parts.append(body_text[:800])
+            body_text = _clean_extracted_text(body_text[:1200])
+            if body_text and not _is_probably_garbled(body_text):
+                parts.append(body_text)
 
-        text = " ".join(dict.fromkeys(parts))  # deduplicate preserving order
+        text = _clean_extracted_text(" ".join(dict.fromkeys(parts)))  # deduplicate preserving order
+        if _is_probably_garbled(text):
+            logger.warning("⚠️ Crawled text appears garbled; using URL fallback instead")
+            text = ""
         logger.info(f"🌐 Crawled {len(text)} chars from {url[:60]}")
         return text if text.strip() else url
 
@@ -787,7 +885,7 @@ def _fetch_thumbnail_url(url: str, platform: str, page_html: str = "") -> Option
             import requests as _req
             _r = _req.get(url, headers=_CRAWL_HEADERS, timeout=8, allow_redirects=True)
             if _r.ok:
-                page_html = _r.text
+                page_html = _decode_html_response(_r)
                 logger.info(f"🌐 Fetched page HTML for thumbnail extraction ({len(page_html)} bytes)")
         except Exception as _e:
             logger.warning(f"⚠️ Thumbnail crawl failed: {_e}")
@@ -1069,19 +1167,33 @@ def _vietnamese_scam_detector(text: str) -> Dict:
 
     # === 0a5. Unrealistic number ratio detection ===
     # "đưa 1000 robux nhận 1000000 robux" → ratio 1000:1 = scam
-    # Exclude strings starting with '0' (phones) and cap at 7 digits to avoid Bank Acc/Phone collisions
-    numbers_in_text = [int(n) for n in re.findall(r'\b\d+\b', text) if 2 <= len(n) <= 7 and not n.startswith('0')]
-    if len(numbers_in_text) >= 2 and has_game:
-        numbers_in_text.sort()
-        ratio = numbers_in_text[-1] / max(numbers_in_text[0], 1)
-        if ratio >= 30:  # 30x or more + gaming context = very likely scam (fallback)
-            score += 0.40
-            flags.append(f'UNREALISTIC_RATIO:{numbers_in_text[0]}→{numbers_in_text[-1]} (x{ratio:.0f})')
-            details['unrealistic_ratio'] = ratio
-        elif ratio >= 15:  # 15x-30x + gaming = suspicious
-            score += 0.15
-            flags.append(f'SUSPICIOUS_RATIO:{numbers_in_text[0]}→{numbers_in_text[-1]} (x{ratio:.0f})')
-            details['suspicious_ratio'] = ratio
+    # IMPORTANT: only evaluate explicit exchange structures to avoid false hits from dates (15/4/2026).
+    if has_game:
+        exchange_pair_patterns = [
+            r'(\d{2,7})\s*(?:robux|rbx|kim\s*cương|kc|quân\s*huy|qh|uc|k|vnd|đ)?\s*(?:->|→|=>|to|đổi|x2|nhân\s*đôi|gấp)\s*(\d{2,7})',
+            r'(?:gửi|đưa|nạp|cho)\s*(\d{2,7})\s*(?:robux|rbx|kim\s*cương|kc|quân\s*huy|qh|uc|k|vnd|đ)?.{0,35}?(?:nhận|được|lấy)\s*(\d{2,7})',
+        ]
+        ratio_candidates = []
+        for _pat in exchange_pair_patterns:
+            for m in re.finditer(_pat, text_lower, re.IGNORECASE | re.DOTALL):
+                try:
+                    a = int(m.group(1))
+                    b = int(m.group(2))
+                    if a > 0 and b > 0:
+                        lo, hi = min(a, b), max(a, b)
+                        ratio_candidates.append((lo, hi, hi / lo))
+                except Exception:
+                    continue
+        if ratio_candidates:
+            lo, hi, ratio = max(ratio_candidates, key=lambda x: x[2])
+            if ratio >= 30:  # 30x or more + gaming context = very likely scam
+                score += 0.40
+                flags.append(f'UNREALISTIC_RATIO:{lo}→{hi} (x{ratio:.0f})')
+                details['unrealistic_ratio'] = ratio
+            elif ratio >= 15:  # 15x-30x + gaming = suspicious
+                score += 0.15
+                flags.append(f'SUSPICIOUS_RATIO:{lo}→{hi} (x{ratio:.0f})')
+                details['suspicious_ratio'] = ratio
 
     # === 0. Fast keyword pre-scan (catches cases where regex may miss) ===
     # Crypto / financial scam keywords (case-insensitive via text_lower)
@@ -1292,6 +1404,8 @@ def _vietnamese_scam_detector(text: str) -> Dict:
     suspicious_positive_patterns = [
         r'acc.*game.*giá.*rẻ', r'bán.*acc.*game', r'mua.*acc.*game',
         r'acc.*free.*fire', r'acc.*liên.*quân', r'acc.*roblox.*bán',
+        r'sự.*kiện.*nạp.*robux', r'nạp.*robux.*ưu.*đãi', r'bảng.*giá.*nạp.*robux',
+        r'nạp.*robux.*hè.*\d{4}', r'trang.*nạp.*robux',
         r'kiếm.*tiền.*online', r'làm.*thêm.*tại.*nhà', r'làm.*từ.*xa',
         r'thu.*nhập.*\d+.*triệu', r'thu.*nhập.*khủng',
         r'hoa.*hồng.*cao', r'commission.*cao', r'affiliate',
@@ -1446,26 +1560,78 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
         # Step 1 fallback: get thumbnail URL (from pre-crawled HTML or crawl independently)
         thumb_url = _fetch_thumbnail_url(url, platform, page_html)
 
+    def _normalize_vision_result(base: Dict) -> Dict:
+        """Ensure consistent keys for downstream fusion."""
+        risk = float(base.get("combined_risk_score", base.get("scam_risk", 0.2)))
+        risk = max(0.0, min(1.0, risk))
+        base["combined_risk_score"] = round(risk, 3)
+        base["safety_score"] = round(1.0 - risk, 3)
+        base["scam_risk"] = round(max(float(base.get("scam_risk", 0.0)), risk), 3)
+        base["is_safe"] = risk < 0.5
+        base["requires_review"] = risk >= 0.5
+        base["risk_level"] = "HIGH" if risk >= 0.7 else ("MEDIUM" if risk >= 0.4 else "LOW")
+        return base
+
     # Step 2: try real CLIP inference on downloaded image
     if thumb_url:
         try:
             import requests as _req
+            import base64 as _b64
             from PIL import Image as PILImage
             import io, tempfile, os
+            from ai_engine.vision_worker.ocr_extractor import extract_text_from_image
             worker = get_vision_worker()
-            if worker is not None:
+            if thumb_url.startswith("data:image/"):
+                try:
+                    _payload = thumb_url.split(",", 1)[1]
+                    _img_bytes = _b64.b64decode(_payload)
+                except Exception as _e:
+                    raise ValueError(f"Invalid data URL image: {_e}")
+                image = PILImage.open(io.BytesIO(_img_bytes)).convert("RGB")
+            else:
                 img_resp = _req.get(thumb_url, headers=_CRAWL_HEADERS, timeout=8)
                 img_resp.raise_for_status()
                 image = PILImage.open(io.BytesIO(img_resp.content)).convert("RGB")
-                with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-                    tmp_path = tmp.name
-                    image.save(tmp_path, "JPEG")
-                try:
-                    result = worker.analyze_image(tmp_path)
-                    logger.info(f"🖼️ CLIP real image analysis: risk={result.get('combined_risk_score', 0):.3f}")
-                    return result
-                finally:
-                    os.unlink(tmp_path)
+            with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
+                tmp_path = tmp.name
+                image.save(tmp_path, "JPEG")
+            try:
+                # 2a. CLIP score (if available)
+                result = worker.analyze_image(tmp_path) if worker is not None else {
+                    "combined_risk_score": 0.2, "scam_risk": 0.2
+                }
+
+                # 2b. OCR text score from image itself (critical for image-only scans)
+                ocr_text = extract_text_from_image(tmp_path, conf_threshold=0.45, max_chars=1200)
+                ocr_text_l = (ocr_text or "").lower()
+                ocr_risk = 0.0
+                if ocr_text and len(ocr_text.strip()) >= 8:
+                    try:
+                        ocr_nlp = _vietnamese_scam_detector(ocr_text)
+                        ocr_risk = float(ocr_nlp.get("risk_score", 0.0))
+                    except Exception:
+                        ocr_risk = 0.0
+
+                    # Extra hard-boost for known gaming scam lexicon on image text.
+                    img_high_kw = [
+                        "robux", "nạp robux", "bảng giá", "uy tín", "nạp thả ga",
+                        "free robux", "unlock robux", "nạp thẻ", "chuyển khoản trước",
+                    ]
+                    kw_hits = sum(1 for kw in img_high_kw if kw in ocr_text_l)
+                    if kw_hits >= 2:
+                        ocr_risk = max(ocr_risk, min(0.95, 0.55 + 0.1 * kw_hits))
+
+                clip_risk = float(result.get("combined_risk_score", 0.2))
+                final_risk = max(clip_risk, ocr_risk)
+                result["combined_risk_score"] = round(final_risk, 3)
+                result["ocr_text_excerpt"] = (ocr_text[:220] if ocr_text else "")
+                result["ocr_risk"] = round(ocr_risk, 3)
+                logger.info(
+                    f"🖼️ Vision fused: clip={clip_risk:.3f} ocr={ocr_risk:.3f} final={final_risk:.3f}"
+                )
+                return _normalize_vision_result(result)
+            finally:
+                os.unlink(tmp_path)
         except Exception as e:
             logger.warning(f"⚠️ CLIP image analysis failed ({e}), using heuristics")
 
@@ -1518,17 +1684,14 @@ def _run_vision_analysis(url: str, platform: str, page_html: str = "", text: str
     risk_score = round(risk_score, 3)
     logger.info(f"🖼️ Vision heuristic: risk={risk_score:.3f} (high={high_hits} med={med_hits} url={url_hits})")
 
-    return {
+    return _normalize_vision_result({
         "combined_risk_score": risk_score,
         "safety_score": round(1.0 - risk_score, 3),
         "violent_risk": 0.1,
         "scam_risk": risk_score,
         "sexual_risk": 0.05,
         "inappropriate_risk": round(risk_score * 0.5, 3),
-        "is_safe": risk_score < 0.5,
-        "requires_review": risk_score >= 0.5,
-        "risk_level": "HIGH" if risk_score >= 0.7 else ("MEDIUM" if risk_score >= 0.4 else "LOW")
-    }
+    })
 
 def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data: Dict = None) -> Dict:
     """Run XGBoost fusion with 29-feature vector or rule-based fallback"""
@@ -1586,6 +1749,25 @@ def _run_fusion(vision_result: Dict, nlp_result: Dict, platform: str, post_data:
 
     # ── Vision → probability vector ─────────────────────────────────────────
     vision_risk = float(vision_result.get("combined_risk_score", 0.3))
+    if vision_risk >= 0.75:
+        logger.info(f"🖼️ Vision override: strong image risk → FAKE_SCAM ({vision_risk:.2f})")
+        return {
+            "prediction": "FAKE_SCAM",
+            "confidence": round(max(0.75, vision_risk), 3),
+            "risk_level": "HIGH",
+            "requires_review": True,
+            "fusion_method": "vision_ocr_override"
+        }
+    if vision_risk >= 0.55:
+        logger.info(f"🖼️ Vision override: image risk → SUSPICIOUS ({vision_risk:.2f})")
+        return {
+            "prediction": "SUSPICIOUS",
+            "confidence": round(max(0.55, vision_risk), 3),
+            "risk_level": "MEDIUM",
+            "requires_review": True,
+            "fusion_method": "vision_ocr_override"
+        }
+
     vis_p_scam  = vision_risk
     vis_p_susp  = min(0.4, vision_risk * 0.5)
     vis_p_safe  = max(0.0, 1.0 - vis_p_scam - vis_p_susp)

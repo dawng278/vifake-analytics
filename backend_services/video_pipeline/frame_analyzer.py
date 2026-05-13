@@ -136,6 +136,7 @@ class FrameAnalyzer:
         suspicious_qr_count = 0
         ocr_texts = []
         ocr_intent_hits = 0
+        ocr_keyword_hits = 0
 
         for i, frame_path in enumerate(frame_paths):
             try:
@@ -163,6 +164,7 @@ class FrameAnalyzer:
                         ocr_texts.append(text)
                         hits = self._count_intent_hits(text)
                         ocr_intent_hits += hits
+                        ocr_keyword_hits += self._count_scam_keywords(text)
 
             except Exception as e:
                 logger.warning(f"⚠️ Frame {i} analysis failed: {e}")
@@ -175,8 +177,9 @@ class FrameAnalyzer:
 
         # QR risk boost
         qr_risk_boost = min(suspicious_qr_count * 0.15, 0.4)
-        # OCR intent boost
-        ocr_risk_boost = min(ocr_intent_hits * 0.08, 0.3)
+        # OCR scam-text boost (Robux price boards, fake gifts, payment prompts)
+        ocr_risk_score = min(ocr_intent_hits * 0.12 + ocr_keyword_hits * 0.08, 0.75)
+        ocr_risk_boost = min(ocr_risk_score, 0.5)
 
         final_confidence = min(avg_confidence + qr_risk_boost + ocr_risk_boost, 1.0)
         if qr_risk_boost > 0 or ocr_risk_boost > 0.1:
@@ -194,10 +197,12 @@ class FrameAnalyzer:
             # OCR
             "ocr_texts":           ocr_texts[:5],  # Cap at 5 to avoid huge response
             "ocr_intent_hits":     ocr_intent_hits,
+            "ocr_keyword_hits":    ocr_keyword_hits,
+            "ocr_risk_score":      round(ocr_risk_score, 3),
         }
         logger.info(f"🤖 AI={is_ai} conf={final_confidence:.3f} | "
                     f"QR={len(qr_codes_found)}(sus={suspicious_qr_count}) | "
-                    f"OCR hits={ocr_intent_hits}")
+                    f"OCR intents={ocr_intent_hits} keywords={ocr_keyword_hits} risk={ocr_risk_score:.3f}")
         return result
 
     # ─── AI-generated scoring ─────────────────────────────────────────────────
@@ -287,3 +292,14 @@ class FrameAnalyzer:
         except Exception:
             return 0
 
+    def _count_scam_keywords(self, text: str) -> int:
+        """Fast visual scam lexicon for OCR-heavy gaming scam frames."""
+        t = (text or "").lower()
+        keywords = [
+            "robux", "roblox", "nạp robux", "bảng giá", "vnđ", "vnd",
+            "nạp thẻ", "nạp thả ga", "uy tín", "tốc độ", "an toàn",
+            "free robux", "giftcode", "gift code", "quà", "tặng",
+            "kim cương", "quân huy", "v-bucks", "vbucks",
+            "chuyển khoản", "momo", "zalopay", "bank",
+        ]
+        return sum(1 for kw in keywords if kw in t)

@@ -110,7 +110,22 @@
     .pipe-detail { margin-top: 12px; padding: 10px 12px; background: var(--color-background-secondary); border-radius: 8px; border: 1px solid var(--color-border-tertiary); font-size: 12px; color: var(--color-text-secondary); line-height: 1.7; }
     .analyze-area { display: flex; flex-direction: column; gap: 8px; }
     .url-row { display: flex; align-items: center; gap: 6px; }
+    .media-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
     .url-row input { flex: 1; height: 32px; padding: 0 10px; border: 1px solid var(--color-border-tertiary); border-radius: 8px; font-size: 12px; font-family: var(--font-sans); color: var(--color-text-primary); background: var(--color-background-secondary); outline: none; transition: border-color .15s; }
+    .media-row input[type="text"], .media-row input[type="url"], .media-row input[type="file"] { flex: 1; min-width: 180px; height: 32px; padding: 0 10px; border: 1px solid var(--color-border-tertiary); border-radius: 8px; font-size: 12px; font-family: var(--font-sans); color: var(--color-text-primary); background: var(--color-background-secondary); outline: none; transition: border-color .15s; }
+    .media-help { font-size: 10px; color: var(--color-text-tertiary); }
+    .paste-count { font-size: 10px; color: var(--color-text-tertiary); }
+    .btn-clear {
+      border: 1px solid var(--color-border-tertiary);
+      background: var(--color-background-primary);
+      color: var(--color-text-secondary);
+      border-radius: 6px;
+      font-size: 10px;
+      padding: 3px 8px;
+      cursor: pointer;
+    }
+    .paste-preview { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .paste-preview img { width: 54px; height: 54px; object-fit: cover; border-radius: 6px; border: 1px solid var(--color-border-tertiary); }
     .url-row input:focus { border-color: var(--accent); }
     .platform-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; background: var(--color-background-tertiary); color: var(--color-text-tertiary); white-space: nowrap; border: 1px solid var(--color-border-tertiary); }
     .platform-badge.detected { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); }
@@ -277,7 +292,17 @@
               <input id="input-url" type="url" placeholder="Dán link Facebook / TikTok / X (không bắt buộc)" oninput="detectPlatform(this.value)" />
               <span class="platform-badge" id="platform-badge">Nền tảng</span>
             </div>
-            <textarea id="input-text" placeholder="(Tùy chọn) Paste nội dung văn bản bài viết để kết quả chính xác hơn"></textarea>
+            <div class="media-row">
+              <input id="input-image-urls" type="text" placeholder="(Tùy chọn) URL ảnh, ngăn cách bằng dấu phẩy" />
+              <input id="input-image-files" type="file" accept="image/*" multiple />
+            </div>
+            <textarea id="input-text" placeholder="(Tùy chọn) Paste nội dung văn bản bài viết để kết quả chính xác hơn. Bạn cũng có thể Ctrl+V ảnh trực tiếp tại đây."></textarea>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <span class="paste-count" id="paste-count">Ảnh dán từ clipboard: 0</span>
+              <button class="btn-clear" type="button" id="btn-clear-paste">Xóa ảnh đã dán</button>
+            </div>
+            <div class="paste-preview" id="paste-preview"></div>
+            <div class="media-help">Mẹo: ô văn bản nhận cả text và ảnh (Ctrl+V). Bạn có thể gửi text-only, image-only, hoặc cả hai.</div>
             <div class="api-error" id="api-error"></div>
             <button class="btn-analyze" id="btn-run" onclick="runAnalysis()">
               <i class="ti ti-scan"></i> Phân tích
@@ -600,6 +625,7 @@
     : RENDER_API;
   const AUTH_TOKEN = 'demo-token-123';
   const PAGES = ['dashboard','analyze','model','pipeline'];
+  let pastedImageDataUrls = [];
 
   window.setPage = function(p) {
     PAGES.forEach(id => document.getElementById('page-'+id).style.display = 'none');
@@ -682,6 +708,10 @@
   window.setDemo = function(i) {
     document.getElementById('input-text').value = DEMOS[i];
     document.getElementById('input-url').value = '';
+    document.getElementById('input-image-urls').value = '';
+    document.getElementById('input-image-files').value = '';
+    pastedImageDataUrls = [];
+    renderPastedImages();
     document.getElementById('platform-badge').textContent = 'Nền tảng';
     document.getElementById('platform-badge').classList.remove('detected');
     document.getElementById('api-error').classList.remove('show');
@@ -723,7 +753,10 @@
   window.runAnalysis = async function() {
     const txt = document.getElementById('input-text').value.trim();
     const rawUrl = document.getElementById('input-url').value.trim();
-    if (!txt && !rawUrl) return;
+    const imageUrlRaw = document.getElementById('input-image-urls').value.trim();
+    const imageFiles = document.getElementById('input-image-files').files;
+    const hasPastedImages = Array.isArray(pastedImageDataUrls) && pastedImageDataUrls.length > 0;
+    if (!txt && !rawUrl && !hasPastedImages && (!imageUrlRaw && (!imageFiles || imageFiles.length === 0))) return;
     const btn=document.getElementById('btn-run'), thinking=document.getElementById('thinking'),
           box=document.getElementById('result-box'), errEl=document.getElementById('api-error');
     btn.disabled=true; thinking.style.display='flex';
@@ -731,15 +764,34 @@
 
     const postUrl = rawUrl || 'https://demo.local/post';
     const platform = detectPlatformName(rawUrl) || 'facebook';
-    // Require at least URL or text
-    if (!txt && !rawUrl) {
+    // Require at least one input
+    if (!txt && !rawUrl && !hasPastedImages && (!imageUrlRaw && (!imageFiles || imageFiles.length === 0))) {
       btn.disabled=false; thinking.style.display='none';
-      errEl.textContent='⚠️ Vui lòng nhập link hoặc nội dung văn bản.';
+      errEl.textContent='⚠️ Vui lòng nhập link, văn bản hoặc ảnh.';
       errEl.style.color='#854F0B'; errEl.classList.add('show'); return;
     }
+
+    async function filesToDataUrls(fileList) {
+      const out = [];
+      for (const f of Array.from(fileList || [])) {
+        const s = await new Promise((resolve, reject) => {
+          const fr = new FileReader();
+          fr.onload = () => resolve(String(fr.result || ''));
+          fr.onerror = reject;
+          fr.readAsDataURL(f);
+        });
+        if (s && s.startsWith('data:image/')) out.push(s);
+      }
+      return out;
+    }
+
     // When no text: URL-only mode — do NOT pass content so API crawls/analyzes the URL itself
     const urlOnly = !txt && !!rawUrl;
     const content = txt || null;  // null = URL-only; API will crawl and extract text itself
+    const imageUrls = imageUrlRaw ? imageUrlRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+    let uploadedImages = [];
+    try { uploadedImages = await filesToDataUrls(imageFiles); } catch (_) {}
+    const allImages = [...imageUrls, ...uploadedImages, ...pastedImageDataUrls];
     if (urlOnly) {
       errEl.textContent='ℹ️ Phân tích dựa trên URL và hình ảnh (không có văn bản — độ chính xác thấp hơn). Paste nội dung bài viết để cải thiện kết quả.';
       errEl.style.color='#534AB7'; errEl.classList.add('show');
@@ -749,6 +801,7 @@
     try {
       const reqBody = {url: postUrl, platform: platform, priority:'high'};
       if (content) reqBody.content = content;  // only include if user typed text
+      if (allImages.length) reqBody.images = allImages.slice(0, 5);
       const resp = await fetch(API_BASE+'/api/v1/analyze', {
         method:'POST',
         headers:{'Content-Type':'application/json','Authorization':'Bearer '+AUTH_TOKEN},
@@ -874,6 +927,65 @@
     document.getElementById('pipe-detail').textContent=PIPE[i];
   };
   window.selectStep(0);
+
+  function renderPastedImages() {
+    const preview = document.getElementById('paste-preview');
+    const count = document.getElementById('paste-count');
+    if (!preview || !count) return;
+    count.textContent = 'Đã dán: ' + pastedImageDataUrls.length + ' ảnh';
+    preview.innerHTML = pastedImageDataUrls
+      .slice(0, 10)
+      .map(src => '<img src="'+src+'" alt="pasted-image" />')
+      .join('');
+  }
+
+  async function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result || ''));
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
+    });
+  }
+
+  async function handlePasteEvent(e) {
+    const items = (e.clipboardData && e.clipboardData.items) ? Array.from(e.clipboardData.items) : [];
+    const imageItems = items.filter(it => it.type && it.type.startsWith('image/'));
+    if (!imageItems.length) return false;
+    e.preventDefault();
+    const textArea = document.getElementById('input-text');
+    if (textArea) textArea.style.borderColor = 'var(--accent)';
+    for (const it of imageItems) {
+      const file = it.getAsFile();
+      if (!file) continue;
+      try {
+        const dataUrl = await fileToDataUrl(file);
+        if (dataUrl && dataUrl.startsWith('data:image/')) pastedImageDataUrls.push(dataUrl);
+      } catch (_) {}
+    }
+    pastedImageDataUrls = pastedImageDataUrls.slice(0, 5);
+    renderPastedImages();
+    setTimeout(() => { if (textArea) textArea.style.borderColor = ''; }, 700);
+    return true;
+  }
+
+  // Paste image directly in the main text area (same place user writes content).
+  const inputText = document.getElementById('input-text');
+  if (inputText) {
+    inputText.addEventListener('paste', async function(e) {
+      const handled = await handlePasteEvent(e);
+      // If no image in clipboard, allow normal text paste behavior.
+      if (!handled) return;
+    });
+  }
+  const clearBtn = document.getElementById('btn-clear-paste');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function() {
+      pastedImageDataUrls = [];
+      renderPastedImages();
+    });
+  }
+  renderPastedImages();
 })();
 </script>
 </body>

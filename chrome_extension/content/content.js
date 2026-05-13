@@ -24,6 +24,7 @@
     if (host.includes('facebook.com')) return 'facebook';
     if (host.includes('youtube.com')) return 'youtube';
     if (host.includes('tiktok.com')) return 'tiktok';
+    if (host.includes('x.com') || host.includes('twitter.com')) return 'twitter';
     return 'unknown';
   }
 
@@ -69,6 +70,11 @@
       'ytd-compact-video-renderer',
       '#comments ytd-comment-thread-renderer',
     ],
+    twitter: [
+      'article[data-testid="tweet"]',
+      'article',
+      '[data-testid="cellInnerDiv"]',
+    ],
   };
 
   // ─── Text Extractors ───
@@ -76,6 +82,7 @@
     if (PLATFORM === 'facebook') return extractFacebookText(postEl);
     if (PLATFORM === 'youtube') return extractYouTubeText(postEl);
     if (PLATFORM === 'tiktok') return extractTikTokText(postEl);
+    if (PLATFORM === 'twitter') return (postEl.innerText || '').trim();
     return '';
   }
 
@@ -1054,6 +1061,15 @@
   // Walk up DOM from clicked element to find post-like container
   function findPostContainer(startEl) {
     if (!startEl) return null;
+
+    const selectors = POST_SELECTORS[PLATFORM] || [];
+    for (const selector of selectors) {
+      const direct = startEl.closest?.(selector);
+      if (direct && direct !== document.body && direct !== document.documentElement) {
+        return direct;
+      }
+    }
+
     let current = startEl;
     let bestCandidate = null;
     let bestScore = 0;
@@ -1098,7 +1114,7 @@
   function extractMediaUrls(postEl) {
     const images = [];
     const videos = [];
-    postEl.querySelectorAll('img').forEach(img => {
+    const collectImage = (img) => {
       const src = img.src;
       if (!src || src.startsWith('data:')) return;
       // Filter out tiny icons (avatars are OK, emojis aren't)
@@ -1106,24 +1122,31 @@
       if (rect.width >= 50 && rect.height >= 50) {
         images.push(src);
       }
-    });
-    postEl.querySelectorAll('video').forEach(video => {
+    };
+    const collectVideo = (video) => {
       if (video.src) videos.push(video.src);
+      if (video.poster) images.push(video.poster);
       video.querySelectorAll('source').forEach(s => { if (s.src) videos.push(s.src); });
-    });
+    };
+
+    if (postEl.matches?.('img')) collectImage(postEl);
+    postEl.querySelectorAll('img').forEach(collectImage);
+    if (postEl.matches?.('video')) collectVideo(postEl);
+    postEl.querySelectorAll('video').forEach(collectVideo);
     return { images: [...new Set(images)].slice(0, 5), videos: [...new Set(videos)].slice(0, 3) };
   }
 
   // Listen for context-menu scan request from background
   chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action === 'scanFromContextMenu') {
-      handleContextMenuScan(msg.selectionText || '');
+      handleContextMenuScan(msg);
       sendResponse({ ok: true });
       return false;
     }
   });
 
-  async function handleContextMenuScan(selectionText) {
+  async function handleContextMenuScan(context) {
+    const selectionText = context.selectionText || '';
     let postEl = lastRightClickedEl;
     let text = '';
 
@@ -1135,31 +1158,66 @@
       // Priority 2: Walk up from clicked element to find post container
       postEl = findPostContainer(lastRightClickedEl);
       if (!postEl) {
-        showFloatingNotice('error', 'Không tìm thấy bài viết. Hãy bôi đen text hoặc click chuột phải vào trong bài.');
-        return;
+        postEl = lastRightClickedEl || document.body;
       }
       text = (postEl.innerText || '').trim();
-    }
-
-    if (text.length < 10) {
-      showFloatingNotice('error', 'Nội dung quá ngắn để phân tích (cần ≥10 ký tự).');
-      return;
     }
 
     // Limit text length
     if (text.length > 5000) text = text.substring(0, 5000);
 
     const media = postEl ? extractMediaUrls(postEl) : { images: [], videos: [] };
-    const url = location.href;
+    if (context.srcUrl && /\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(context.srcUrl)) {
+      media.images.unshift(context.srcUrl);
+    }
+    if (context.srcUrl && /\.(mp4|webm|mov|m3u8)(\?|#|$)/i.test(context.srcUrl)) {
+      media.videos.unshift(context.srcUrl);
+    }
+    media.images = [...new Set(media.images)].slice(0, 5);
+    media.videos = [...new Set(media.videos)].slice(0, 3);
+
+    if (text.length < 10 && media.images.length === 0 && media.videos.length === 0) {
+      showFloatingNotice('error', 'Không tìm thấy đủ văn bản, ảnh hoặc video để phân tích.');
+      return;
+    }
+
+    const url = context.pageUrl || location.href;
+    const hasVideoContext = media.videos.length > 0 || /tiktok\.com\/@.+\/video|youtube\.com\/watch|youtu\.be\/|(?:x|twitter)\.com\/.+\/status\//i.test(url);
+    const apiPlatform = ['facebook', 'tiktok', 'youtube', 'twitter'].includes(PLATFORM) ? PLATFORM : 'facebook';
 
     // Show scanning notice
     const noticeEl = showFloatingNotice('scanning', `Đang quét bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''})...`);
 
     try {
-      const result = await chrome.runtime.sendMessage({
-        action: 'analyze',
-        payload: { text, url, platform: PLATFORM, images: media.images, videos: media.videos },
-      });
+      let result;
+      if (hasVideoContext && (PLATFORM === 'tiktok' || PLATFORM === 'youtube' || PLATFORM === 'twitter')) {
+        result = await chrome.runtime.sendMessage({
+          action: 'analyze_video',
+          payload: {
+            video_url: media.videos[0] || url,
+            page_url: url,
+            description: text,
+            author: '',
+          },
+        });
+        if (result && result.verdict) {
+          result = {
+            label: result.verdict,
+            prediction: result.verdict,
+            confidence: result.confidence,
+            analysis_details: {
+              intent_label: result.explanation || '',
+              intent_explanation: result.explanation || '',
+              nlp_flags: Object.keys(result.intents || {}),
+            },
+          };
+        }
+      } else {
+        result = await chrome.runtime.sendMessage({
+          action: 'analyze',
+          payload: { text, url, platform: apiPlatform, images: media.images, videos: media.videos },
+        });
+      }
 
       noticeEl?.remove();
       showFloatingResult(result, postEl);
