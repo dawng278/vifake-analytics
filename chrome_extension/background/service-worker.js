@@ -194,12 +194,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 // ─── Core: Analyze ───
 async function handleAnalyze(payload, tabId) {
-  const { text, url, platform, images } = payload;  // P2-A: destructure images
+  const { text, url, platform, images, videos } = payload;  // include post-scoped media
   const hasText = !!(text && text.trim().length >= 10);
   const hasImages = Array.isArray(images) && images.length > 0;
+  const hasVideos = Array.isArray(videos) && videos.length > 0;
 
-  if (!hasText && !hasImages) {
-    return { error: 'Cần văn bản hoặc ảnh để phân tích' };
+  if (!hasText && !hasImages && !hasVideos) {
+    return { error: 'Cần văn bản, ảnh hoặc video trong bài viết để phân tích' };
   }
 
   // Update badge to scanning
@@ -244,7 +245,7 @@ async function handleAnalyze(payload, tabId) {
     // Step 3: Store result
     const scanRecord = {
       id: jobId,
-      text: hasText ? text.substring(0, 100) + (text.length > 100 ? '...' : '') : '[image-only scan]',
+      text: hasText ? text.substring(0, 100) + (text.length > 100 ? '...' : '') : (hasImages ? '[image-only scan]' : '[video-only scan]'),
       result: result,
       timestamp: Date.now(),
       platform: platform || 'facebook',

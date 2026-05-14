@@ -210,12 +210,12 @@
       <div class="stats-row">
         <div class="stat-card"><div class="stat-label">Tổng content đã scan</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub stat-up" id="stat-total-sub">Đang kết nối API...</div></div>
         <div class="stat-card"><div class="stat-label">Phát hiện scam</div><div class="stat-value" style="color:#A32D2D" id="stat-scam">—</div><div class="stat-sub stat-warn" id="stat-scam-sub">Đang kết nối API...</div></div>
-        <div class="stat-card"><div class="stat-label">Chính xác (F1) — Synthetic</div><div class="stat-value" style="color:#3B6D11">0.923</div><div class="stat-sub">Est. real-world: <strong>0.81–0.85</strong></div></div>
-        <div class="stat-card"><div class="stat-label">Thời gian xử lý</div><div class="stat-value">~330ms</div><div class="stat-sub">Median latency · Mock mode</div></div>
+        <div class="stat-card"><div class="stat-label">Macro-F1 — Real benchmark</div><div class="stat-value" style="color:#3B6D11">0.218</div><div class="stat-sub">Champion: <strong>dedup_20260514T111704Z_r2</strong> · 227 mẫu</div></div>
+        <div class="stat-card"><div class="stat-label">Thời gian xử lý</div><div class="stat-value">~330ms</div><div class="stat-sub">Median latency · Local inference (không mock)</div></div>
       </div>
       <div class="row2">
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Phân phối loại scam</div><div class="card-sub">3.000 synthetic samples · 4 categories</div></div></div>
+          <div class="card-header"><div><div class="card-title">Phân phối loại scam</div><div class="card-sub">Biểu đồ minh họa trên dữ liệu synthetic (không phải benchmark chấm điểm)</div></div></div>
           <svg width="100%" viewBox="0 0 340 125" style="max-width:380px">
             <circle cx="80" cy="62" r="42" fill="none" stroke="var(--color-background-secondary)" stroke-width="18"/>
             <circle cx="80" cy="62" r="42" fill="none" stroke="#534AB7" stroke-width="18" stroke-dasharray="92 171" stroke-dashoffset="0" transform="rotate(-90 80 62)"/>
@@ -232,7 +232,7 @@
           </svg>
         </div>
         <div class="card">
-          <div class="card-header"><div><div class="card-title">Scam theo nền tảng</div><div class="card-sub">Projected · Synthetic simulation</div></div></div>
+          <div class="card-header"><div><div class="card-title">Scam theo nền tảng</div><div class="card-sub">Biểu đồ minh họa dashboard (không dùng để chấm điểm mô hình)</div></div></div>
           <svg width="100%" viewBox="0 0 200 125" style="max-width:260px">
             <text x="10" y="19" font-size="10" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Facebook</text>
             <rect x="75" y="9" width="84" height="12" rx="3" fill="#534AB7" opacity=".8"/>
@@ -254,7 +254,7 @@
       </div>
       <div class="row3">
         <div class="card">
-          <div class="card-header"><div class="card-title">Lịch sử scan gần đây</div><div class="card-sub">Demo data · Synthetic simulation</div></div>
+          <div class="card-header"><div class="card-title">Lịch sử scan gần đây</div><div class="card-sub">Demo data UI (verdict thật nằm ở khung Phân tích)</div></div>
           <table class="scan-table">
             <thead><tr><th>Nội dung</th><th>Nền tảng</th><th>NLP</th><th>Vision</th><th>Verdict</th></tr></thead>
             <tbody id="scan-tbody"></tbody>
@@ -357,21 +357,21 @@
 
     <!-- PAGE: MODEL -->
     <div id="page-model" style="display:none">
-      <div class="topbar"><h1>Đánh giá mô hình</h1><div class="topbar-sub">5-fold CV · Test split 20% · 600 samples</div></div>
+      <div class="topbar"><h1>Đánh giá mô hình</h1><div class="topbar-sub">Real validation benchmark · Champion run 20260514T111704Z</div></div>
       <!-- row: confusion matrix full width -->
       <div class="card">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
           <div>
             <div class="card-title" style="margin-bottom:4px">Confusion matrix — XGBoost Fusion &nbsp;<span style="font-size:10px;font-weight:400;color:var(--color-text-tertiary)">3-class</span></div>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-              <span style="font-size:10px;background:#FEF8E7;border:1px solid #E6C96A;color:#7A5C00;padding:2px 8px;border-radius:10px">Synthetic test set · 600 samples</span>
-              <span style="font-size:10px;color:var(--color-text-tertiary)">Est. real-world F1: <strong style="color:var(--color-text-secondary)">0.81–0.85</strong> (domain shift ~8–12%)</span>
-              <span style="font-size:10px;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);color:var(--color-text-tertiary);padding:2px 8px;border-radius:10px">Dựa trên kết quả huấn luyện phiên bản v1.2 ngày 05/05/2026</span>
+              <span style="font-size:10px;background:#FEF8E7;border:1px solid #E6C96A;color:#7A5C00;padding:2px 8px;border-radius:10px">Real validation · 227 samples</span>
+              <span style="font-size:10px;color:var(--color-text-tertiary)">Macro-F1: <strong style="color:var(--color-text-secondary)">0.2180</strong> · F1 SUSPICIOUS: <strong style="color:var(--color-text-secondary)">0.2667</strong></span>
+              <span style="font-size:10px;background:var(--color-background-secondary);border:1px solid var(--color-border-tertiary);color:var(--color-text-tertiary);padding:2px 8px;border-radius:10px">Official Roblox-VNG SAFE false-positive: 0/4 (0.0%)</span>
             </div>
           </div>
           <div style="font-size:10px;color:var(--color-text-tertiary);text-align:right;line-height:1.7">
-            Threshold 0.50 &rarr; P=87.8%, R=87.4% &nbsp;·&nbsp; Balanced<br>
-            Threshold 0.40 &rarr; P=84.2%, R=91.6% &nbsp;·&nbsp; <span style="color:#3B6D11;font-weight:500">&uarr; Recall (child safety)</span>
+            Hạn chế hiện tại: F1 FAKE_SCAM = 0.0000 (recall thấp)<br>
+            Kế hoạch: hard-negative scam + error-driven augmentation vòng 2
           </div>
         </div>
         <!-- 3-class confusion matrix SVG -->
@@ -386,70 +386,68 @@
           <text x="46" y="210" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)" transform="rotate(-90,46,210)">Actual: FAKE</text>
           <!-- row 1: SAFE -->
           <rect x="65" y="26" width="95" height="52" rx="5" fill="#EAF3DE"/>
-          <text x="112" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#27500A" font-family="var(--font-sans)">318</text>
-          <text x="112" y="68" text-anchor="middle" font-size="9" fill="#3B6D11" font-family="var(--font-sans)">TN</text>
+          <text x="112" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#27500A" font-family="var(--font-sans)">43</text>
+          <text x="112" y="68" text-anchor="middle" font-size="9" fill="#3B6D11" font-family="var(--font-sans)">TP-SAFE</text>
           <rect x="165" y="26" width="95" height="52" rx="5" fill="#F5F3FE"/>
-          <text x="212" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">14</text>
-          <text x="212" y="68" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">FP→SUSP</text>
+          <text x="212" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">30</text>
+          <text x="212" y="68" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">SAFE→SUSP</text>
           <rect x="265" y="26" width="95" height="52" rx="5" fill="#FAEEDA"/>
-          <text x="312" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">8</text>
-          <text x="312" y="68" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FP→FAKE</text>
+          <text x="312" y="54" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">0</text>
+          <text x="312" y="68" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">SAFE→FAKE</text>
           <!-- row 2: SUSPICIOUS -->
           <rect x="65" y="84" width="95" height="52" rx="5" fill="#F5F3FE"/>
-          <text x="112" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">9</text>
-          <text x="112" y="126" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">FN→SAFE</text>
+          <text x="112" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">39</text>
+          <text x="112" y="126" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">SUSP→SAFE</text>
           <rect x="165" y="84" width="95" height="52" rx="5" fill="#EEF0FE"/>
-          <text x="212" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#2c2880" font-family="var(--font-sans)">61</text>
+          <text x="212" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#2c2880" font-family="var(--font-sans)">18</text>
           <text x="212" y="126" text-anchor="middle" font-size="9" fill="#4a42a0" font-family="var(--font-sans)">TP-SUSP</text>
           <rect x="265" y="84" width="95" height="52" rx="5" fill="#F5F3FE"/>
-          <text x="312" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">7</text>
-          <text x="312" y="126" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">FP→FAKE</text>
+          <text x="312" y="112" text-anchor="middle" font-size="17" font-weight="500" fill="#4a42a0" font-family="var(--font-sans)">0</text>
+          <text x="312" y="126" text-anchor="middle" font-size="9" fill="#6b63c0" font-family="var(--font-sans)">SUSP→FAKE</text>
           <!-- row 3: FAKE_SCAM -->
           <rect x="65" y="142" width="95" height="52" rx="5" fill="#FAEEDA"/>
-          <text x="112" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">6</text>
-          <text x="112" y="184" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FN→SAFE</text>
+          <text x="112" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">67</text>
+          <text x="112" y="184" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FAKE→SAFE</text>
           <rect x="165" y="142" width="95" height="52" rx="5" fill="#FAEEDA"/>
-          <text x="212" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">12</text>
-          <text x="212" y="184" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FN→SUSP</text>
+          <text x="212" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#633806" font-family="var(--font-sans)">30</text>
+          <text x="212" y="184" text-anchor="middle" font-size="9" fill="#854F0B" font-family="var(--font-sans)">FAKE→SUSP</text>
           <rect x="265" y="142" width="95" height="52" rx="5" fill="#EAF3DE"/>
-          <text x="312" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#27500A" font-family="var(--font-sans)">148</text>
+          <text x="312" y="170" text-anchor="middle" font-size="17" font-weight="500" fill="#27500A" font-family="var(--font-sans)">0</text>
           <text x="312" y="184" text-anchor="middle" font-size="9" fill="#3B6D11" font-family="var(--font-sans)">TP-FAKE</text>
           <!-- summary -->
-          <text x="370" y="50" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">SAFE: P=93.5%</text>
-          <text x="370" y="64" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=93.8%</text>
-          <text x="370" y="108" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">SUSP: P=70.1%</text>
-          <text x="370" y="122" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=79.2%</text>
-          <text x="370" y="166" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">FAKE: P=89.7%</text>
-          <text x="370" y="180" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=88.6%</text>
-          <text x="212" y="218" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Macro F1: 0.861 &nbsp;·&nbsp; Weighted F1: 0.923 &nbsp;·&nbsp; Accuracy: 88.2%</text>
+          <text x="370" y="50" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">SAFE: P=28.9%</text>
+          <text x="370" y="64" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=58.9%</text>
+          <text x="370" y="108" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">SUSP: P=23.1%</text>
+          <text x="370" y="122" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=31.6%</text>
+          <text x="370" y="166" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">FAKE: P=0.0%</text>
+          <text x="370" y="180" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">R=0.0%</text>
+          <text x="212" y="218" text-anchor="middle" font-size="9" fill="var(--color-text-tertiary)" font-family="var(--font-sans)">Macro F1: 0.2180 &nbsp;·&nbsp; Weighted F1: 0.1915 &nbsp;·&nbsp; Accuracy: 26.87%</text>
         </svg>
       </div>
       <!-- row: model performance + baseline -->
       <div class="row2">
         <div class="card">
-          <div class="card-title" style="margin-bottom:12px">Model performance</div>
+          <div class="card-title" style="margin-bottom:12px">Model performance (champion run)</div>
           <div class="model-bars">
-            <div class="mbar-row"><span class="mbar-label">Accuracy</span><div class="mbar-track"><div class="mbar-fill" style="width:92.2%;background:#534AB7"></div></div><span class="mbar-val">92.2%</span></div>
-            <div class="mbar-row"><span class="mbar-label">Precision</span><div class="mbar-track"><div class="mbar-fill" style="width:87.8%;background:#534AB7"></div></div><span class="mbar-val">87.8%</span></div>
-            <div class="mbar-row"><span class="mbar-label">Recall</span><div class="mbar-track"><div class="mbar-fill" style="width:87.4%;background:#534AB7"></div></div><span class="mbar-val">87.4%</span></div>
-            <div class="mbar-row"><span class="mbar-label">F1-Score</span><div class="mbar-track"><div class="mbar-fill" style="width:92.3%;background:#1D9E75"></div></div><span class="mbar-val">0.923</span></div>
-            <div class="mbar-row"><span class="mbar-label">AUC-ROC</span><div class="mbar-track"><div class="mbar-fill" style="width:96.1%;background:#D85A30"></div></div><span class="mbar-val">0.961</span></div>
+            <div class="mbar-row"><span class="mbar-label">Accuracy</span><div class="mbar-track"><div class="mbar-fill" style="width:26.9%;background:#534AB7"></div></div><span class="mbar-val">26.9%</span></div>
+            <div class="mbar-row"><span class="mbar-label">Macro-F1</span><div class="mbar-track"><div class="mbar-fill" style="width:21.8%;background:#534AB7"></div></div><span class="mbar-val">0.218</span></div>
+            <div class="mbar-row"><span class="mbar-label">Weighted-F1</span><div class="mbar-track"><div class="mbar-fill" style="width:19.2%;background:#534AB7"></div></div><span class="mbar-val">0.192</span></div>
+            <div class="mbar-row"><span class="mbar-label">F1-SUSP</span><div class="mbar-track"><div class="mbar-fill" style="width:26.7%;background:#1D9E75"></div></div><span class="mbar-val">0.267</span></div>
+            <div class="mbar-row"><span class="mbar-label">F1-FAKE</span><div class="mbar-track"><div class="mbar-fill" style="width:0%;background:#D85A30"></div></div><span class="mbar-val">0.000</span></div>
           </div>
           <div style="margin-top:10px;padding:7px 10px;background:var(--color-background-secondary);border-radius:6px;border:1px solid var(--color-border-tertiary)">
-            <div style="font-size:10px;font-weight:500;color:var(--color-text-secondary);margin-bottom:3px">5-fold Cross-validation (stratified)</div>
+            <div style="font-size:10px;font-weight:500;color:var(--color-text-secondary);margin-bottom:3px">Branch comparison (original vs dedup)</div>
             <div style="font-size:10px;color:var(--color-text-tertiary);line-height:1.7">
-              CV F1: <strong style="color:var(--color-text-primary)">0.918 &plusmn; 0.009</strong> &nbsp;&middot;&nbsp; CV AUC: <strong style="color:var(--color-text-primary)">0.957 &plusmn; 0.006</strong><br>
-              Low variance &rarr; model ổn định, không overfit vào 1 split
+              Original r2: <strong style="color:var(--color-text-primary)">score 0.37742</strong> &nbsp;&middot;&nbsp; Dedup r2: <strong style="color:var(--color-text-primary)">score 0.37802</strong><br>
+              Champion chọn dedup vì macro-F1 cao hơn nhẹ và giữ SAFE FP official = 0/4
             </div>
           </div>
           <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--color-border-tertiary)">
-            <div style="font-size:11px;font-weight:500;margin-bottom:8px">So sánh baseline &amp; ablation</div>
-            <div class="mbar-row"><span class="mbar-label" style="width:108px;color:var(--color-text-tertiary)">TF-IDF + SVM</span><div class="mbar-track"><div class="mbar-fill" style="width:65%;background:#c8c8d0"></div></div><span class="mbar-val" style="color:var(--color-text-tertiary)">65.0%</span></div>
-            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px;color:var(--color-text-tertiary)">mBERT multilingual</span><div class="mbar-track"><div class="mbar-fill" style="width:71%;background:#c8c8d0"></div></div><span class="mbar-val" style="color:var(--color-text-tertiary)">71.0%</span></div>
-            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">PhoBERT only</span><div class="mbar-track"><div class="mbar-fill" style="width:76%;background:#888780"></div></div><span class="mbar-val">76.0%</span></div>
-            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">+CLIP Vision</span><div class="mbar-track"><div class="mbar-fill" style="width:84%;background:#888780"></div></div><span class="mbar-val">84.0%</span></div>
-            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">+14 features</span><div class="mbar-track"><div class="mbar-fill" style="width:92.2%;background:#1D9E75"></div></div><span class="mbar-val" style="font-weight:600">92.2%</span></div>
-            <div style="margin-top:7px;font-size:10px;color:var(--color-text-tertiary)">↑ +27.2% vs TF-IDF baseline &nbsp;·&nbsp; +21.2% vs mBERT multilingual</div>
+            <div style="font-size:11px;font-weight:500;margin-bottom:8px">3 chỉ số cạnh tranh chính</div>
+            <div class="mbar-row"><span class="mbar-label" style="width:108px">SAFE FP (official)</span><div class="mbar-track"><div class="mbar-fill" style="width:100%;background:#1D9E75"></div></div><span class="mbar-val" style="font-weight:600">0/4</span></div>
+            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">Top lỗi #1</span><div class="mbar-track"><div class="mbar-fill" style="width:67%;background:#D85A30"></div></div><span class="mbar-val">67</span></div>
+            <div class="mbar-row" style="margin-top:6px"><span class="mbar-label" style="width:108px">Top lỗi #2</span><div class="mbar-track"><div class="mbar-fill" style="width:39%;background:#D85A30"></div></div><span class="mbar-val">39</span></div>
+            <div style="margin-top:7px;font-size:10px;color:var(--color-text-tertiary)">Top misclassifications: FAKE_SCAM→SAFE = 67, SUSPICIOUS→SAFE = 39 (ưu tiên xử lý vòng tiếp theo).</div>
           </div>
         </div>
         <!-- Feature importance card -->
@@ -948,7 +946,7 @@
       'EMOJI_ABUSE'
     ];
     const effectiveRiskFlags = nlpFlags.filter(f => !benignScamLikeFlags.some(k => String(f).startsWith(k)));
-    const hasScamSignal=/(SCAM|PHISH|FRAUD|FAKE|PAY_FIRST)/i.test(intentStr+effectiveRiskFlags.join(' '));
+    const hasScamSignal=/(SCAM|PHISH|FRAUD|FAKE|PAY_FIRST|LỪA[\s_-]*ĐẢO|NGHI[\s_-]*VẤN|ĐÁNG[\s_-]*NGỜ)/i.test(intentStr+effectiveRiskFlags.join(' '));
     if(label==='SAFE'&&hasScamSignal&&fusionPct>=65) label='FAKE_SCAM';
     // Official Roblox-VNG promo lock: do not auto-escalate SAFE because of generic gaming/urgency language.
     if (label === 'SAFE' && hasOfficialPromoContext && hasSafeRobloxSource && !hasSafeSourceContradiction) {
@@ -965,8 +963,59 @@
       nlpFlags.includes('CLIP_GAME_SCAM_MARKERS') &&
       nlpFlags.includes('VISION_OCR_RISK') &&
       nlpFlags.includes('IMAGE_ONLY_LOW_OCR_CONFIDENCE');
-    if (label === 'SUSPICIOUS' && (hasCriticalFlag || hasImageScamCombo)) {
+    const weakImageOnlyFlags = new Set([
+      'LOW_TEXT_QUALITY_REVIEW',
+      'VISION_OCR_RISK',
+      'CLIP_GAME_SCAM_MARKERS',
+      'IMAGE_ONLY_LOW_OCR_CONFIDENCE',
+      'GAMING_SCAM_CONTEXT'
+    ]);
+    const hasOnlyWeakImageSignals =
+      nlpFlags.length > 0 &&
+      nlpFlags.every(f => weakImageOnlyFlags.has(String(f)) || /^clip_kw=/.test(String(f)));
+    const hasHardScamEvidence = nlpFlags.some(f =>
+      /^FINANCIAL_SCAM:/.test(f) ||
+      /^PRICE_ANOMALY_SCAM/.test(f) ||
+      /^UNREALISTIC_RATIO/.test(f) ||
+      /ACCOUNT_TAKEOVER/.test(f) ||
+      /GAMING_DOUBLING_SCAM/.test(f) ||
+      /SHORTLINK_SUSPICIOUS/.test(f) ||
+      /PHISH/i.test(f) ||
+      /OTP/i.test(f)
+    );
+    const hasMediumRiskEvidence = nlpFlags.some(f =>
+      /TRUST_MANIPULATION/.test(f) ||
+      /URGENCY_PRESSURE/.test(f) ||
+      /EXCESSIVE_CAPS/.test(f) ||
+      /CONTEXT_RATE_QUERY/.test(f)
+    );
+    const hasDangerNarrative = /CẢNH BÁO NGUY HIỂM|LỪA ĐẢO 100%|BẪY GIÁ|GIAO DỊCH NẠP THẺ CÀO|CHUYỂN TIỀN TRƯỚC/.test((intentStr || '') + ' ' + (intentExplanation || ''));
+    const officialSafeLock = hasOfficialPromoContext && hasSafeRobloxSource && !hasSafeSourceContradiction;
+    // Do not keep SAFE when risk evidence exists (except verified official-safe context).
+    if (label === 'SAFE' && !officialSafeLock) {
+      if (hasCriticalFlag && fusionPct >= 55) {
+        label = 'FAKE_SCAM';
+      } else if (hasHardScamEvidence || hasMediumRiskEvidence || hasImageScamCombo) {
+        label = 'SUSPICIOUS';
+      }
+    }
+    if (label === 'SUSPICIOUS' && (hasCriticalFlag || (hasImageScamCombo && hasHardScamEvidence && fusionPct >= 85))) {
       label = 'FAKE_SCAM';
+    }
+    // If warning is clearly dangerous and confidence is high, escalate to FAKE_SCAM.
+    if (label === 'SUSPICIOUS' && !officialSafeLock && (
+      (hasHardScamEvidence && fusionPct >= 80) ||
+      (hasDangerNarrative && fusionPct >= 85) ||
+      (hasCriticalFlag && fusionPct >= 55)
+    )) {
+      label = 'FAKE_SCAM';
+    }
+    // Guardrail: image-only + OCR yếu + chỉ có marker mơ hồ => không được auto đỏ.
+    if (label === 'FAKE_SCAM' && hasImageScamCombo && hasOnlyWeakImageSignals && !hasCriticalFlag && !hasHardScamEvidence) {
+      label = 'SUSPICIOUS';
+    }
+    if (label === 'SUSPICIOUS' && hasImageScamCombo && hasOnlyWeakImageSignals) {
+      intentStr = 'Nghi vấn qua ảnh (OCR thấp, cần thêm văn bản/link để kết luận chắc)';
     }
     // If backend confirms official promo intent, trust backend intent+flags over fusion-only spikes.
     const isOfficialPromoIntent = /Thông báo ưu đãi chính thức Roblox-VNG/i.test(intentStr || '');
@@ -1050,12 +1099,12 @@
   }
 
   const PIPE = [
-    'Thu thập dữ liệu: 3.000 synthetic Vietnamese scam samples · Generator tạo 4 loại scam (FAKE_GAME_ROBUX, CREDENTIAL_HARVEST, ROMANCE_SCAM, FAKE_GIVEAWAY_QR) · 100% synthetic — không dùng dữ liệu thật của trẻ em · Tuân thủ Nghị định 13/2023/NĐ-CP',
+    'Thu thập dữ liệu: synthetic train (gốc + dedup) kết hợp real validation/game coverage/official-safe cases · Có audit dedup và manifest dữ liệu · Tuân thủ Nghị định 13/2023/NĐ-CP',
     'Tiền xử lý: Tokenization tiếng Việt với PhoBERT tokenizer · Dual-track teencode normalization (ko→không, j→gì, acc→tài khoản) · Text cleaning: loại bỏ HTML, normalize unicode · Augmentation: perturbation engine sinh biến thể thực tế',
     'EDA & phân tích: Class distribution analysis · Word cloud scam keywords · Teencode frequency analysis · Correlation heatmap giữa 14 features · Phân phối confidence score trước/sau Platt scaling',
     'Feature Engineering: 14-feature vector builder · phobert_score, clip_risk, teencode_density, urgency_flag, url_count, vision_nlp_conflict (novel), fake_reward_score, money_keyword, phone_pattern, qr_detected, deepfake_score, ocr_risk, calibrated_conf, intent_label',
     'Modeling: PhoBERT fine-tuned (NLP) + CLIP FP16 (vision) + XGBoost meta-learner (fusion) · 5-category intent classifier · Platt scaling calibration · Active learning loop cho 2026 evolving scam patterns',
-    'Đánh giá: Accuracy 92.2% · F1 0.923 · AUC-ROC 0.961 · Confusion matrix · Ablation: PhoBERT alone 76% → +CLIP 84% → +14 features 92.2% · Reliability diagram (calibration chart)',
+    'Đánh giá: Champion dedup_20260514T111704Z_r2 trên 227 mẫu thật · Accuracy 26.87% · Macro-F1 0.2180 · F1 SUSPICIOUS 0.2667 · Official Roblox-VNG SAFE FP 0/4',
     'Deploy: Docker Compose (local) · FastAPI + SSE streaming · Chrome Extension Manifest V3 · Web dashboard · Dockerfile + render.yaml cho cloud · Privacy-by-Design: zero persistent user storage',
   ];
   window.selectStep = function(i) {

@@ -502,7 +502,7 @@
     try {
       const result = await chrome.runtime.sendMessage({
         action: 'analyze',
-        payload: { text, url, platform: PLATFORM, images: media.images },  // P2-A: include images
+        payload: { text, url, platform: PLATFORM, images: media.images, videos: media.videos },  // post-scoped text+images+videos
       });
 
       progress.remove();
@@ -802,10 +802,51 @@
       return;
     }
 
-    const label     = result.label || result.prediction || 'UNKNOWN';
+    const rawLabel  = result.label || result.prediction || 'UNKNOWN';
     const confidence = result.confidence || 0;
     const riskLevel  = result.risk_level || '';
     const details    = result.analysis_details || {};
+    const nlpFlags   = details.nlp_flags || [];
+    const hasOfficialPromoContext = nlpFlags.includes('OFFICIAL_ROBLOX_PROMO_CONTEXT');
+    const hasSafeRobloxSource = nlpFlags.some(f => /^SAFE_ROBLOX_SOURCE/.test(f));
+    const hasSafeSourceContradiction = nlpFlags.some(f => /^SAFE_SOURCE_CONTRADICTION/.test(f));
+    const officialSafeLock = hasOfficialPromoContext && hasSafeRobloxSource && !hasSafeSourceContradiction;
+    const hasCriticalFlag = nlpFlags.some(f =>
+      /^PRICE_ANOMALY_SCAM/.test(f) ||
+      /^FINANCIAL_SCAM:pay_first_scheme/.test(f) ||
+      /ACCOUNT_TAKEOVER/.test(f) ||
+      /GAMING_DOUBLING_SCAM/.test(f) ||
+      /^UNREALISTIC_RATIO/.test(f)
+    );
+    const hasHardEvidence = nlpFlags.some(f =>
+      /^FINANCIAL_SCAM:/.test(f) ||
+      /^PRICE_ANOMALY_SCAM/.test(f) ||
+      /^UNREALISTIC_RATIO/.test(f) ||
+      /ACCOUNT_TAKEOVER/.test(f) ||
+      /GAMING_DOUBLING_SCAM/.test(f) ||
+      /SHORTLINK_SUSPICIOUS/.test(f) ||
+      /PHISH/i.test(f) ||
+      /OTP/i.test(f)
+    );
+    const hasMediumEvidence = nlpFlags.some(f =>
+      /TRUST_MANIPULATION/.test(f) ||
+      /URGENCY_PRESSURE/.test(f) ||
+      /EXCESSIVE_CAPS/.test(f) ||
+      /CONTEXT_RATE_QUERY/.test(f)
+    );
+    const hasDangerNarrative = /CẢNH BÁO NGUY HIỂM|LỪA ĐẢO 100%|BẪY GIÁ|GIAO DỊCH NẠP THẺ CÀO|CHUYỂN TIỀN TRƯỚC/i
+      .test((details.intent_label || '') + ' ' + (details.intent_explanation || ''));
+    let label = rawLabel;
+    if (label === 'SAFE' && !officialSafeLock && (hasHardEvidence || (hasMediumEvidence && confidence >= 0.6))) {
+      label = 'SUSPICIOUS';
+    }
+    if (label === 'SUSPICIOUS' && !officialSafeLock && (
+      (hasCriticalFlag && confidence >= 0.55) ||
+      (hasHardEvidence && confidence >= 0.8) ||
+      (hasDangerNarrative && confidence >= 0.85)
+    )) {
+      label = 'FAKE_SCAM';
+    }
     const intentLabel = details.intent_label || '';
     const intentExpl  = details.intent_explanation || '';
     const meta       = RISK_META[label] || RISK_META.SUSPICIOUS;
@@ -815,7 +856,7 @@
     // FIX: intent scores are nested under .intents, not at top level
     const intentScores = details.intent?.intents || {};
     const intentHtml   = buildIntentBars(intentScores);
-    const flags        = details.nlp_flags || [];
+    const flags        = nlpFlags;
 
     panel.innerHTML = `
       <div class="vifake-result-header ${meta.cls}">
@@ -1219,32 +1260,41 @@
   async function handleContextMenuScan(context) {
     const selectionText = context.selectionText || '';
     const anchorEl = lastRightClickedEl;
-    let postEl = anchorEl;
-    let text = '';
-
-    // Priority 1: User explicitly selected text → use that
-    if (selectionText && selectionText.length >= 10) {
-      text = selectionText;
-      postEl = findPostContainer(anchorEl) || anchorEl || document.body;
-    } else {
-      // Priority 2: Walk up from clicked element to find post container
-      postEl = findPostContainer(anchorEl);
-      if (!postEl) {
-        postEl = anchorEl || document.body;
-      }
-      text = extractPostText(postEl) || (postEl.innerText || '').trim();
+    const imageFocusedScan = !!(
+      context.srcUrl ||
+      anchorEl?.matches?.('img') ||
+      anchorEl?.closest?.('img')
+    );
+    // Strict post scope: only scan when click is inside a detected post container.
+    const postEl = findPostContainer(anchorEl);
+    if (!postEl) {
+      showFloatingNotice('error', 'Vui lòng click chuột phải trực tiếp bên trong một bài viết để quét. Không quét vùng ngoài bài viết.');
+      return;
+    }
+    let text = extractPostText(postEl) || (postEl.innerText || '').trim();
+    // If user selected text inside the same post, prepend it as priority hint.
+    if (selectionText && selectionText.length >= 10 && postEl.contains(anchorEl)) {
+      text = `${selectionText}\n${text}`.trim();
     }
 
     // Limit text length
     if (text.length > 5000) text = text.substring(0, 5000);
 
     const media = postEl ? await extractMediaUrls(postEl, { anchorEl }) : { images: [], videos: [] };
-    if (context.srcUrl && /\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(context.srcUrl)) {
+    if (context.srcUrl) {
       let contextImage = null;
-      if (lastRightClickedEl && lastRightClickedEl.matches?.('img')) {
-        contextImage = await imageElementToDataUrl(lastRightClickedEl);
+      const directImg = lastRightClickedEl && lastRightClickedEl.matches?.('img') ? lastRightClickedEl : null;
+      const closestImg = lastRightClickedEl?.closest?.('img') || null;
+      const imgInPost = directImg && postEl.contains(directImg) ? directImg : (closestImg && postEl.contains(closestImg) ? closestImg : null);
+      if (imgInPost) {
+        contextImage = await imageElementToDataUrl(imgInPost);
+      } else {
+        // Ignore external image URLs that are not inside the resolved post container.
+        contextImage = null;
       }
-      media.images.unshift(contextImage || context.srcUrl);
+      if (contextImage) {
+        media.images.unshift(contextImage);
+      }
     }
     if (context.srcUrl && /\.(mp4|webm|mov|m3u8)(\?|#|$)/i.test(context.srcUrl)) {
       media.videos.unshift(context.srcUrl);
@@ -1262,7 +1312,10 @@
     const apiPlatform = ['facebook', 'tiktok', 'youtube', 'twitter'].includes(PLATFORM) ? PLATFORM : 'facebook';
 
     // Show scanning notice
-    const noticeEl = showFloatingNotice('scanning', `Đang quét bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''})...`);
+    const noticeEl = showFloatingNotice(
+      'scanning',
+      `Đang quét bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''}${imageFocusedScan ? ', ưu tiên ảnh mục tiêu' : ''})...`
+    );
 
     try {
       let result;
@@ -1296,7 +1349,7 @@
       }
 
       noticeEl?.remove();
-      showFloatingResult(result, postEl);
+      showFloatingResult(result, postEl, { imageFocusedScan, textLength: text.length, imageCount: media.images.length });
     } catch (err) {
       noticeEl?.remove();
       showFloatingNotice('error', `Lỗi: ${err.message || 'Không thể kết nối API'}`);
@@ -1327,7 +1380,7 @@
   }
 
   // Show full result panel (top-right, larger)
-  function showFloatingResult(result, postEl) {
+  function showFloatingResult(result, postEl, scanMeta = {}) {
     const existing = document.querySelector('.vifake-floating-result');
     existing?.remove();
 
@@ -1349,9 +1402,73 @@
       return;
     }
 
-    const label = result.label || result.prediction || 'UNKNOWN';
+    let label = result.label || result.prediction || 'UNKNOWN';
     const confidence = result.confidence || 0;
     const details = result.analysis_details || {};
+    const nlpFlags = details.nlp_flags || [];
+    const imageFocusedScan = !!scanMeta.imageFocusedScan;
+
+    const hasImageWeakCombo =
+      nlpFlags.includes('CLIP_GAME_SCAM_MARKERS') &&
+      nlpFlags.includes('VISION_OCR_RISK') &&
+      nlpFlags.includes('IMAGE_ONLY_LOW_OCR_CONFIDENCE');
+    const hasHardEvidence = nlpFlags.some(f =>
+      /^FINANCIAL_SCAM:/.test(f) ||
+      /^PRICE_ANOMALY_SCAM/.test(f) ||
+      /^UNREALISTIC_RATIO/.test(f) ||
+      /ACCOUNT_TAKEOVER/.test(f) ||
+      /GAMING_DOUBLING_SCAM/.test(f) ||
+      /SHORTLINK_SUSPICIOUS/.test(f) ||
+      /PHISH/i.test(f) ||
+      /OTP/i.test(f)
+    );
+    const hasMediumEvidence = nlpFlags.some(f =>
+      /TRUST_MANIPULATION/.test(f) ||
+      /URGENCY_PRESSURE/.test(f) ||
+      /EXCESSIVE_CAPS/.test(f) ||
+      /CONTEXT_RATE_QUERY/.test(f)
+    );
+    const hasOfficialPromoContext = nlpFlags.includes('OFFICIAL_ROBLOX_PROMO_CONTEXT');
+    const hasSafeRobloxSource = nlpFlags.some(f => /^SAFE_ROBLOX_SOURCE/.test(f));
+    const hasSafeSourceContradiction = nlpFlags.some(f => /^SAFE_SOURCE_CONTRADICTION/.test(f));
+    const officialSafeLock = hasOfficialPromoContext && hasSafeRobloxSource && !hasSafeSourceContradiction;
+
+    // Core guardrail: SAFE must not survive when strong risk evidence exists (except verified official-safe context).
+    if (label === 'SAFE' && !officialSafeLock) {
+      if (hasHardEvidence) {
+        label = 'SUSPICIOUS';
+      } else if (hasMediumEvidence && confidence >= 0.6) {
+        label = 'SUSPICIOUS';
+      }
+    }
+    // Escalate to FAKE_SCAM when danger is explicit and confidence is high.
+    const hasCriticalFlag = nlpFlags.some(f =>
+      /^PRICE_ANOMALY_SCAM/.test(f) ||
+      /^FINANCIAL_SCAM:pay_first_scheme/.test(f) ||
+      /ACCOUNT_TAKEOVER/.test(f) ||
+      /GAMING_DOUBLING_SCAM/.test(f) ||
+      /^UNREALISTIC_RATIO/.test(f)
+    );
+    const hasDangerNarrative = /CẢNH BÁO NGUY HIỂM|LỪA ĐẢO 100%|BẪY GIÁ|GIAO DỊCH NẠP THẺ CÀO|CHUYỂN TIỀN TRƯỚC/i
+      .test((details.intent_label || '') + ' ' + (details.intent_explanation || ''));
+    if (label === 'SUSPICIOUS' && !officialSafeLock && (
+      (hasCriticalFlag && confidence >= 0.55) ||
+      (hasHardEvidence && confidence >= 0.8) ||
+      (hasDangerNarrative && confidence >= 0.85)
+    )) {
+      label = 'FAKE_SCAM';
+    }
+
+    // Image-focused scans with weak OCR signals are unstable; avoid "SAFE tuyệt đối".
+    if (imageFocusedScan && label === 'SAFE' && hasImageWeakCombo && !hasHardEvidence) {
+      label = 'SUSPICIOUS';
+      if (!details.intent_label) {
+        details.intent_label = 'Nghi vấn qua ảnh (OCR thấp)';
+      }
+      if (!details.intent_explanation) {
+        details.intent_explanation = 'Ảnh có tín hiệu rủi ro nhưng OCR chưa đủ rõ để kết luận chắc. Hãy quét thêm văn bản/link hoặc ảnh rõ hơn.';
+      }
+    }
 
     const riskClass = {
       'SAFE': 'vifake-risk-safe',
@@ -1379,6 +1496,7 @@
         ${showIntent && details.intent_label ? `<p><strong>Ý định:</strong> ${escapeHtml(details.intent_label)}</p>` : ''}
         ${showIntent && details.intent_explanation ? `<p>${escapeHtml(details.intent_explanation)}</p>` : ''}
         ${label === 'SAFE' ? `<p class="vifake-safe-msg">Không phát hiện dấu hiệu lừa đảo trong nội dung này.</p>` : ''}
+        ${label === 'SAFE' && imageFocusedScan ? `<p style="margin-top:6px;color:#8a8f9b;font-size:12px">Lưu ý: đây là quét theo ảnh, nên kết quả có thể thay đổi nếu ảnh mờ/crop thiếu nội dung.</p>` : ''}
         ${label !== 'SAFE' ? `
           <div class="vifake-action-hint">
             <strong>💡 Gợi ý:</strong>
