@@ -536,9 +536,16 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         # (XGBoost trained on synthetic scam data can bias toward FAKE_SCAM for neutral text)
         # BUT: Don't override to SAFE if text contains gaming keywords (potential scam context)
         nlp_flags_raw = nlp_result.get("flags", [])
+        benign_context_flags = (
+            "SAFE_INDICATORS",
+            "TEENCODE",
+            "SAFE_ROBLOX_SOURCE",
+            "OFFICIAL_ROBLOX_PROMO_CONTEXT",
+            "CONTEXT_RATE_QUERY",
+        )
         has_scam_flags = any(
             f for f in nlp_flags_raw
-            if not f.startswith("SAFE_INDICATORS") and not f.startswith("TEENCODE")
+            if not str(f).startswith(benign_context_flags)
         )
         # Check for gaming context that should prevent safe override
         GAMING_CONTEXT_KEYWORDS = [
@@ -570,6 +577,8 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         image_only_visual_signal = image_only_mode and (vision_risk >= 0.35 or ocr_risk >= 0.30 or ocr_marker_score >= 0.45 or clip_marker_score >= 0.22)
         has_visual_scam_signal = vision_risk >= 0.50 or ocr_risk >= 0.45 or ocr_marker_score >= 0.55 or clip_marker_score >= 0.28 or image_only_visual_signal
         has_gaming_context = has_gaming_context or ("robux" in ocr_marker_hits) or ("game_currency" in ocr_marker_hits) or clip_marker_score >= 0.22
+        roblox_src = (nlp_result.get("details") or {}).get("roblox_safe_source") or {}
+        has_official_roblox_promo = bool(roblox_src.get("official_promo_context")) and not bool(roblox_src.get("has_risky_prompt"))
         if has_visual_scam_signal or low_ocr_confidence:
             _flags = result["analysis_details"].get("nlp_flags", []) or []
             if "VISION_OCR_RISK" not in _flags:
@@ -584,13 +593,13 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
                 _flags.append("IMAGE_PARSE_OR_OCR_FAILED")
             result["analysis_details"]["nlp_flags"] = _flags
 
-        if not has_scam_flags and nlp_result.get("is_safe", False) and not has_gaming_context and not has_visual_scam_signal:
+        if not has_scam_flags and nlp_result.get("is_safe", False) and (not has_gaming_context or has_official_roblox_promo) and not has_visual_scam_signal:
             result["label"] = "SAFE"
             result["risk_level"] = "LOW"
             result["confidence"] = round(min(result["confidence"], 0.25), 3)
             result["needs_review"] = False
             logger.info("🛡️ Safe override: NLP=SAFE + 0 scam flags + no gaming context → SAFE")
-        elif has_gaming_context and not has_scam_flags:
+        elif has_gaming_context and not has_scam_flags and not has_official_roblox_promo:
             # Gaming content without explicit scam flags → SUSPICIOUS (not safe)
             result["label"] = "SUSPICIOUS"
             result["risk_level"] = "MEDIUM"
@@ -1177,7 +1186,18 @@ def _run_nlp_analysis(text: str) -> Dict:
             elif phobert_conf >= 0.78 and (phobert_conf - scam_conf) >= 0.10:
                 result = phobert_result  # PhoBERT caught scam that detector likely missed
         elif phobert_pred == "SAFE" and scam_pred == "SAFE":
-            result = phobert_result if phobert_conf > scam_conf else result
+            scam_flags = result.get("flags", []) or []
+            preserve_rule_context = any(
+                "SAFE_ROBLOX_SOURCE" in str(f)
+                or "OFFICIAL_ROBLOX_PROMO_CONTEXT" in str(f)
+                or "CONTEXT_RATE_QUERY" in str(f)
+                or "PRICE_ANOMALY" in str(f)
+                for f in scam_flags
+            )
+            if preserve_rule_context:
+                logger.info("🧱 Preserve rule-context SAFE result (keep flags/details for intent sync)")
+            else:
+                result = phobert_result if phobert_conf > scam_conf else result
     
     # Add intent detection
     try:
@@ -1244,6 +1264,16 @@ def _run_nlp_analysis(text: str) -> Dict:
             if has_p2p_trade and "p2p" not in result["intent_explanation"].lower() and "trung gian" not in result["intent_explanation"].lower():
                  result["intent_explanation"] += " [💡 LƯU Ý: Nên tìm bên trung gian giao dịch uy tín để đảm bảo an toàn]."
 
+        # Final intent sync for official-safe Roblox-VNG promotions.
+        has_source_contradiction = any("SAFE_SOURCE_CONTRADICTION" in str(f) for f in all_flags)
+        has_official_roblox_promo = any("OFFICIAL_ROBLOX_PROMO_CONTEXT" in str(f) for f in all_flags)
+        if final_pred == "SAFE" and has_safe_roblox_source and has_official_roblox_promo and not has_source_contradiction:
+            result["intent_label"] = "Thông báo ưu đãi chính thức Roblox-VNG"
+            result["intent_explanation"] = (
+                "Nội dung phù hợp ngữ cảnh chương trình khuyến mãi chính thức (Roblox-VNG/Webpay/thẻ cào chính thức) "
+                "và không phát hiện yêu cầu OTP, mật khẩu hoặc chuyển khoản cá nhân."
+            )
+
         logger.info(f"🎯 Intent: {intent_result.get('primary_intent_label')} (score={intent_result.get('risk_weighted_score', 0):.3f})")
     except Exception as e:
         logger.warning(f"⚠️ Intent detection failed: {e}")
@@ -1291,6 +1321,7 @@ def _vietnamese_scam_detector(text: str) -> Dict:
 
     ACTION_WORDS = ['đưa', 'gửi', 'cho', 'trade', 'chuyển', 'nhập', 'đổi',
                     'trao', 'bỏ', 'nạp', 'mượn', 'transfer', 'swap', 'drop']
+    HIGH_RISK_GIVE_WORDS = ['đưa', 'gửi', 'cho mượn', 'mượn', 'trade', 'đổi', 'trao', 'swap', 'transfer']
     RECEIVE_WORDS = ['nhận', 'lấy', 'được', 'trả lại', 'hoàn', 'unlock',
                      'trả', 'nhận lại', 'nhận được']
 
@@ -1303,9 +1334,10 @@ def _vietnamese_scam_detector(text: str) -> Dict:
                 break
 
     has_action = any(a in text_lower for a in ACTION_WORDS)
+    has_high_risk_give_action = any(a in text_lower for a in HIGH_RISK_GIVE_WORDS)
     has_receive = any(r in text_lower for r in RECEIVE_WORDS)
 
-    if has_game and has_action and has_receive:
+    if has_game and has_high_risk_give_action and has_receive:
         score += 0.45  # Very high signal: game item + give + receive = doubling scam
         flags.append('GAMING_DOUBLING_SCAM:give_receive_pattern')
         details['gaming_doubling_risk'] = 0.45
@@ -1335,17 +1367,21 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         details['p2p_trading_risk'] = p2p_score
 
     # === 0a3.5 Hashtag Concatenation detection (TikTok specific evasion) ===
-    # Detects #shoprobuxlau, #shoprobuxgiare, etc which dodge standard delimiters
+    # Detects patterns like #shoprobuxlau, #robuxgiare only inside hashtag tokens.
     hash_pairs = [
         (r'robux', r'(lau|giare|giárẻ|uytin|sach|hack)'),
-        (r'quânhuy', r'(lau|giare|lậu|hack)'),
-        (r'kimcương', r'(hack|giare|free|lậu)'),
+        (r'quanhuy|quânhuy', r'(lau|giare|lậu|hack)'),
+        (r'kimcuong|kimcương', r'(hack|giare|free|lậu)'),
     ]
-    for t1, t2 in hash_pairs:
-        if re.search(rf'({t1}.*?{t2}|{t2}.*?{t1})', text_lower):
-            score += 0.60 # Strong Scam indicator - force high priority
-            flags.append(f'SQUASHED_HASHTAG_SCAM:{t1}+{t2}')
-            details['hashtag_fusion_risk'] = 0.60
+    hashtag_tokens = re.findall(r'#([a-z0-9_]{4,64})', text_lower)
+    for token in hashtag_tokens:
+        for t1, t2 in hash_pairs:
+            if re.search(t1, token) and re.search(t2, token):
+                score += 0.60  # Strong scam indicator for fused scam hashtags
+                flags.append(f'SQUASHED_HASHTAG_SCAM:{t1}+{t2}')
+                details['hashtag_fusion_risk'] = 0.60
+                break
+        if details.get('hashtag_fusion_risk'):
             break
 
     # === 0a3. Gaming doubling/trade explicit patterns ===
@@ -1399,10 +1435,12 @@ def _vietnamese_scam_detector(text: str) -> Dict:
 
     # === 0a4b. Trusted Roblox source confirmation ===
     roblox_safe_eval = evaluate_roblox_safe_source(text)
-    if roblox_safe_eval.get("trusted_hit_count", 0) > 0:
+    if roblox_safe_eval.get("trusted_hit_count", 0) > 0 or roblox_safe_eval.get("official_promo_context"):
         details["roblox_safe_source"] = roblox_safe_eval
         details["roblox_safe_source_version"] = roblox_safe_eval.get("reference_version", "unknown")
         flags.append(f"SAFE_ROBLOX_SOURCE ({roblox_safe_eval.get('trusted_hit_count', 0)} channels)")
+        if roblox_safe_eval.get("official_promo_context"):
+            flags.append("OFFICIAL_ROBLOX_PROMO_CONTEXT")
 
         if roblox_safe_eval.get("has_risky_prompt"):
             flags.append("SAFE_SOURCE_CONTRADICTION:risky_prompt_detected")
@@ -1479,13 +1517,18 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         details['crypto_keyword_hits'] = crypto_hits
 
     # "send small get large" pattern: e.g. "gửi 0.01 ETH... nhận lại 0.05 ETH"
-    send_get_pattern = r'(gửi|send|nạp)\s+[\d.,]+\s*\w+.*?(nhận|receive|get)\s+[\d.,]+'
+    send_get_pattern = r'(gửi|send|nạp).{0,25}[\d.,]+\s*\w+.{0,35}?(nhận|receive|get).{0,20}?[\d.,]+'
     if re.search(send_get_pattern, text_lower, re.DOTALL):
         score += 0.35
         flags.append("FINANCIAL_SCAM:send_receive_doubling")
 
     # Generic money-doubling numbers (e.g. "100k nhận về 500k")
-    money_double = r'(nạp|gửi|bỏ ra).*?\d+.*?(nhận|được|lấy về).*?\d+'
+    # Tightened to avoid matching date/marketing content such as "08.03.2026".
+    money_double = (
+        r'(nạp|gửi|bỏ ra).{0,25}\d{1,3}(?:[.,]\d{3})?\s*(k|vnd|đ|đồng)'
+        r'.{0,40}?(nhận|được|lấy về)'
+        r'.{0,20}?\d{1,3}(?:[.,]\d{3})?\s*(k|vnd|đ|đồng)'
+    )
     if re.search(money_double, text_lower, re.DOTALL):
         score += 0.25
         flags.append("FINANCIAL_SCAM:money_doubling")
@@ -1536,7 +1579,9 @@ def _vietnamese_scam_detector(text: str) -> Dict:
             r'verify.*acc', r'xác.*minh.*acc', r'xác.*nhận.*acc', r'verify.*tài.*khoản',
         ],
         'gift_card_scam': [
-            r'nạp.*thẻ.*được', r'nạp.*thẻ', r'thẻ.*gate', r'thẻ.*garena',
+            r'nạp.*thẻ.*được.*(x\d+|\d+\s*(k|vnd|đ|đồng|robux|uc|quân huy|kim cương)|tặng|hoàn|bonus)',
+            r'nạp.*thẻ.*(x2|x3|siêu rẻ|siêu hời|gấp \d+ lần)',
+            r'thẻ.*gate', r'thẻ.*garena',
             r'nạp.*50k.*được.*500k', r'nạp.*100k.*được.*1tr',
             r'ưu.*đãi.*đặc.*biệt', r'khuyến.*mãi.*đặc.*biệt',
         ],
@@ -1727,6 +1772,39 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         if not has_cta_or_execution and not has_direct_theft_signal:
             score = min(score, 0.39)  # keep it at most SUSPICIOUS
             details['context_rate_query_clamp'] = True
+
+    # === 7e. Official Roblox-VNG promo guard ===
+    # Keep official promo posts from being over-penalized by generic urgency/giveaway language.
+    roblox_src = details.get("roblox_safe_source") or {}
+    has_official_roblox_promo = bool(roblox_src.get("official_promo_context"))
+    has_safe_roblox_ref = bool(roblox_src.get("is_safe_reference"))
+    has_roblox_source_risky_prompt = bool(roblox_src.get("has_risky_prompt"))
+    if has_official_roblox_promo or has_safe_roblox_ref:
+        severe_scam_signals = any(
+            str(f).startswith("FINANCIAL_SCAM:pay_first_scheme")
+            or "ACCOUNT_TAKEOVER" in str(f)
+            or "GAMING_DOUBLING_SCAM" in str(f)
+            or str(f).startswith("UNREALISTIC_RATIO")
+            or str(f).startswith("PRICE_ANOMALY_SCAM")
+            or "SHORTLINK_SUSPICIOUS" in str(f)
+            or "SAFE_SOURCE_CONTRADICTION" in str(f)
+            for f in flags
+        )
+        if not severe_scam_signals and not has_roblox_source_risky_prompt:
+            score = min(score, 0.18)  # allow SAFE for official promo context
+            details["official_roblox_promo_clamp"] = True
+
+    # Official-source contradiction must never end as SAFE.
+    if any("SAFE_SOURCE_CONTRADICTION" in str(f) for f in flags):
+        has_payment_or_credential_ask = bool(re.search(
+            r"(otp|m[aậ]t\s*kh[aẩ]u|password|pass|chuy[eể]n\s*kho[aả]n|n[aạ]p\s*tr[uư][oớ]c|c[oọ]c\s*tr[uư][oớ]c)",
+            text_lower
+        ))
+        if has_payment_or_credential_ask:
+            score = max(score, 0.58)
+        else:
+            score = max(score, 0.40)
+        details["safe_source_contradiction_boost"] = True
 
     # === 8. Safe Content Indicators (negative scoring) ===
     safe_patterns = [

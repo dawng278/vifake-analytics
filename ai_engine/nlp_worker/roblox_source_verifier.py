@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import unicodedata
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, List
@@ -47,6 +48,13 @@ _FALLBACK_REFERENCE: Dict[str, Any] = {
                 "shop.vnggames.com",
                 "robloxsupport@vnggames.com",
                 "hotroroblox.vnggames.com",
+                "roblox - vng",
+                "roblox vng",
+                "cổng nạp roblox - vng",
+                "cổng nạp roblox vng",
+                "webpay",
+                "thẻ cào chính thức",
+                "kênh thẻ cào chính thức",
             ],
         },
         {
@@ -92,8 +100,10 @@ def _load_reference() -> Dict[str, Any]:
 
 
 def _norm(text: str) -> str:
-    t = (text or "").strip().lower()
+    t = unicodedata.normalize("NFKC", (text or "")).strip().lower()
     t = t.replace("\n", " ")
+    t = re.sub(r"[\-–—_/|:;,\.\(\)\[\]\{\}!]+", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
     return t
 
 
@@ -155,19 +165,34 @@ def evaluate_roblox_safe_source(text: str) -> Dict[str, Any]:
                 }
             )
 
+    official_promo_patterns = [
+        r"roblox\s*vng",
+        r"c[oô]ng\s*n[aạ]p\s*roblox",
+        r"\bwebpay\b",
+        r"th[eẻ]\s*c[aà]o\s*ch[ií]nh\s*th[uứ]c",
+        r"k[eê]nh\s*th[eẻ]\s*c[aà]o\s*ch[ií]nh\s*th[uứ]c",
+        r"giao\s*d[ịi]ch.{0,20}\bwebpay\b",
+    ]
+    official_promo_hits = [p for p in official_promo_patterns if re.search(p, t)]
+    official_promo_context = len(official_promo_hits) >= 2
+
     hard_block_signals = ref.get("hard_block_signals", [])
     has_risky_prompt = _looks_like_risky_prompt(t, hard_block_signals)
 
     trusted_hit_count = len(matched_channels)
-    is_safe_reference = trusted_hit_count > 0 and not has_risky_prompt
+    has_official_context = (trusted_hit_count > 0) or official_promo_context
+    is_safe_reference = has_official_context and not has_risky_prompt
 
     discount = 0.0
     if is_safe_reference:
-        discount = min(0.10 + (trusted_hit_count * 0.05), 0.28)
+        promo_bonus = 0.06 if official_promo_context else 0.0
+        discount = min(0.10 + (trusted_hit_count * 0.05) + promo_bonus, 0.40)
 
     return {
         "trusted_hit_count": trusted_hit_count,
         "matched_channels": matched_channels,
+        "official_promo_context": official_promo_context,
+        "official_promo_hits": len(official_promo_hits),
         "is_safe_reference": is_safe_reference,
         "has_risky_prompt": has_risky_prompt,
         "safety_discount": round(discount, 3),
