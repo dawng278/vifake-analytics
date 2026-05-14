@@ -1064,6 +1064,9 @@
     for (const selector of selectors) {
       const direct = startEl.closest?.(selector);
       if (direct && direct !== document.body && direct !== document.documentElement) {
+        if (PLATFORM === 'tiktok' && direct.tagName === 'VIDEO') {
+          return findMainVideoContainer(direct) || direct.parentElement || direct;
+        }
         return direct;
       }
     }
@@ -1123,31 +1126,82 @@
     }
   }
 
-  async function extractMediaUrls(postEl) {
+  function overlapRatio(a, b) {
+    if (!a || !b) return 0;
+    const x1 = Math.max(a.left, b.left);
+    const y1 = Math.max(a.top, b.top);
+    const x2 = Math.min(a.right, b.right);
+    const y2 = Math.min(a.bottom, b.bottom);
+    if (x2 <= x1 || y2 <= y1) return 0;
+    const inter = (x2 - x1) * (y2 - y1);
+    const union = (a.width * a.height) + (b.width * b.height) - inter;
+    return union > 0 ? inter / union : 0;
+  }
+
+  function centerDistance(a, b) {
+    if (!a || !b) return Number.MAX_SAFE_INTEGER;
+    const ax = a.left + a.width / 2;
+    const ay = a.top + a.height / 2;
+    const bx = b.left + b.width / 2;
+    const by = b.top + b.height / 2;
+    const dx = ax - bx;
+    const dy = ay - by;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  async function extractMediaUrls(postEl, options = {}) {
     const images = [];
     const videos = [];
-    const collectImage = async (img) => {
+    const imageCandidates = [];
+    const anchorEl = options.anchorEl || null;
+    const anchorRect = anchorEl?.getBoundingClientRect?.() || null;
+
+    const collectImageCandidate = (img) => {
       const src = img.src;
       if (!src || src.startsWith('data:')) return;
-      // Filter out tiny icons (avatars are OK, emojis aren't)
+      // Filter out tiny icons/emojis.
       const rect = img.getBoundingClientRect();
-      if (rect.width >= 50 && rect.height >= 50) {
-        const dataUrl = (src.startsWith('blob:') || src.includes('fbcdn') || src.includes('tiktokcdn'))
-          ? await imageElementToDataUrl(img)
-          : null;
-        images.push(dataUrl || src);
-      }
+      if (rect.width < 50 || rect.height < 50) return;
+      const area = rect.width * rect.height;
+      const ov = anchorRect ? overlapRatio(rect, anchorRect) : 0;
+      const dist = anchorRect ? centerDistance(rect, anchorRect) : 0;
+      imageCandidates.push({ img, src, rect, area, ov, dist });
     };
+
+    const collectImage = async (candidate) => {
+      const { img, src } = candidate;
+      const dataUrl = (src.startsWith('blob:') || src.includes('fbcdn') || src.includes('tiktokcdn'))
+        ? await imageElementToDataUrl(img)
+        : null;
+      images.push(dataUrl || src);
+    };
+
     const collectVideo = (video) => {
       if (video.src) videos.push(video.src);
       if (video.poster) images.push(video.poster);
       video.querySelectorAll('source').forEach(s => { if (s.src) videos.push(s.src); });
     };
 
-    if (postEl.matches?.('img')) await collectImage(postEl);
+    if (postEl.matches?.('img')) collectImageCandidate(postEl);
     for (const img of postEl.querySelectorAll('img')) {
-      await collectImage(img);
+      collectImageCandidate(img);
     }
+
+    // Rank images by proximity to click target first, then by size.
+    if (anchorRect) {
+      imageCandidates.sort((a, b) => {
+        if (b.ov !== a.ov) return b.ov - a.ov;
+        if (a.dist !== b.dist) return a.dist - b.dist;
+        return b.area - a.area;
+      });
+    } else {
+      imageCandidates.sort((a, b) => b.area - a.area);
+    }
+
+    for (const candidate of imageCandidates.slice(0, 8)) {
+      await collectImage(candidate);
+    }
+
     if (postEl.matches?.('video')) collectVideo(postEl);
     postEl.querySelectorAll('video').forEach(collectVideo);
     return { images: [...new Set(images)].slice(0, 5), videos: [...new Set(videos)].slice(0, 3) };
@@ -1164,26 +1218,27 @@
 
   async function handleContextMenuScan(context) {
     const selectionText = context.selectionText || '';
-    let postEl = lastRightClickedEl;
+    const anchorEl = lastRightClickedEl;
+    let postEl = anchorEl;
     let text = '';
 
     // Priority 1: User explicitly selected text → use that
     if (selectionText && selectionText.length >= 10) {
       text = selectionText;
-      postEl = lastRightClickedEl || document.body;
+      postEl = findPostContainer(anchorEl) || anchorEl || document.body;
     } else {
       // Priority 2: Walk up from clicked element to find post container
-      postEl = findPostContainer(lastRightClickedEl);
+      postEl = findPostContainer(anchorEl);
       if (!postEl) {
-        postEl = lastRightClickedEl || document.body;
+        postEl = anchorEl || document.body;
       }
-      text = (postEl.innerText || '').trim();
+      text = extractPostText(postEl) || (postEl.innerText || '').trim();
     }
 
     // Limit text length
     if (text.length > 5000) text = text.substring(0, 5000);
 
-    const media = postEl ? await extractMediaUrls(postEl) : { images: [], videos: [] };
+    const media = postEl ? await extractMediaUrls(postEl, { anchorEl }) : { images: [], videos: [] };
     if (context.srcUrl && /\.(png|jpe?g|webp|gif)(\?|#|$)/i.test(context.srcUrl)) {
       let contextImage = null;
       if (lastRightClickedEl && lastRightClickedEl.matches?.('img')) {
