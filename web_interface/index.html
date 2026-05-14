@@ -920,7 +920,8 @@
     const visC=Math.round(visRaw*100);
     // Use intent_label (string) — d.intent is an object from the API
     const intentObj=d.intent||{};
-    const intentStr=d.intent_label||(typeof intentObj==='object'?intentObj.primary_intent_label||'':String(intentObj))||'—';
+    let intentStr=d.intent_label||(typeof intentObj==='object'?intentObj.primary_intent_label||'':String(intentObj))||'—';
+    const intentExplanation = d.intent_explanation || '';
     const flagStr=(d.nlp_flags||[]).join(' ');
     const ocrHits=Array.isArray(d.ocr_keyword_hits)?d.ocr_keyword_hits:[];
     const ocrText=d.ocr_text_excerpt||'';
@@ -937,6 +938,27 @@
     const fusionPct=Math.round(conf*100);
     const hasScamSignal=/(SCAM|PHISH|FRAUD|FAKE|PAY_FIRST)/i.test(intentStr+(d.nlp_flags||[]).join(' '));
     if(label==='SAFE'&&hasScamSignal&&fusionPct>=65) label='FAKE_SCAM';
+    const nlpFlags = d.nlp_flags || [];
+    const hasCriticalFlag = nlpFlags.some(f =>
+      /^PRICE_ANOMALY_SCAM/.test(f) ||
+      /^FINANCIAL_SCAM:pay_first_scheme/.test(f) ||
+      /ACCOUNT_TAKEOVER/.test(f) ||
+      /GAMING_DOUBLING_SCAM/.test(f) ||
+      /^UNREALISTIC_RATIO/.test(f)
+    );
+    const hasImageScamCombo =
+      nlpFlags.includes('CLIP_GAME_SCAM_MARKERS') &&
+      nlpFlags.includes('VISION_OCR_RISK') &&
+      nlpFlags.includes('IMAGE_ONLY_LOW_OCR_CONFIDENCE');
+    if (label === 'SUSPICIOUS' && (hasCriticalFlag || hasImageScamCombo)) {
+      label = 'FAKE_SCAM';
+    }
+    const isSafeIntent = /không phát hiện dấu hiệu lừa đảo/i.test(intentStr || '');
+    if ((label === 'SUSPICIOUS' || label === 'FAKE_SCAM') && isSafeIntent) {
+      intentStr = label === 'FAKE_SCAM'
+        ? 'Nghi vấn lừa đảo (đã phát hiện tín hiệu mạnh)'
+        : 'Nghi vấn lừa đảo (cần kiểm tra thêm)';
+    }
     if(ocrRisk>0) ft.push('ocr_risk');
     return {
       verdict:label,
@@ -944,8 +966,9 @@
       vis:visC,
       fus:fusionPct,
       intent:intentStr||'—',
+      intentExplanation:intentExplanation||'',
       features:ft,
-      flags:d.nlp_flags||[],
+      flags:nlpFlags,
       debug:{
         ocrText:ocrText,
         ocrHits:ocrHits,
@@ -976,8 +999,11 @@
       setBar('bar-vis','val-vis',r.vis);
       setBar('bar-fus','val-fus',r.fus);
     },30));
-    document.getElementById('res-intent').textContent=r.intent?'Intent: '+r.intent:'';
-    document.getElementById('res-intent').style.color=r.intent&&r.intent!=='Không phát hiện dấu hiệu lừa đảo'?'var(--color-text-tertiary)':'#3B6D11';
+    const hasRiskIntent = r.verdict === 'SUSPICIOUS' || r.verdict === 'FAKE_SCAM';
+    const intentLine = r.intent ? ('Intent: ' + r.intent) : '';
+    const explainLine = r.intentExplanation ? (' · ' + r.intentExplanation) : '';
+    document.getElementById('res-intent').textContent = intentLine + (hasRiskIntent ? explainLine : '');
+    document.getElementById('res-intent').style.color = hasRiskIntent ? '#854F0B' : '#3B6D11';
     const debug = r.debug || {};
     const debugParts = [];
     if (debug.ocrHits && debug.ocrHits.length) debugParts.push('ocr_hits=' + debug.ocrHits.join(','));

@@ -31,6 +31,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from pydantic import BaseModel, Field, field_validator
 import uvicorn
 from ai_engine.nlp_worker.market_rate_analyzer import detect_market_price_anomalies
+from ai_engine.nlp_worker.roblox_source_verifier import evaluate_roblox_safe_source
 
 # URL result cache (TTL 300s, max 1000 entries)
 try:
@@ -624,6 +625,33 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
                 result["needs_review"] = True
                 logger.warning("🧱 Image-only low-OCR guardrail -> SUSPICIOUS")
 
+        # If image-only was already SUSPICIOUS from fusion/heuristics, still allow
+        # promotion to FAKE_SCAM when visual scam evidence is strong.
+        if image_only_mode and result.get("label") == "SUSPICIOUS":
+            strong_combo = (
+                ("robux" in ocr_marker_hits or "roblox_brand" in ocr_marker_hits)
+                and ("bang_gia_rate" in ocr_marker_hits or "nap_topup" in ocr_marker_hits or "money_vnd" in ocr_marker_hits)
+            )
+            severe_visual_combo = (
+                strong_combo
+                or ("pay_first" in ocr_marker_hits)
+                or ("credential_or_otp" in ocr_marker_hits)
+                or (clip_marker_score >= 0.20 and low_ocr_confidence)
+                or (ocr_marker_score >= 0.62)
+                or (vision_risk >= 0.62)
+                or (ocr_risk >= 0.58)
+            )
+            if severe_visual_combo:
+                result["label"] = "FAKE_SCAM"
+                result["risk_level"] = "HIGH"
+                result["confidence"] = max(float(result.get("confidence", 0.0)), 0.72, ocr_risk, ocr_marker_score, clip_marker_score, vision_risk)
+                result["needs_review"] = True
+                logger.warning(
+                    "🧱 Image-only suspicious->FAKE_SCAM guardrail: "
+                    f"ocr={ocr_marker_hits} clip={clip_marker_hits} "
+                    f"clip_s={clip_marker_score:.2f} ocr_s={ocr_marker_score:.2f}"
+                )
+
         # Vision/OCR guardrail: image-only scams must not be downgraded to SAFE.
         if has_visual_scam_signal and result.get("label") == "SAFE":
             if vision_risk >= 0.75 or ocr_risk >= 0.65:
@@ -637,11 +665,30 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             result["needs_review"] = True
             logger.warning(f"🖼️ Vision/OCR guardrail: risk={vision_risk:.2f}, ocr={ocr_risk:.2f} → {result['label']}")
 
+        # Critical scam flag lock: avoid ending at SUSPICIOUS when high-severity scam
+        # indicators already exist from NLP/OCR/price-anomaly checks.
+        _flags_for_lock = result["analysis_details"].get("nlp_flags", []) or []
+        has_critical_scam_flag = any(
+            str(f).startswith("PRICE_ANOMALY_SCAM")
+            or str(f).startswith("FINANCIAL_SCAM:pay_first_scheme")
+            or "ACCOUNT_TAKEOVER" in str(f)
+            or "GAMING_DOUBLING_SCAM" in str(f)
+            or str(f).startswith("UNREALISTIC_RATIO")
+            or ("OCR_GAME_SCAM_MARKERS" in str(f) and ("CLIP_GAME_SCAM_MARKERS" in _flags_for_lock or "VISION_OCR_RISK" in _flags_for_lock))
+            for f in _flags_for_lock
+        )
+        if result.get("label") == "SUSPICIOUS" and has_critical_scam_flag:
+            result["label"] = "FAKE_SCAM"
+            result["risk_level"] = "HIGH"
+            result["confidence"] = max(float(result.get("confidence", 0.0)), 0.72, ocr_risk, ocr_marker_score, clip_marker_score, vision_risk)
+            result["needs_review"] = True
+            logger.warning("🧱 Critical scam flag lock: SUSPICIOUS -> FAKE_SCAM")
+
         # Upgrade borderline FAKE_SCAM to SUSPICIOUS when confidence is in gray zone (0.40-0.69)
         label = result["label"]
         conf_val = result.get("confidence", 0.5)
         keep_fake_for_image_only = bool(image_only_mode and (low_ocr_confidence or ocr_marker_hits or clip_marker_score >= 0.22))
-        if label == "FAKE_SCAM" and 0.40 <= conf_val < 0.70 and not keep_fake_for_image_only:
+        if label == "FAKE_SCAM" and 0.40 <= conf_val < 0.70 and not keep_fake_for_image_only and not has_critical_scam_flag:
             result["label"] = "SUSPICIOUS"
             result["risk_level"] = "MEDIUM"
             result["needs_review"] = True
@@ -655,6 +702,43 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             result["risk_level"] = "LOW"
         elif label == "SUSPICIOUS" and result["risk_level"] not in ("MEDIUM", "HIGH"):
             result["risk_level"] = "MEDIUM"
+
+        # Sync intent to final verdict so UI does not show SAFE intent while label is suspicious/scam.
+        _flags_final = result["analysis_details"].get("nlp_flags", []) or []
+        _intent_label = result["analysis_details"].get("intent_label", "") or ""
+        _intent_expl = result["analysis_details"].get("intent_explanation", "") or ""
+        _safe_intent = "không phát hiện dấu hiệu lừa đảo" in _intent_label.lower()
+
+        if result["label"] in ("SUSPICIOUS", "FAKE_SCAM") and (_safe_intent or not _intent_label.strip()):
+            has_price_anomaly = any("PRICE_ANOMALY" in str(f) for f in _flags_final)
+            has_visual_markers = any(
+                str(f) in ("CLIP_GAME_SCAM_MARKERS", "OCR_GAME_SCAM_MARKERS", "VISION_OCR_RISK")
+                for f in _flags_final
+            )
+
+            if has_price_anomaly:
+                result["analysis_details"]["intent_label"] = "Bất thường giá thị trường"
+                result["analysis_details"]["intent_explanation"] = (
+                    "Tỷ lệ nạp/game-currency lệch mạnh so với mức tham chiếu. "
+                    "Khả năng cao là bẫy giá rẻ để lừa chuyển tiền/cọc trước."
+                )
+            elif has_visual_markers:
+                result["analysis_details"]["intent_label"] = "Nghi vấn lừa đảo game qua hình ảnh"
+                result["analysis_details"]["intent_explanation"] = (
+                    "Ảnh chứa marker rủi ro (bảng giá/rate game-currency, tín hiệu scam từ OCR/CLIP). "
+                    "Cần tránh cung cấp tài khoản, OTP hoặc chuyển tiền trước."
+                )
+            else:
+                result["analysis_details"]["intent_label"] = "Nghi vấn hoạt động lừa đảo"
+                result["analysis_details"]["intent_explanation"] = (
+                    "Hệ thống phát hiện nhiều tín hiệu rủi ro trong nội dung. "
+                    "Khuyến nghị không giao dịch hoặc cung cấp thông tin nhạy cảm."
+                )
+
+            logger.info(
+                "🧭 Intent synchronized with final verdict: "
+                f"label={result['label']} intent={result['analysis_details'].get('intent_label')}"
+            )
 
         complete_job(job_id, result)
         # Store in cache (URL-mode only; don't cache user-pasted content)
@@ -1079,12 +1163,18 @@ def _run_nlp_analysis(text: str) -> Dict:
         phobert_conf = phobert_result.get('confidence', 0)
         phobert_pred = phobert_result.get('prediction', 'SAFE')
         scam_pred = result.get('prediction', 'SAFE')
+        scam_flags = result.get("flags", []) or []
+        has_safe_source_signal = any("SAFE_ROBLOX_SOURCE" in str(f) for f in scam_flags)
         logger.info(f"🔄 Comparing: PhoBERT={phobert_pred}@{phobert_conf:.3f} vs ScamDetector={scam_pred}@{scam_conf:.3f}")
         # If scam detector found signals (non-SAFE), it overrides a SAFE PhoBERT
         if scam_pred != "SAFE":
             pass  # keep scam detector result
         elif phobert_pred != "SAFE" and phobert_conf > scam_conf:
-            result = phobert_result  # PhoBERT caught scam that detector missed
+            # Guardrail: do not let borderline PhoBERT override trusted-source SAFE signal.
+            if has_safe_source_signal:
+                logger.info("🧱 Safe-source lock: keep ScamDetector SAFE over PhoBERT non-safe override")
+            elif phobert_conf >= 0.78 and (phobert_conf - scam_conf) >= 0.10:
+                result = phobert_result  # PhoBERT caught scam that detector likely missed
         elif phobert_pred == "SAFE" and scam_pred == "SAFE":
             result = phobert_result if phobert_conf > scam_conf else result
     
@@ -1103,6 +1193,7 @@ def _run_nlp_analysis(text: str) -> Dict:
         has_price_scam = any("PRICE_ANOMALY" in str(f) for f in all_flags)
         has_doubling = any("GAMING_DOUBLING" in str(f) or "UNREALISTIC_RATIO" in str(f) for f in all_flags)
         has_p2p_trade = any("RISKY_P2P_TRADING" in str(f) for f in all_flags)
+        has_safe_roblox_source = any("SAFE_ROBLOX_SOURCE" in str(f) for f in all_flags)
         
         if primary_intent == "none" or max_score == 0.0:
             if has_price_scam:
@@ -1125,6 +1216,12 @@ def _run_nlp_analysis(text: str) -> Dict:
             elif final_pred in ["FAKE_SCAM", "SUSPICIOUS"]:
                 result["intent_label"] = "Nghi vấn hoạt động lừa đảo"
                 result["intent_explanation"] = "Hệ thống phát hiện sự kết hợp của nhiều từ khoá rủi ro hoặc cấu trúc văn bản đặc trưng của tin nhắn gian lận nhắm vào người dùng."
+            elif has_safe_roblox_source:
+                result["intent_label"] = "Tham chiếu nguồn nạp Roblox chính thức"
+                result["intent_explanation"] = (
+                    "Nội dung có nhắc tới kênh nạp Robux chính thống (App Store/Google Play/VNG Shop/Roblox Help) "
+                    "và không thấy dấu hiệu đòi OTP, mật khẩu hay chuyển khoản cá nhân."
+                )
             else:
                 result["intent_label"] = "Không phát hiện dấu hiệu lừa đảo"
                 result["intent_explanation"] = get_safe_explanation()
@@ -1291,6 +1388,21 @@ def _vietnamese_scam_detector(text: str) -> Dict:
                 "PRICE_ANOMALY_SUSPICIOUS:"
                 f"{top.get('currency')}@{top.get('ratio_per_1000_vnd')}per1k"
             )
+
+    # === 0a4b. Trusted Roblox source confirmation ===
+    roblox_safe_eval = evaluate_roblox_safe_source(text)
+    if roblox_safe_eval.get("trusted_hit_count", 0) > 0:
+        details["roblox_safe_source"] = roblox_safe_eval
+        details["roblox_safe_source_version"] = roblox_safe_eval.get("reference_version", "unknown")
+        flags.append(f"SAFE_ROBLOX_SOURCE ({roblox_safe_eval.get('trusted_hit_count', 0)} channels)")
+
+        if roblox_safe_eval.get("has_risky_prompt"):
+            flags.append("SAFE_SOURCE_CONTRADICTION:risky_prompt_detected")
+        elif roblox_safe_eval.get("is_safe_reference"):
+            safe_source_discount = float(roblox_safe_eval.get("safety_discount", 0.0) or 0.0)
+            if safe_source_discount > 0:
+                score = max(0.0, score - safe_source_discount)
+                details["safe_source_discount"] = round(safe_source_discount, 3)
 
 
     # === 0a4. Account takeover / cookie logger ===

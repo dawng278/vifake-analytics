@@ -1,0 +1,112 @@
+{
+  "version": "2026-05-14",
+  "last_verified_utc": "2026-05-14",
+  "scope": "roblox_vn_safe_recharge",
+  "notes": "Reference for safe-source confirmation in scam detection. Used for indicator matching, not direct transaction execution.",
+  "trusted_channels": [
+    {
+      "id": "roblox_vng_app_store_vn",
+      "name": "Roblox VN (App Store Vietnam)",
+      "type": "app_store",
+      "url": "https://apps.apple.com/vn/app/roblox-vn/id6474715805",
+      "indicators": [
+        "apps.apple.com/vn/app/roblox-vn/id6474715805",
+        "roblox vn",
+        "vnggames co., ltd",
+        "mua bằng app store"
+      ],
+      "sample_price_points": [
+        {"pack": "40 Robux", "price_vnd": 18000},
+        {"pack": "Premium 80 Robux", "price_vnd": 36000},
+        {"pack": "Premium 400 Robux", "price_vnd": 180000},
+        {"pack": "Premium 800 Robux", "price_vnd": 360000},
+        {"pack": "Premium 1700 Robux", "price_vnd": 720000},
+        {"pack": "Premium 4500 Robux", "price_vnd": 1799000},
+        {"pack": "Premium 10000 Robux", "price_vnd": 3599000},
+        {"pack": "22500 Robux", "price_vnd": 7199000}
+      ]
+    },
+    {
+      "id": "roblox_vng_google_play_vn",
+      "name": "Roblox VNG (Google Play Vietnam)",
+      "type": "google_play",
+      "url": "https://play.google.com/store/apps/details?id=com.roblox.client.vnggames",
+      "indicators": [
+        "play.google.com/store/apps/details?id=com.roblox.client.vnggames",
+        "com.roblox.client.vnggames",
+        "vnggames co., ltd",
+        "mua bằng google play"
+      ]
+    },
+    {
+      "id": "vng_webshop_roblox_vn",
+      "name": "VNGGames Shop - Roblox VN",
+      "type": "webshop",
+      "url": "https://shop.vnggames.com/vn/game/roblox",
+      "indicators": [
+        "shop.vnggames.com/vn/game/roblox",
+        "shop.vnggames.com",
+        "webshop.vnggames.com",
+        "robloxsupport@vnggames.com",
+        "hotroroblox.vnggames.com"
+      ]
+    },
+    {
+      "id": "roblox_help_vng_faq",
+      "name": "Roblox Help - FAQ Roblox VNG Official Launch",
+      "type": "official_help",
+      "url": "https://en.help.roblox.com/hc/en-us/articles/27349697955220-FAQ-Roblox-VNG-Official-Launch",
+      "indicators": [
+        "en.help.roblox.com",
+        "faq roblox vng official launch",
+        "roblox help"
+      ]
+    }
+  ],
+  "global_crosscheck_samples": [
+    {
+      "region": "US",
+      "source": "https://apps.apple.com/us/app/roblox/id431946152",
+      "price_points": [
+        {"pack": "Roblox Premium 450", "price_usd": 4.99},
+        {"pack": "Roblox Premium 1000", "price_usd": 9.99},
+        {"pack": "Roblox Premium 2200", "price_usd": 19.99},
+        {"pack": "10000 Robux", "price_usd": 99.99}
+      ]
+    }
+  ],
+  "derived_robux_thresholds_per_1000_vnd": {
+    "method": "VN official packs baseline + US packs converted with 1 USD ~= 26,351.5 VND (snapshot 2026-05-14)",
+    "official_observed_band": {
+      "vn_min": 2.22,
+      "vn_max": 3.13,
+      "us_crosscheck_min": 3.43,
+      "us_crosscheck_max": 4.19
+    },
+    "detector_bands": {
+      "safe_min": 2.2,
+      "safe_max": 4.4,
+      "suspicious_high": 6.0,
+      "scam_high": 8.5
+    },
+    "interpretation": {
+      "safe": "Nằm trong biên chính hãng hoặc chênh nhẹ theo nền tảng/phí cửa hàng.",
+      "suspicious": "Cao hơn đáng kể so với biên chính hãng, cần kiểm chứng nguồn nạp.",
+      "scam": "Cao phi lý so với biên chính hãng, rủi ro lừa đảo rất cao."
+    }
+  },
+  "verification_methods": [
+    "Chỉ tin link domain chuẩn: apps.apple.com, play.google.com, shop.vnggames.com, en.help.roblox.com",
+    "Đối chiếu package/app id: com.roblox.client.vnggames và id6474715805",
+    "Đối chiếu publisher hiển thị: VNGGAMES CO., LTD hoặc VNGGames Co., Ltd",
+    "So tỷ giá Robux trên 1,000 VND: nếu cao bất thường so với mốc chính hãng thì tăng cảnh báo",
+    "Tuyệt đối không cung cấp OTP, mật khẩu, cookie, hoặc chuyển khoản cá nhân để nạp Robux"
+  ],
+  "hard_block_signals": [
+    "chuyển khoản trước",
+    "gửi otp",
+    "nhập mật khẩu",
+    "verify acc qua link rút gọn",
+    "ib để nhận robux"
+  ]
+}

@@ -1,15 +1,17 @@
 {
-  "version": "2026-05-13",
+  "version": "2026-05-14",
   "unit": "currency_per_1000_vnd",
   "source": "internal_curated_reference_2026",
   "notes": "Reference ranges are internally curated for scam-gap detection, not financial advice.",
   "currencies": {
     "robux": {
       "aliases": ["robux", "rbx", "rb", "robux card"],
-      "safe_min": 5,
-      "safe_max": 16,
-      "suspicious_high": 24,
-      "scam_high": 40
+      "safe_min": 2.2,
+      "safe_max": 4.4,
+      "suspicious_high": 6.0,
+      "scam_high": 8.5,
+      "derived_from": "official_vn_appstore_plus_us_crosscheck_2026_05",
+      "reference_note": "Based on Roblox VN official packs + US App Store cross-check; unit is Robux per 1,000 VND."
     },
     "quan_huy": {
       "aliases": ["quân huy", "quan huy", "qh"],

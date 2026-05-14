@@ -18,17 +18,17 @@ _PRICE_RE = re.compile(rf"({_NUM_TOKEN})\s*(k|vnd|đ|đồng)\b", re.IGNORECASE)
 logger = logging.getLogger(__name__)
 
 _FALLBACK_REFERENCE: Dict[str, Any] = {
-    "version": "embedded-fallback-2026-05-13",
+    "version": "embedded-fallback-2026-05-14",
     "unit": "currency_per_1000_vnd",
     "source": "embedded_fallback",
     "notes": "Used only when external market reference file is unavailable.",
     "currencies": {
         "robux": {
             "aliases": ["robux", "rbx", "rb", "robux card"],
-            "safe_min": 5,
-            "safe_max": 16,
-            "suspicious_high": 24,
-            "scam_high": 40,
+            "safe_min": 2.2,
+            "safe_max": 4.4,
+            "suspicious_high": 6.0,
+            "scam_high": 8.5,
         },
         "quan_huy": {
             "aliases": ["quân huy", "quan huy", "qh"],
