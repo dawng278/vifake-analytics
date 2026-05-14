@@ -139,7 +139,10 @@ class VideoAnalysisPipeline:
                 "verdict": "SUSPICIOUS",  # Fail-closed: insufficient evidence should not be SAFE
                 "confidence": 0.55,
                 "intents": {},
-                "note": "Không trích xuất được nội dung audio/text từ video"
+                "nlp_flags": ["VIDEO_LOW_EVIDENCE"],
+                "intent_label": "Chưa đủ dữ liệu video để kết luận chắc",
+                "intent_explanation": "Không trích xuất được nội dung audio/text từ video. Hãy thử quét lại khi video phát ổn định.",
+                "note": "Không trích xuất được nội dung audio/text từ video",
             }
         
         try:
@@ -170,9 +173,12 @@ class VideoAnalysisPipeline:
                 "verdict": fusion_result.get("prediction", "SAFE"),
                 "confidence": fusion_result.get("confidence", 0.0),
                 "intents": nlp_result.get("intent", {}),
+                "nlp_flags": nlp_result.get("flags", []),
+                "intent_label": nlp_result.get("intent_label", ""),
+                "intent_explanation": nlp_result.get("intent_explanation", ""),
                 "risk_level": fusion_result.get("risk_level", "LOW"),
                 "requires_review": fusion_result.get("requires_review", False),
-                "fusion_method": fusion_result.get("fusion_method", "unknown")
+                "fusion_method": fusion_result.get("fusion_method", "unknown"),
             }
             
         except Exception as e:
@@ -181,6 +187,9 @@ class VideoAnalysisPipeline:
                 "verdict": "SUSPICIOUS",
                 "confidence": 0.55,
                 "intents": {},
+                "nlp_flags": ["VIDEO_LOW_EVIDENCE"],
+                "intent_label": "Lỗi phân tích văn bản video",
+                "intent_explanation": "Không thể phân tích phần văn bản/audio của video trong lần quét này.",
                 "error": str(e)
             }
 
@@ -221,6 +230,46 @@ class VideoAnalysisPipeline:
         intent_count   = sum(1 for v in scores_dict.values() if v > 0.25)
         max_intent     = max(scores_dict.values()) if scores_dict else 0.0
         primary_intent = max(scores_dict, key=scores_dict.get) if scores_dict else "none"
+        signal_flags = [str(f) for f in (text_result.get("nlp_flags", []) or [])]
+        has_critical_nlp_flag = any(
+            flag.startswith("PRICE_ANOMALY_SCAM")
+            or flag.startswith("UNREALISTIC_RATIO")
+            or "FINANCIAL_SCAM:pay_first_scheme" in flag
+            or "ACCOUNT_TAKEOVER" in flag
+            or "GAMING_DOUBLING_SCAM" in flag
+            or flag.startswith("HASHTAG_ROBUX_LAUNDERING")
+            or flag.startswith("HASHTAG_PRICEBOARD_SCAM_COMBO")
+            or "SHORTLINK_SUSPICIOUS" in flag
+            or "PHISH" in flag.upper()
+            or "OTP" in flag.upper()
+            for flag in signal_flags
+        )
+        has_direct_scam_flag = any(
+            flag.startswith("PRICE_ANOMALY_SCAM")
+            or flag.startswith("UNREALISTIC_RATIO")
+            or "FINANCIAL_SCAM:pay_first_scheme" in flag
+            or "ACCOUNT_TAKEOVER" in flag
+            or "GAMING_DOUBLING_SCAM" in flag
+            or flag.startswith("HASHTAG_PRICEBOARD_SCAM_COMBO")
+            for flag in signal_flags
+        )
+        has_laundering_hashtag_flag = any(
+            flag.startswith("HASHTAG_ROBUX_LAUNDERING")
+            or flag.startswith("SQUASHED_HASHTAG_SCAM")
+            for flag in signal_flags
+        )
+
+        # Guardrail: if text-analysis emits deterministic scam flags, do not keep SAFE.
+        if text_verdict == "SAFE" and has_direct_scam_flag:
+            text_verdict = "FAKE_SCAM"
+            text_conf = max(text_conf, 0.68)
+            signal_flags.append("VIDEO_TEXT_GUARDRAIL:direct_scam_flag")
+            logger.warning("🧱 Video text guardrail: SAFE -> FAKE_SCAM due to direct scam flags")
+        elif text_verdict == "SAFE" and has_laundering_hashtag_flag:
+            text_verdict = "SUSPICIOUS"
+            text_conf = max(text_conf, 0.60)
+            signal_flags.append("VIDEO_TEXT_GUARDRAIL:laundering_hashtag")
+            logger.warning("🧱 Video text guardrail: SAFE -> SUSPICIOUS due to laundering hashtag flags")
 
         # Intent labels (Vietnamese)
         INTENT_LABELS = {
@@ -249,9 +298,16 @@ class VideoAnalysisPipeline:
         if text_verdict == "FAKE_SCAM":
             final_verdict = "FAKE_SCAM"
         elif text_verdict == "SUSPICIOUS":
-            final_verdict = "SUSPICIOUS"
-        elif text_verdict == "SAFE":
             if visual_scam_score >= 0.65 or visual_keyword_hits >= 5:
+                final_verdict = "FAKE_SCAM"
+            elif has_critical_nlp_flag and text_conf >= 0.60:
+                final_verdict = "FAKE_SCAM"
+            else:
+                final_verdict = "SUSPICIOUS"
+        elif text_verdict == "SAFE":
+            if has_critical_nlp_flag and text_conf >= 0.55:
+                final_verdict = "FAKE_SCAM"
+            elif visual_scam_score >= 0.65 or visual_keyword_hits >= 5:
                 final_verdict = "FAKE_SCAM"
             elif visual_scam_score >= 0.35 or visual_keyword_hits >= 3:
                 final_verdict = "SUSPICIOUS"
@@ -272,9 +328,15 @@ class VideoAnalysisPipeline:
         _faces_detected = int(vision_result.get("faces_detected", 0) or 0)
         _no_media_evidence = (len(_transcript) < 5) and (_frames_analyzed == 0) and (_faces_detected == 0)
         if _no_media_evidence and final_verdict == "SAFE":
-            final_verdict = "SUSPICIOUS"
-            text_conf = max(text_conf, 0.55)
-            logger.warning("⚠️ No transcript + no analyzed frames → forcing SUSPICIOUS (fail-closed)")
+            low_text_risk = (text_verdict == "SAFE" and not has_critical_nlp_flag and max_intent < 0.20 and visual_scam_score < 0.20)
+            if low_text_risk:
+                signal_flags.append("VIDEO_LOW_EVIDENCE")
+                logger.info("ℹ️ Low-evidence video but text risk is clean → keep SAFE with caution note")
+            else:
+                final_verdict = "SUSPICIOUS"
+                text_conf = max(text_conf, 0.55)
+                signal_flags.append("VIDEO_LOW_EVIDENCE")
+                logger.warning("⚠️ No transcript + no analyzed frames with unresolved risk → forcing SUSPICIOUS")
 
         # ── Build rich explanation ──────────────────────────────
         reasons = []
@@ -284,6 +346,8 @@ class VideoAnalysisPipeline:
             reasons.append("🚨 Văn bản phát hiện nội dung lừa đảo rõ ràng")
         elif text_verdict == "SUSPICIOUS":
             reasons.append("⚠️ Văn bản có một số từ ngữ đáng ngờ")
+        elif "VIDEO_LOW_EVIDENCE" in signal_flags:
+            reasons.append("ℹ️ Dữ liệu media hạn chế, kết quả dựa nhiều vào mô tả văn bản")
 
         # 2. Per-intent reasons (only those with meaningful score)
         active_intents = [(k, v) for k, v in scores_dict.items() if v > 0.25]
@@ -362,6 +426,9 @@ class VideoAnalysisPipeline:
             "explanation":    explanation,
             "risk_level":     risk_level,
             "requires_review": final_verdict != "SAFE",
+            "intent_label": text_result.get("intent_label", ""),
+            "signal_flags": signal_flags,
+            "extraction_quality": "LOW_EVIDENCE" if "VIDEO_LOW_EVIDENCE" in signal_flags else "NORMAL",
             # debug
             "text_verdict":             text_verdict,
             "text_confidence":          text_conf,

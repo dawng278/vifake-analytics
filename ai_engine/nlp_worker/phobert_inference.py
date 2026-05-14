@@ -63,16 +63,22 @@ class PhoBERTInference:
         self.config = config or NLPConfig()
         self.tokenizer = None
         self.model = None
+        self.loaded_model_path = ""
+        self.is_mock_runtime = False
+        self.is_finetuned_scam_head = False
 
         if not TRANSFORMERS_AVAILABLE:
             logger.warning("⚠️  PhoBERT running in mock mode (transformers not installed)")
             self.labels = {0: "SAFE", 1: "TOXIC", 2: "MANIPULATIVE"}
             self.onnx_model = None
+            self.loaded_model_path = "rule_based_fallback"
+            self.is_mock_runtime = True
             return
 
         # Determine model path
         if model_path is None:
             model_path = self.config.MODEL_DIR if os.path.exists(self.config.MODEL_DIR) else self.config.DEFAULT_MODEL
+        self.loaded_model_path = model_path
 
         logger.info(f"🤖 Loading PhoBERT from: {model_path}")
 
@@ -99,6 +105,13 @@ class PhoBERTInference:
             "TOXIC":        "SUSPICIOUS",
             "MANIPULATIVE": "FAKE_SCAM",
         }
+
+        # If we loaded a custom local checkpoint directory, treat it as fine-tuned scam head.
+        self.is_finetuned_scam_head = bool(
+            isinstance(model_path, str)
+            and os.path.isdir(model_path)
+            and model_path != self.config.DEFAULT_MODEL
+        )
         
         logger.info(f"✅ PhoBERT loaded on {self.config.device}")
         logger.info(f"📝 Labels: {list(self.labels.values())}")
@@ -148,6 +161,9 @@ class PhoBERTInference:
                 "requires_review": pred_id in [1, 2] and confidence < 0.8,
                 "model_info": {
                     "model":      self.config.model_name,
+                    "loaded_model_path": self.loaded_model_path,
+                    "is_finetuned_scam_head": self.is_finetuned_scam_head,
+                    "is_mock_runtime": self.is_mock_runtime,
                     "max_length": self.config.max_length,
                     "device":     self.config.device
                 }
@@ -413,6 +429,12 @@ class PhoBERTInference:
             "mock":            True,
             "mock_reason":     "rule_based_fallback",
             "matched_patterns": scam_hits or susp_hits,
+            "model_info": {
+                "model": self.config.model_name,
+                "loaded_model_path": self.loaded_model_path,
+                "is_finetuned_scam_head": self.is_finetuned_scam_head,
+                "is_mock_runtime": True,
+            },
         }
 
     def batch_predict(self, texts: List[str]) -> List[Dict]:

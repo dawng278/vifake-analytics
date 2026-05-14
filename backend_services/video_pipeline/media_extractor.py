@@ -8,6 +8,7 @@ using yt-dlp and ffmpeg for processing.
 import asyncio
 import uuid
 import os
+import re
 import yt_dlp
 import logging
 from typing import List, Optional
@@ -24,6 +25,7 @@ class MediaExtractor:
         self.video_url = video_url
         self.session_id = str(uuid.uuid4())[:8]  # Unique ID per analysis
         self.session_dir = os.path.join(TEMP_DIR, self.session_id)
+        self._stream_url_cache = None
         os.makedirs(self.session_dir, exist_ok=True)
         logger.info(f"🎬 MediaExtractor initialized for session {self.session_id}")
 
@@ -81,6 +83,7 @@ class MediaExtractor:
         os.makedirs(frames_dir, exist_ok=True)
         
         try:
+            input_source = await self._resolve_playable_stream_url()
             # Get video duration first
             duration = await self._get_video_duration()
             logger.info(f"📹 Video duration: {duration:.1f}s")
@@ -105,7 +108,7 @@ class MediaExtractor:
                 # -ss before -i: fast seek (doesn't decode full video)
                 cmd = [
                     "ffmpeg", "-ss", str(ts),
-                    "-i", self.video_url,      # Stream directly from URL
+                    "-i", input_source,        # Stream directly from resolved media URL
                     "-vframes", "1",           # Extract 1 frame only
                     "-q:v", "3",               # Quality 3 (1-31, lower=better)
                     "-y", frame_path,
@@ -127,6 +130,48 @@ class MediaExtractor:
         except Exception as e:
             logger.error(f"❌ Frame extraction failed: {e}")
             raise
+
+    async def _resolve_playable_stream_url(self) -> str:
+        """
+        Resolve a direct playable stream URL for ffmpeg frame extraction.
+        - Keep direct media URLs as-is.
+        - For page URLs (TikTok/YouTube/etc.), ask yt-dlp for best direct stream.
+        """
+        if self._stream_url_cache:
+            return self._stream_url_cache
+
+        # Already a direct media URL.
+        if re.search(r'\.(mp4|webm|mov|m3u8)(\?|#|$)', self.video_url, re.IGNORECASE):
+            self._stream_url_cache = self.video_url
+            return self._stream_url_cache
+
+        ydl_opts = {
+            "quiet": True,
+            "no_warnings": True,
+            "skip_download": True,
+            "socket_timeout": 15,
+        }
+
+        def resolve_url():
+            try:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                    info = ydl.extract_info(self.video_url, download=False)
+                    if not isinstance(info, dict):
+                        return self.video_url
+                    direct = info.get("url")
+                    if direct:
+                        return direct
+                    formats = info.get("formats") or []
+                    for fmt in formats:
+                        if fmt.get("url") and fmt.get("vcodec") != "none":
+                            return fmt["url"]
+            except Exception as e:
+                logger.warning(f"⚠️ Could not resolve direct stream URL, fallback to source URL: {e}")
+            return self.video_url
+
+        loop = asyncio.get_event_loop()
+        self._stream_url_cache = await loop.run_in_executor(None, resolve_url)
+        return self._stream_url_cache
 
     async def _get_video_duration(self) -> float:
         """Get video duration without downloading"""

@@ -37,7 +37,8 @@ try:
     import easyocr
     _ocr_reader = None  # Lazy-loaded on first use
     EASYOCR_AVAILABLE = True
-except ImportError:
+except Exception as _e:
+    logging.getLogger(__name__).warning(f"⚠️ EasyOCR not available ({_e}). OCR analysis will be skipped.")
     easyocr = None
     _ocr_reader = None
     EASYOCR_AVAILABLE = False

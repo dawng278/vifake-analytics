@@ -242,10 +242,14 @@ class VideoAnalyzeResponse(BaseModel):
     """Response model for video analysis"""
     verdict: str = Field(..., description="SAFE | SUSPICIOUS | FAKE_SCAM")
     confidence: float = Field(..., description="Confidence score (0.0-1.0)")
+    risk_level: str = Field(default="MEDIUM", description="LOW | MEDIUM | HIGH")
     is_ai_generated: bool = Field(..., description="Whether video appears AI-generated")
     ai_confidence: float = Field(..., description="AI detection confidence")
     intents: Dict = Field(..., description="Scam intent analysis results")
     transcript: str = Field(..., description="Full audio transcript")
+    intent_label: str = Field(default="", description="Primary intent label")
+    signal_flags: List[str] = Field(default_factory=list, description="Rule/guardrail flags contributing to verdict")
+    extraction_quality: str = Field(default="NORMAL", description="NORMAL | LOW_EVIDENCE")
     explanation: str = Field(..., description="Human-readable explanation")
     processing_ms: int = Field(..., description="Total processing time in milliseconds")
 
@@ -295,6 +299,30 @@ def create_analysis_job(url: str, platform: str, priority: str = "normal") -> st
     
     logger.info(f"📋 Created analysis job: {job_id} for {platform}:{url}")
     return job_id
+
+def _video_runtime_degradation_signals(nlp_result: Dict, vision_result: Dict) -> List[str]:
+    """Collect runtime-quality issues that make video verdicts less trustworthy."""
+    notes = []
+    nlp_flags = [str(f) for f in (nlp_result.get("flags", []) or [])]
+    nlp_details = nlp_result.get("details", {}) or {}
+
+    if "NLP_RULE_BASED_FALLBACK" in nlp_flags:
+        notes.append("nlp_rule_based_fallback")
+    if "NLP_BASE_MODEL_UNFINETUNED" in nlp_flags:
+        notes.append("nlp_base_model_unfinetuned")
+    if nlp_details.get("nlp_runtime_degraded"):
+        notes.append("nlp_runtime_degraded")
+
+    if vision_result.get("vision_capability_limited", False):
+        notes.append("vision_capability_limited")
+    if not bool(vision_result.get("clip_available", True)):
+        notes.append("clip_unavailable")
+    if not bool(vision_result.get("ocr_available", True)):
+        notes.append("ocr_unavailable")
+    if str(vision_result.get("analysis_note", "")).strip():
+        notes.append(f"vision_note:{vision_result.get('analysis_note')}")
+
+    return notes
 
 def update_job_progress(job_id: str, progress: float, stage: str):
     """Update job progress"""
@@ -493,6 +521,31 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             "created_at": datetime.now().isoformat()
         }
 
+        # Runtime honesty guardrail for video analysis:
+        # if core components are degraded, do not emit definitive SAFE on video-like content.
+        runtime_degraded_notes = _video_runtime_degradation_signals(nlp_result, vision_result)
+        video_like_context = (
+            platform in ("tiktok", "youtube", "twitter")
+            or any(d in (url or "").lower() for d in ("tiktok.com", "youtube.com", "youtu.be", "x.com", "twitter.com"))
+        )
+        if runtime_degraded_notes:
+            _flags = result["analysis_details"].get("nlp_flags", []) or []
+            if "VIDEO_ANALYSIS_DEGRADED" not in _flags:
+                _flags.append("VIDEO_ANALYSIS_DEGRADED")
+            result["analysis_details"]["nlp_flags"] = _flags
+            result["analysis_details"]["runtime_degraded"] = True
+            result["analysis_details"]["runtime_degraded_notes"] = runtime_degraded_notes
+
+            if video_like_context and result.get("label") == "SAFE":
+                result["label"] = "SUSPICIOUS"
+                result["risk_level"] = "MEDIUM"
+                result["confidence"] = max(float(result.get("confidence", 0.0)), 0.58)
+                result["needs_review"] = True
+                logger.warning(
+                    "⚠️ Video runtime degraded guardrail: SAFE disabled for video-like context "
+                    f"({', '.join(runtime_degraded_notes[:3])})"
+                )
+
         # Crawl-quality guardrail (especially Facebook share/login-wall URLs):
         # If extracted text is weak/empty/URL-like, never return definitive SAFE.
         low_text_quality = (
@@ -684,6 +737,8 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             or "ACCOUNT_TAKEOVER" in str(f)
             or "GAMING_DOUBLING_SCAM" in str(f)
             or str(f).startswith("UNREALISTIC_RATIO")
+            or str(f).startswith("HASHTAG_ROBUX_LAUNDERING")
+            or str(f).startswith("HASHTAG_PRICEBOARD_SCAM_COMBO")
             or ("OCR_GAME_SCAM_MARKERS" in str(f) and ("CLIP_GAME_SCAM_MARKERS" in _flags_for_lock or "VISION_OCR_RISK" in _flags_for_lock))
             for f in _flags_for_lock
         )
@@ -1198,6 +1253,21 @@ def _run_nlp_analysis(text: str) -> Dict:
                 logger.info("🧱 Preserve rule-context SAFE result (keep flags/details for intent sync)")
             else:
                 result = phobert_result if phobert_conf > scam_conf else result
+
+    # Runtime quality markers (so downstream can fail-closed when model is degraded).
+    try:
+        _model_info = (phobert_result or {}).get("model_info", {}) if isinstance(phobert_result, dict) else {}
+        _is_mock_runtime = bool(_model_info.get("is_mock_runtime")) or bool((phobert_result or {}).get("mock", False))
+        _is_finetuned = bool(_model_info.get("is_finetuned_scam_head", False))
+        if _is_mock_runtime:
+            result.setdefault("flags", []).append("NLP_RULE_BASED_FALLBACK")
+            result.setdefault("details", {})["nlp_runtime_degraded"] = True
+        elif not _is_finetuned:
+            result.setdefault("flags", []).append("NLP_BASE_MODEL_UNFINETUNED")
+            result.setdefault("details", {})["nlp_runtime_degraded"] = True
+        result.setdefault("details", {})["nlp_model_info"] = _model_info
+    except Exception:
+        pass
     
     # Add intent detection
     try:
@@ -1383,6 +1453,29 @@ def _vietnamese_scam_detector(text: str) -> Dict:
                 break
         if details.get('hashtag_fusion_risk'):
             break
+
+    # === 0a3.6 Critical Roblox-lau hashtag + price-board combo ===
+    # Examples: #robuxlauuytin, #shoprobuxgiare + "bảng giá robux"
+    has_robux_lau_hashtag = False
+    for token in hashtag_tokens:
+        token_flat = token.replace('_', '')
+        if "robux" in token_flat and any(k in token_flat for k in ("lau", "giare", "uytin", "sach")):
+            has_robux_lau_hashtag = True
+            break
+
+    has_robux_priceboard_context = bool(re.search(
+        r'(bảng\s*giá\s*robux|gia\s*nap\s*robux|giá\s*nạp\s*robux|robux\s*nhận|ưu\s*đãi\s*nạp\s*đầu|rate\s*robux)',
+        text_lower
+    ))
+
+    if has_robux_lau_hashtag:
+        score += 0.38
+        flags.append("HASHTAG_ROBUX_LAUNDERING")
+        details["robux_lau_hashtag_risk"] = 0.38
+        if has_robux_priceboard_context:
+            score += 0.34
+            flags.append("HASHTAG_PRICEBOARD_SCAM_COMBO")
+            details["robux_lau_priceboard_combo"] = True
 
     # === 0a3. Gaming doubling/trade explicit patterns ===
     _GAME_CURRENCY = r'(robux|rbx|rb|skin|gem|coin|diamond|kim\s*cương|quân\s*huy|tướng|ngọc|uc|elite\s*pass|royale\s*pass|bundle)'
@@ -1786,6 +1879,8 @@ def _vietnamese_scam_detector(text: str) -> Dict:
             or "GAMING_DOUBLING_SCAM" in str(f)
             or str(f).startswith("UNREALISTIC_RATIO")
             or str(f).startswith("PRICE_ANOMALY_SCAM")
+            or str(f).startswith("HASHTAG_ROBUX_LAUNDERING")
+            or str(f).startswith("HASHTAG_PRICEBOARD_SCAM_COMBO")
             or "SHORTLINK_SUSPICIOUS" in str(f)
             or "SAFE_SOURCE_CONTRADICTION" in str(f)
             for f in flags
@@ -1847,6 +1942,8 @@ def _vietnamese_scam_detector(text: str) -> Dict:
     has_gaming_scam_flags = any(
         f.startswith('GAMING_DOUBLING') or f.startswith('ACCOUNT_TAKEOVER')
         or f.startswith('UNREALISTIC_RATIO')
+        or f.startswith('HASHTAG_ROBUX_LAUNDERING')
+        or f.startswith('HASHTAG_PRICEBOARD_SCAM_COMBO')
         for f in flags
     )
     if has_gaming_scam_flags:

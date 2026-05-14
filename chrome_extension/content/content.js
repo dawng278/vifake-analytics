@@ -174,7 +174,11 @@
 
   function extractTikTokText(postEl) {
     // P1-D: extract caption + pinned/first comments for scam link detection
-    const desc = postEl.querySelector('[data-e2e="browse-video-desc"], [data-e2e="video-desc"], [class*="DivDescription"]')?.innerText?.trim() || '';
+    let desc = postEl.querySelector('[data-e2e="browse-video-desc"], [data-e2e="video-desc"], [class*="DivDescription"], [class*="DivVideoDescription"], [class*=\"Caption\"]')?.innerText?.trim() || '';
+    if (!desc) {
+      const fallbackDesc = postEl.querySelector('[data-e2e*="desc"], [data-e2e*="caption"]')?.innerText?.trim() || '';
+      desc = fallbackDesc;
+    }
     const parts = [];
     if (desc) parts.push('[DESC] ' + desc);
     // Pinned comment & first visible comment often carry scam links
@@ -188,6 +192,29 @@
         commentCount++;
       }
     });
+
+    // TikTok photo/video pages often expose scam clues in hashtags even when desc selector misses.
+    const hashtagSet = new Set();
+    const collectHashtags = (text) => {
+      if (!text) return;
+      const matches = String(text).match(/#[a-z0-9_]{2,64}/gi) || [];
+      matches.forEach(tag => hashtagSet.add(tag.toLowerCase()));
+    };
+    collectHashtags(desc);
+    collectHashtags(postEl.innerText || '');
+    postEl.querySelectorAll('a[href*="/tag/"], a[href*="/hashtag/"]').forEach(a => {
+      collectHashtags(a.innerText || '');
+    });
+    if (hashtagSet.size > 0) {
+      parts.push('[HASHTAGS] ' + Array.from(hashtagSet).slice(0, 12).join(' '));
+    }
+
+    if (parts.length === 0) {
+      const fallbackText = (postEl.innerText || '').trim();
+      if (fallbackText && fallbackText.length > 20) {
+        parts.push('[POST] ' + fallbackText.slice(0, 1200));
+      }
+    }
     return parts.join('\n');
   }
 
@@ -208,9 +235,17 @@
     const authorEl = postEl.querySelector('[data-e2e="browse-username"]')
       || postEl.querySelector('[class*="DivUsername"]');
 
+    // Merge selector description with richer post text to retain hashtags/risk tokens.
+    const richText = extractTikTokText(postEl) || '';
+    const mergedDescription = [descEl?.textContent?.trim() || '', richText]
+      .filter(Boolean)
+      .join('\n')
+      .trim()
+      .slice(0, 3000);
+
     return {
       video_url: videoEl.src,
-      description: descEl?.textContent?.trim() || '',
+      description: mergedDescription,
       author: authorEl?.textContent?.trim() || '',
       page_url: window.location.href,
     };
@@ -810,6 +845,7 @@
     const hasOfficialPromoContext = nlpFlags.includes('OFFICIAL_ROBLOX_PROMO_CONTEXT');
     const hasSafeRobloxSource = nlpFlags.some(f => /^SAFE_ROBLOX_SOURCE/.test(f));
     const hasSafeSourceContradiction = nlpFlags.some(f => /^SAFE_SOURCE_CONTRADICTION/.test(f));
+    const isLowEvidenceVideo = nlpFlags.includes('VIDEO_LOW_EVIDENCE') || details.extraction_quality === 'LOW_EVIDENCE';
     const officialSafeLock = hasOfficialPromoContext && hasSafeRobloxSource && !hasSafeSourceContradiction;
     const hasCriticalFlag = nlpFlags.some(f =>
       /^PRICE_ANOMALY_SCAM/.test(f) ||
@@ -846,6 +882,10 @@
       (hasDangerNarrative && confidence >= 0.85)
     )) {
       label = 'FAKE_SCAM';
+    }
+    if (label === 'SUSPICIOUS' && isLowEvidenceVideo && !hasHardEvidence && !hasMediumEvidence) {
+      details.intent_label = details.intent_label || 'Chưa đủ dữ liệu video để kết luận chắc';
+      details.intent_explanation = details.intent_explanation || 'Video không trích xuất được đủ audio/frame. Hãy thử quét lại khi video phát ổn định hoặc cung cấp thêm mô tả/link bài viết.';
     }
     const intentLabel = details.intent_label || '';
     const intentExpl  = details.intent_explanation || '';
@@ -1196,6 +1236,8 @@
     const imageCandidates = [];
     const anchorEl = options.anchorEl || null;
     const anchorRect = anchorEl?.getBoundingClientRect?.() || null;
+    const includeImages = options.includeImages !== false;
+    const includeVideoPosters = options.includeVideoPosters === true;
 
     const collectImageCandidate = (img) => {
       const src = img.src;
@@ -1219,28 +1261,30 @@
 
     const collectVideo = (video) => {
       if (video.src) videos.push(video.src);
-      if (video.poster) images.push(video.poster);
+      if (includeVideoPosters && video.poster) images.push(video.poster);
       video.querySelectorAll('source').forEach(s => { if (s.src) videos.push(s.src); });
     };
 
-    if (postEl.matches?.('img')) collectImageCandidate(postEl);
-    for (const img of postEl.querySelectorAll('img')) {
-      collectImageCandidate(img);
-    }
+    if (includeImages) {
+      if (postEl.matches?.('img')) collectImageCandidate(postEl);
+      for (const img of postEl.querySelectorAll('img')) {
+        collectImageCandidate(img);
+      }
 
-    // Rank images by proximity to click target first, then by size.
-    if (anchorRect) {
-      imageCandidates.sort((a, b) => {
-        if (b.ov !== a.ov) return b.ov - a.ov;
-        if (a.dist !== b.dist) return a.dist - b.dist;
-        return b.area - a.area;
-      });
-    } else {
-      imageCandidates.sort((a, b) => b.area - a.area);
-    }
+      // Rank images by proximity to click target first, then by size.
+      if (anchorRect) {
+        imageCandidates.sort((a, b) => {
+          if (b.ov !== a.ov) return b.ov - a.ov;
+          if (a.dist !== b.dist) return a.dist - b.dist;
+          return b.area - a.area;
+        });
+      } else {
+        imageCandidates.sort((a, b) => b.area - a.area);
+      }
 
-    for (const candidate of imageCandidates.slice(0, 8)) {
-      await collectImage(candidate);
+      for (const candidate of imageCandidates.slice(0, 8)) {
+        await collectImage(candidate);
+      }
     }
 
     if (postEl.matches?.('video')) collectVideo(postEl);
@@ -1260,10 +1304,15 @@
   async function handleContextMenuScan(context) {
     const selectionText = context.selectionText || '';
     const anchorEl = lastRightClickedEl;
+    const pageUrl = context.pageUrl || location.href;
     const imageFocusedScan = !!(
       context.srcUrl ||
       anchorEl?.matches?.('img') ||
       anchorEl?.closest?.('img')
+    );
+    const directVideoTarget = !!(
+      anchorEl?.matches?.('video') ||
+      anchorEl?.closest?.('video')
     );
     // Strict post scope: only scan when click is inside a detected post container.
     const postEl = findPostContainer(anchorEl);
@@ -1280,7 +1329,15 @@
     // Limit text length
     if (text.length > 5000) text = text.substring(0, 5000);
 
-    const media = postEl ? await extractMediaUrls(postEl, { anchorEl }) : { images: [], videos: [] };
+    const pageLooksVideo = /tiktok\.com\/@.+\/video|youtube\.com\/watch|youtu\.be\/|(?:x|twitter)\.com\/.+\/status\//i.test(pageUrl);
+    const postHasVideoElement = !!postEl?.querySelector?.('video');
+    const mediaOptions = {
+      anchorEl,
+      // For video-first platforms, avoid accidental side-image pickup (posters/thumbnails/sidebar cards).
+      includeImages: !(PLATFORM === 'tiktok' && (directVideoTarget || pageLooksVideo || postHasVideoElement)),
+      includeVideoPosters: false,
+    };
+    const media = postEl ? await extractMediaUrls(postEl, mediaOptions) : { images: [], videos: [] };
     if (context.srcUrl) {
       let contextImage = null;
       const directImg = lastRightClickedEl && lastRightClickedEl.matches?.('img') ? lastRightClickedEl : null;
@@ -1307,37 +1364,42 @@
       return;
     }
 
-    const url = context.pageUrl || location.href;
+    const url = pageUrl;
     const hasVideoContext = media.videos.length > 0 || /tiktok\.com\/@.+\/video|youtube\.com\/watch|youtu\.be\/|(?:x|twitter)\.com\/.+\/status\//i.test(url);
     const apiPlatform = ['facebook', 'tiktok', 'youtube', 'twitter'].includes(PLATFORM) ? PLATFORM : 'facebook';
+    const displayImageCount = hasVideoContext ? 0 : media.images.length;
 
     // Show scanning notice
     const noticeEl = showFloatingNotice(
       'scanning',
-      `Đang quét bài viết (${text.length} ký tự${media.images.length ? `, ${media.images.length} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''}${imageFocusedScan ? ', ưu tiên ảnh mục tiêu' : ''})...`
+      `Đang quét bài viết (${text.length} ký tự${displayImageCount ? `, ${displayImageCount} ảnh` : ''}${media.videos.length ? `, ${media.videos.length} video` : ''}${imageFocusedScan ? ', ưu tiên ảnh mục tiêu' : ''})...`
     );
 
     try {
       let result;
       if (hasVideoContext && (PLATFORM === 'tiktok' || PLATFORM === 'youtube' || PLATFORM === 'twitter')) {
+        const tiktokInfo = PLATFORM === 'tiktok' ? (extractTikTokVideoInfo(postEl) || {}) : {};
         result = await chrome.runtime.sendMessage({
           action: 'analyze_video',
           payload: {
-            video_url: media.videos[0] || url,
+            video_url: tiktokInfo.video_url || media.videos[0] || url,
             page_url: url,
-            description: text,
-            author: '',
+            description: (tiktokInfo.description || text || '').trim(),
+            author: (tiktokInfo.author || '').trim(),
           },
         });
         if (result && result.verdict) {
+          const signalFlags = Array.isArray(result.signal_flags) ? result.signal_flags : [];
           result = {
             label: result.verdict,
             prediction: result.verdict,
             confidence: result.confidence,
+            risk_level: result.risk_level || (result.verdict === 'FAKE_SCAM' ? 'HIGH' : (result.verdict === 'SAFE' ? 'LOW' : 'MEDIUM')),
             analysis_details: {
-              intent_label: result.explanation || '',
+              intent_label: result.intent_label || result.explanation || '',
               intent_explanation: result.explanation || '',
-              nlp_flags: Object.keys(result.intents || {}),
+              nlp_flags: signalFlags,
+              extraction_quality: result.extraction_quality || '',
             },
           };
         }
@@ -1349,7 +1411,13 @@
       }
 
       noticeEl?.remove();
-      showFloatingResult(result, postEl, { imageFocusedScan, textLength: text.length, imageCount: media.images.length });
+      showFloatingResult(result, postEl, {
+        imageFocusedScan,
+        textLength: text.length,
+        imageCount: displayImageCount,
+        videoCount: media.videos.length,
+        textPreview: text.slice(0, 2500),
+      });
     } catch (err) {
       noticeEl?.remove();
       showFloatingNotice('error', `Lỗi: ${err.message || 'Không thể kết nối API'}`);
@@ -1407,6 +1475,7 @@
     const details = result.analysis_details || {};
     const nlpFlags = details.nlp_flags || [];
     const imageFocusedScan = !!scanMeta.imageFocusedScan;
+    const textPreview = String(scanMeta.textPreview || '');
 
     const hasImageWeakCombo =
       nlpFlags.includes('CLIP_GAME_SCAM_MARKERS') &&
@@ -1431,6 +1500,14 @@
     const hasOfficialPromoContext = nlpFlags.includes('OFFICIAL_ROBLOX_PROMO_CONTEXT');
     const hasSafeRobloxSource = nlpFlags.some(f => /^SAFE_ROBLOX_SOURCE/.test(f));
     const hasSafeSourceContradiction = nlpFlags.some(f => /^SAFE_SOURCE_CONTRADICTION/.test(f));
+    const isLowEvidenceVideo = nlpFlags.includes('VIDEO_LOW_EVIDENCE') || details.extraction_quality === 'LOW_EVIDENCE';
+    const hasFreeBaitPattern = /(free\s*(robux|rbx|uc|kim cương|quan huy|quân huy)|miễn phí\s*(robux|rbx|uc|kim cương|quân huy)|giveaway)/i.test(textPreview);
+    const hasActionLurePattern = /(inbox|ib|comment|bình luận|follow|like|chia sẻ|share|telegram|zalo|link\s*bio|bio)/i.test(textPreview);
+    const hasRobuxLauTagPattern = (
+      /#?(shop)?robux(lau|giare|uytin|sach|re|rep)\b|#robuxlau\b|#robuxgiare\b|#robuxuytin\b/i.test(textPreview) ||
+      /#[a-z0-9_]*robux[a-z0-9_]*(lau|giare|uytin|sach)[a-z0-9_]*/i.test(textPreview)
+    );
+    const hasRobuxRatePattern = /(bảng\s*giá\s*robux|gia\s*nap\s*robux|nạp\s*robux|rate\s*robux)/i.test(textPreview);
     const officialSafeLock = hasOfficialPromoContext && hasSafeRobloxSource && !hasSafeSourceContradiction;
 
     // Core guardrail: SAFE must not survive when strong risk evidence exists (except verified official-safe context).
@@ -1457,6 +1534,40 @@
       (hasDangerNarrative && confidence >= 0.85)
     )) {
       label = 'FAKE_SCAM';
+    }
+    if (!officialSafeLock && hasFreeBaitPattern && hasActionLurePattern && label !== 'FAKE_SCAM') {
+      label = confidence >= 0.55 ? 'FAKE_SCAM' : 'SUSPICIOUS';
+      if (!details.intent_label || /không phát hiện/i.test(details.intent_label)) {
+        details.intent_label = 'Mồi quà miễn phí để dẫn dụ tương tác';
+      }
+      if (!details.intent_explanation || /không phát hiện/i.test(details.intent_explanation)) {
+        details.intent_explanation = 'Nội dung có dấu hiệu "free Robux/vật phẩm" kèm kêu gọi tương tác (comment/inbox/follow/link). Đây là mô típ lừa đảo rất phổ biến, cần tránh làm theo.';
+      }
+    }
+    if (!officialSafeLock && hasRobuxLauTagPattern && label === 'SAFE') {
+      label = (hasRobuxRatePattern || hasFreeBaitPattern) ? 'FAKE_SCAM' : 'SUSPICIOUS';
+      details.intent_label = 'Rao nạp Robux không chính thống';
+      details.intent_explanation = (hasRobuxRatePattern || hasFreeBaitPattern)
+        ? 'Phát hiện hashtag rủi ro kiểu "robux lậu/giá rẻ/uy tín" đi kèm ngữ cảnh bảng giá/free-bait. Đây là mô típ lừa đảo phổ biến.'
+        : 'Phát hiện hashtag rủi ro kiểu "robux lậu/giá rẻ/uy tín". Cần kiểm tra nguồn nạp chính thức trước khi tin.';
+    }
+    if (label === 'SUSPICIOUS' && isLowEvidenceVideo && !hasHardEvidence && !hasMediumEvidence) {
+      details.intent_label = details.intent_label || 'Chưa đủ dữ liệu video để kết luận chắc';
+      details.intent_explanation = details.intent_explanation || 'Video không trích xuất được đủ audio/frame. Hãy thử quét lại khi video phát ổn định hoặc cung cấp thêm mô tả/link bài viết.';
+    }
+    if (label !== 'SAFE') {
+      if (!details.intent_label || /không phát hiện/i.test(details.intent_label)) {
+        details.intent_label = 'Nghi vấn hoạt động lừa đảo';
+      }
+      if (!details.intent_explanation || /không phát hiện/i.test(details.intent_explanation)) {
+        if (hasFreeBaitPattern) {
+          details.intent_explanation = 'Phát hiện mô típ mồi quà miễn phí/ưu đãi bất thường trong ngữ cảnh game. Không có giao dịch nào thật sự "free" nếu bị yêu cầu thao tác, cung cấp tài khoản hoặc đi qua link ngoài.';
+        } else if (isLowEvidenceVideo) {
+          details.intent_explanation = 'Kết quả nghi ngờ do thiếu dữ liệu media đủ rõ. Hãy quét lại với video đang phát đầy đủ hoặc bổ sung văn bản bài viết để xác minh.';
+        } else {
+          details.intent_explanation = 'Hệ thống ghi nhận tín hiệu rủi ro nhưng chưa đủ bằng chứng chốt lừa đảo tuyệt đối. Khuyến nghị kiểm tra nguồn và không làm theo các yêu cầu nhạy cảm.';
+        }
+      }
     }
 
     // Image-focused scans with weak OCR signals are unstable; avoid "SAFE tuyệt đối".
@@ -1497,6 +1608,8 @@
         ${showIntent && details.intent_explanation ? `<p>${escapeHtml(details.intent_explanation)}</p>` : ''}
         ${label === 'SAFE' ? `<p class="vifake-safe-msg">Không phát hiện dấu hiệu lừa đảo trong nội dung này.</p>` : ''}
         ${label === 'SAFE' && imageFocusedScan ? `<p style="margin-top:6px;color:#8a8f9b;font-size:12px">Lưu ý: đây là quét theo ảnh, nên kết quả có thể thay đổi nếu ảnh mờ/crop thiếu nội dung.</p>` : ''}
+        ${label === 'SUSPICIOUS' && isLowEvidenceVideo ? `<p style="margin-top:6px;color:#8a8f9b;font-size:12px">Lưu ý: trường hợp này nghi ngờ do thiếu dữ liệu media, không phải bằng chứng scam trực tiếp.</p>` : ''}
+        ${label !== 'SAFE' ? `<p style="margin-top:6px;color:#8a8f9b;font-size:12px">Bằng chứng: ${nlpFlags.length ? escapeHtml(nlpFlags.slice(0, 4).join(' • ')) : 'mẫu ngôn ngữ/kịch bản rủi ro trong bài viết'}</p>` : ''}
         ${label !== 'SAFE' ? `
           <div class="vifake-action-hint">
             <strong>💡 Gợi ý:</strong>
