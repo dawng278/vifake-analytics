@@ -43,14 +43,22 @@ models/*.pth
 models/*.bin
 models/*.onnx
 models/*.pt
+models/**/*.safetensors
+models/**/optimizer.pt
+models/**/scheduler.pt
+models/**/training_args.bin
+models/**/rng_state.pth
 *.ckpt
 *.h5
 *.hdf5
+*.joblib
 
 # Data
 data/raw/
 data/processed/
 data/external/
+data/experiments/runs/
+data/experiments/augment/
 *.csv
 *.parquet
 *.feather
@@ -72,6 +80,7 @@ tmp/
 temp/
 *.tmp
 .cache/
+vifake-analytics-submission-*.zip
 
 # OS
 Thumbs.db
