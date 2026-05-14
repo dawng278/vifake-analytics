@@ -668,6 +668,7 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         # Critical scam flag lock: avoid ending at SUSPICIOUS when high-severity scam
         # indicators already exist from NLP/OCR/price-anomaly checks.
         _flags_for_lock = result["analysis_details"].get("nlp_flags", []) or []
+        has_context_rate_query = any("CONTEXT_RATE_QUERY" in str(f) for f in _flags_for_lock)
         has_critical_scam_flag = any(
             str(f).startswith("PRICE_ANOMALY_SCAM")
             or str(f).startswith("FINANCIAL_SCAM:pay_first_scheme")
@@ -677,7 +678,7 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             or ("OCR_GAME_SCAM_MARKERS" in str(f) and ("CLIP_GAME_SCAM_MARKERS" in _flags_for_lock or "VISION_OCR_RISK" in _flags_for_lock))
             for f in _flags_for_lock
         )
-        if result.get("label") == "SUSPICIOUS" and has_critical_scam_flag:
+        if result.get("label") == "SUSPICIOUS" and has_critical_scam_flag and not has_context_rate_query:
             result["label"] = "FAKE_SCAM"
             result["risk_level"] = "HIGH"
             result["confidence"] = max(float(result.get("confidence", 0.0)), 0.72, ocr_risk, ocr_marker_score, clip_marker_score, vision_risk)
@@ -1194,9 +1195,16 @@ def _run_nlp_analysis(text: str) -> Dict:
         has_doubling = any("GAMING_DOUBLING" in str(f) or "UNREALISTIC_RATIO" in str(f) for f in all_flags)
         has_p2p_trade = any("RISKY_P2P_TRADING" in str(f) for f in all_flags)
         has_safe_roblox_source = any("SAFE_ROBLOX_SOURCE" in str(f) for f in all_flags)
+        has_context_rate_query = any("CONTEXT_RATE_QUERY" in str(f) for f in all_flags)
         
         if primary_intent == "none" or max_score == 0.0:
-            if has_price_scam:
+            if has_context_rate_query and final_pred in ["SAFE", "SUSPICIOUS"]:
+                result["intent_label"] = "Yêu cầu kiểm chứng tỉ giá game"
+                result["intent_explanation"] = (
+                    "Nội dung thể hiện ngữ cảnh hỏi/trao đổi để kiểm tra mức giá nạp game có an toàn hay không. "
+                    "Khuyến nghị tiếp tục đối chiếu kênh chính thức và tránh giao dịch chuyển khoản cá nhân."
+                )
+            elif has_price_scam:
                 result["intent_label"] = "Bất thường giá thị trường"
                 result["intent_explanation"] = (
                     "⚠️ CẢNH BÁO NGUY HIỂM: Hệ thống phát hiện tỷ lệ nạp tiền quá rẻ so với thực tế! "
@@ -1681,6 +1689,44 @@ def _vietnamese_scam_detector(text: str) -> Dict:
         score += susp_pos_boost
         flags.append(f"SUSPICIOUS_SIGNALS ({len(susp_pos_hits)} patterns)")
         details['suspicious_positive_risk'] = susp_pos_boost
+
+    # === 7d. Context guard: question/discussion about suspicious rates ===
+    # Example: "Bảng giá này có đáng tin không hay là scam?"
+    # Goal: reduce false positives when user is asking for verification, not promoting a scam.
+    question_patterns = [
+        r'cho\s*hỏi', r'có\s*đáng\s*tin\s*không', r'hay\s*là\s*scam',
+        r'có\s*lừa\s*đảo\s*không', r'có\s*scam\s*không', r'có\s*uy\s*tín\s*không',
+        r'nên\s*nạp\s*ở\s*đâu', r'nên\s*mua\s*ở\s*đâu',
+    ]
+    rate_discussion_patterns = [
+        r'\brate\b', r'tỉ\s*giá', r'ti\s*gia', r'bảng\s*giá',
+        r'bao\s*nhiêu', r'bao\s*giờ', r'chính\s*hãng', r'official',
+    ]
+    cta_or_execution_patterns = [
+        r'\bib\b', r'inbox', r'chốt\s*đơn', r'chuyển\s*khoản\s*trước',
+        r'nạp\s*trước', r'gửi\s*otp', r'nhập\s*(user|pass|mật khẩu|password)',
+        r'bấm\s*link', r'click\s*link', r'kẻo\s*hết\s*slot', r'nhận\s*ngay',
+    ]
+
+    has_question_context = ('?' in text_lower) or any(re.search(p, text_lower) for p in question_patterns)
+    has_rate_discussion = any(re.search(p, text_lower) for p in rate_discussion_patterns)
+    has_cta_or_execution = any(re.search(p, text_lower) for p in cta_or_execution_patterns)
+
+    if has_game and has_question_context and has_rate_discussion:
+        flags.append("CONTEXT_RATE_QUERY")
+        details['context_rate_query'] = True
+        details['context_rate_query_has_cta'] = has_cta_or_execution
+
+        has_direct_theft_signal = any(
+            str(f).startswith('FINANCIAL_SCAM:pay_first_scheme')
+            or 'ACCOUNT_TAKEOVER' in str(f)
+            or 'GAMING_DOUBLING_SCAM' in str(f)
+            or str(f).startswith('UNREALISTIC_RATIO')
+            for f in flags
+        )
+        if not has_cta_or_execution and not has_direct_theft_signal:
+            score = min(score, 0.39)  # keep it at most SUSPICIOUS
+            details['context_rate_query_clamp'] = True
 
     # === 8. Safe Content Indicators (negative scoring) ===
     safe_patterns = [

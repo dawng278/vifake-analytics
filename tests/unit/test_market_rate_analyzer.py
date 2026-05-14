@@ -31,6 +31,34 @@ def test_mid_high_quan_huy_rate_flagged_as_suspicious():
     assert any(h["currency"] == "quan_huy" and h["severity"] in ("suspicious", "scam") for h in result["hits"])
 
 
+def test_official_like_uc_rate_not_flagged():
+    text = "Nạp UC chính hãng: Pack 60 UC giá 25k trên App Store"
+    result = detect_market_price_anomalies(text)
+    assert result["risk_score"] == 0.0
+    assert result["hits"] == []
+
+
+def test_official_like_quan_huy_rate_not_flagged():
+    text = "Nạp quân huy: gói 111 quân huy giá 79k"
+    result = detect_market_price_anomalies(text)
+    assert result["risk_score"] == 0.0
+    assert result["hits"] == []
+
+
+def test_uc_rate_above_band_flagged():
+    text = "Deal UC hôm nay: 20k nhận 150 UC"
+    result = detect_market_price_anomalies(text)
+    assert result["risk_score"] >= 0.24
+    assert any(h["currency"] == "uc" and h["severity"] in ("suspicious", "scam") for h in result["hits"])
+
+
+def test_quan_huy_rate_above_band_flagged():
+    text = "Rate quân huy sốc: 20k = 70 quân huy"
+    result = detect_market_price_anomalies(text)
+    assert result["risk_score"] >= 0.24
+    assert any(h["currency"] == "quan_huy" and h["severity"] in ("suspicious", "scam") for h in result["hits"])
+
+
 def test_thousands_separator_is_parsed_correctly():
     text = "Deal sốc: chỉ 100k nhận 1.000.000 robux"
     result = detect_market_price_anomalies(text)

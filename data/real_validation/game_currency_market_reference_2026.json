@@ -1,8 +1,8 @@
 {
   "version": "2026-05-14",
   "unit": "currency_per_1000_vnd",
-  "source": "internal_curated_reference_2026",
-  "notes": "Reference ranges are internally curated for scam-gap detection, not financial advice.",
+  "source": "official_store_crosscheck_reference_2026",
+  "notes": "Ranges are calibrated from official VN store observations and official publisher guidance snapshots; used for scam-gap detection, not financial advice.",
   "currencies": {
     "robux": {
       "aliases": ["robux", "rbx", "rb", "robux card"],
@@ -15,17 +15,21 @@
     },
     "quan_huy": {
       "aliases": ["quân huy", "quan huy", "qh"],
-      "safe_min": 4,
-      "safe_max": 18,
-      "suspicious_high": 28,
-      "scam_high": 50
+      "safe_min": 1.2,
+      "safe_max": 2.2,
+      "suspicious_high": 3.2,
+      "scam_high": 4.8,
+      "derived_from": "official_vn_appstore_lienquan_2026_05",
+      "reference_note": "Based on Garena Liên Quân Mobile VN App Store IAP points; thresholds include small promo buffer."
     },
     "uc": {
       "aliases": ["uc"],
-      "safe_min": 3,
-      "safe_max": 18,
-      "suspicious_high": 30,
-      "scam_high": 50
+      "safe_min": 2.2,
+      "safe_max": 5.0,
+      "suspicious_high": 6.5,
+      "scam_high": 9.0,
+      "derived_from": "official_vn_appstore_pubgm_plus_vng_webpay_2026_05",
+      "reference_note": "Based on PUBG Mobile VN App Store UC packs + official VNG webpay UC/bonus table."
     },
     "kim_cuong": {
       "aliases": ["kim cương", "kim cuong", "diamond", "kc"],
