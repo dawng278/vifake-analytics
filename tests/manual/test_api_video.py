@@ -3,7 +3,7 @@
 Test Video Analysis API Endpoint Directly
 
 Usage:
-python test_api_video.py
+python tests/manual/test_api_video.py
 """
 
 import asyncio

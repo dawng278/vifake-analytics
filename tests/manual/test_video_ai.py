@@ -3,15 +3,16 @@
 Test AI Video Detection Pipeline
 
 Usage:
-python test_video_ai.py
+python tests/manual/test_video_ai.py
 """
 
 import asyncio
 import sys
-import os
+from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend_services.video_pipeline.pipeline_coordinator import VideoAnalysisPipeline
 

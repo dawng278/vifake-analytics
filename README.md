@@ -46,6 +46,10 @@ vifake-analytics/
 
 ## 🚀 Quick Start
 
+> ⚠️ Ghi chú cập nhật cấu trúc (2026-05):  
+> - Các script test thủ công đã được gom vào `tests/manual/`  
+> - Script khởi động cũ được chuyển sang `scripts/legacy/start_vifake.sh`
+
 ### Prerequisites
 - Docker & Docker Compose
 - Python 3.9+
@@ -85,6 +89,17 @@ python scripts/demo/run_demo.py
 - Human Review UI: http://localhost:3000
 - Metabase Dashboard: http://localhost:3001
 - Neo4j Bloom: http://localhost:7474
+```
+
+### Luồng chạy khuyến nghị hiện tại
+```bash
+# Start toàn bộ stack demo
+make demo
+
+# Chạy test manual video (khi cần)
+python tests/manual/test_video_ai.py
+python tests/manual/test_enhanced_ai.py
+python tests/manual/test_api_video.py
 ```
 
 ## 🎯 Tính Năng Chính

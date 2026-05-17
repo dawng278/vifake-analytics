@@ -10,11 +10,11 @@ Tests the new 60/40 weighted fusion with:
 
 import asyncio
 import sys
-import os
 from pathlib import Path
 
 # Add project root to path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend_services.video_pipeline.pipeline_coordinator import VideoAnalysisPipeline
 

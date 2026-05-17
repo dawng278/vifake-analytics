@@ -109,6 +109,6 @@ real_videos = [
 ## Next Steps
 
 1. **Collect 10-20 test videos** (mix of AI and real)
-2. **Run automated tests** using `test_video_ai.py`
+2. **Run automated tests** using `tests/manual/test_video_ai.py`
 3. **Analyze results** and adjust thresholds if needed
 4. **Document edge cases** for future improvements

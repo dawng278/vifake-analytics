@@ -15,10 +15,12 @@ import uuid
 import logging
 import os
 import sys
+import re
 import unicodedata
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from pathlib import Path
+from urllib.parse import urlparse
 
 # Add project root to path for AI engine imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -324,6 +326,36 @@ def _video_runtime_degradation_signals(nlp_result: Dict, vision_result: Dict) ->
 
     return notes
 
+_TECHNICAL_RUNTIME_FLAG_PREFIXES = (
+    "NLP_RULE_BASED_FALLBACK",
+    "NLP_BASE_MODEL_UNFINETUNED",
+    "VIDEO_ANALYSIS_DEGRADED",
+    "LOW_TEXT_QUALITY_REVIEW",
+    "IMAGE_ONLY_CAPABILITY_LIMITED",
+    "IMAGE_PARSE_OR_OCR_FAILED",
+)
+
+def _is_technical_runtime_flag(flag: str) -> bool:
+    s = str(flag or "")
+    return any(s.startswith(prefix) for prefix in _TECHNICAL_RUNTIME_FLAG_PREFIXES)
+
+def _is_trusted_edu_source(url: str) -> bool:
+    """Treat edu.vn and gov.vn domains as high-trust institutional sources."""
+    try:
+        host = (urlparse(url or "").hostname or "").lower().strip(".")
+    except Exception:
+        host = ""
+    if not host:
+        return False
+    return host.endswith(".edu.vn") or host.endswith(".gov.vn")
+
+def _contains_trusted_edu_link(text: str) -> bool:
+    try:
+        links = re.findall(r'https?://[^\s<>"\'\)\]]+', str(text or ""), flags=re.IGNORECASE)
+    except Exception:
+        links = []
+    return any(_is_trusted_edu_source(link) for link in links)
+
 def update_job_progress(job_id: str, progress: float, stage: str):
     """Update job progress"""
     if job_id in active_jobs:
@@ -530,7 +562,7 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         )
         if runtime_degraded_notes:
             _flags = result["analysis_details"].get("nlp_flags", []) or []
-            if "VIDEO_ANALYSIS_DEGRADED" not in _flags:
+            if video_like_context and "VIDEO_ANALYSIS_DEGRADED" not in _flags:
                 _flags.append("VIDEO_ANALYSIS_DEGRADED")
             result["analysis_details"]["nlp_flags"] = _flags
             result["analysis_details"]["runtime_degraded"] = True
@@ -599,6 +631,7 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
         has_scam_flags = any(
             f for f in nlp_flags_raw
             if not str(f).startswith(benign_context_flags)
+            and not _is_technical_runtime_flag(str(f))
         )
         # Check for gaming context that should prevent safe override
         GAMING_CONTEXT_KEYWORDS = [
@@ -742,6 +775,50 @@ async def run_full_pipeline(job_id: str, url: str, platform: str, content: Optio
             or ("OCR_GAME_SCAM_MARKERS" in str(f) and ("CLIP_GAME_SCAM_MARKERS" in _flags_for_lock or "VISION_OCR_RISK" in _flags_for_lock))
             for f in _flags_for_lock
         )
+        # Runtime-only anti-false-positive guardrail:
+        # if verdict is FAKE_SCAM but flags are only technical/degraded (no real scam evidence),
+        # downgrade verdict to avoid scaring users on benign school/news posts.
+        _effective_flags = [str(f) for f in _flags_for_lock if str(f).strip()]
+        _has_real_scam_signal = any(
+            (
+                str(f).startswith("PRICE_ANOMALY_SCAM")
+                or str(f).startswith("FINANCIAL_SCAM:")
+                or "ACCOUNT_TAKEOVER" in str(f)
+                or "GAMING_DOUBLING_SCAM" in str(f)
+                or str(f).startswith("UNREALISTIC_RATIO")
+                or str(f).startswith("HASHTAG_ROBUX_LAUNDERING")
+                or str(f).startswith("HASHTAG_PRICEBOARD_SCAM_COMBO")
+                or str(f).startswith("SQUASHED_HASHTAG_SCAM")
+                or "SHORTLINK_SUSPICIOUS" in str(f)
+                or "PHISH" in str(f).upper()
+                or "OTP" in str(f).upper()
+                or str(f) in ("CLIP_GAME_SCAM_MARKERS", "OCR_GAME_SCAM_MARKERS")
+            )
+            for f in _effective_flags
+        )
+        _all_flags_technical_or_benign = bool(_effective_flags) and all(
+            _is_technical_runtime_flag(f) or f.startswith(benign_context_flags)
+            for f in _effective_flags
+        )
+        if result.get("label") == "FAKE_SCAM" and not _has_real_scam_signal and _all_flags_technical_or_benign:
+            _trusted_institutional_context = (
+                _is_trusted_edu_source(url)
+                or _contains_trusted_edu_link(extracted_text)
+            )
+            if _trusted_institutional_context and len((extracted_text or "").strip()) >= 20:
+                result["label"] = "SAFE"
+                result["risk_level"] = "LOW"
+                result["confidence"] = min(float(result.get("confidence", 0.0)), 0.35)
+                result["needs_review"] = False
+                logger.warning("🧯 Runtime-only false positive guardrail: FAKE_SCAM -> SAFE (trusted edu/gov source)")
+            else:
+                result["label"] = "SUSPICIOUS"
+                result["risk_level"] = "MEDIUM"
+                # Clamp away from extreme confidence for degraded runtime verdicts
+                result["confidence"] = min(max(float(result.get("confidence", 0.0)), 0.55), 0.69)
+                result["needs_review"] = True
+                logger.warning("🧯 Runtime-only false positive guardrail: FAKE_SCAM -> SUSPICIOUS (no real scam signals)")
+
         if result.get("label") == "SUSPICIOUS" and has_critical_scam_flag and not has_context_rate_query:
             result["label"] = "FAKE_SCAM"
             result["risk_level"] = "HIGH"

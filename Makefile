@@ -29,7 +29,7 @@ logs:            ## 📋  Follow API logs
 	docker compose logs -f api
 
 test:            ## 🧪  Run test suite inside running API container
-	docker compose exec api python -m pytest test_enhanced_ai.py -v --tb=short
+	docker compose exec api python -m pytest tests/manual/test_enhanced_ai.py -v --tb=short
 
 help:            ## ℹ️   Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
